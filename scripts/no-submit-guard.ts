@@ -20,11 +20,11 @@ export const RULES: { rule: string; re: RegExp }[] = [
   { rule: 'greenhouse job_app', re: /greenhouse\.io[^\s'"`]*job_app/gi },
   { rule: 'greenhouse job_app param', re: /[?&]job_app\b/gi },
   { rule: 'greenhouse applications API', re: /greenhouse\.io\/v1\/boards\/[^\s/'"`]+\/(?:jobs\/[^\s/'"`]+\/)?applications\b/gi },
-  // Lever: apply page and apply API.
-  { rule: 'lever apply page', re: /jobs\.lever\.co\/[^\s'"`]*\/apply\b/gi },
+  // Lever: apply API. The human-facing page jobs.lever.co/<co>/<id>/apply is the handoff target
+  // (the person fills it in themselves), so posting data and handoff code may reference it.
   { rule: 'lever apply API', re: /api\.lever\.co\/v0\/postings\/[^\s'"`]*\/apply\b/gi },
-  // Ashby: application form page and submit endpoints.
-  { rule: 'ashby application form', re: /jobs\.ashbyhq\.com\/[^\s'"`]*\/application\b/gi },
+  // Ashby: submit endpoints. The human-facing jobs.ashbyhq.com/<org>/<id>/application page is the
+  // handoff target, like Lever's apply page above.
   { rule: 'ashby submit API', re: /ashbyhq\.com\/(?:[^\s'"`]*\/)?applicationForm\.submit/gi },
   { rule: 'ashby posting-api application', re: /ashbyhq\.com\/posting-api\/[^\s'"`]*\/application\b/gi },
 ];

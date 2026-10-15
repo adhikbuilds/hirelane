@@ -3,3 +3,4 @@ export { applyMigrations, type MigrationResult } from './migrator.js';
 export { addJob } from './queue.js';
 export { findSchemaDrift } from './verify-schema-lib.js';
 export * from './schema/index.js';
+export * from './ingest/index.js';

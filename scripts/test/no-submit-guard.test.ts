@@ -14,7 +14,7 @@ const ASHBY = ['https://jobs.ashby', 'hq.com/acme/abc-123/', 'application'].join
 const ASHBY_API = ['api.ashby', 'hq.com/applicationForm.', 'submit'].join('');
 
 describe('scanContent', () => {
-  it.each([GH, GH_EMBED, GH_API_APPS, LEVER, LEVER_API, ASHBY, ASHBY_API])(
+  it.each([GH, GH_EMBED, GH_API_APPS, LEVER_API, ASHBY_API])(
     'fails on %s',
     (s) => {
       const v = scanContent(`fetch("${s}", { method: "POST" })`);
@@ -29,12 +29,15 @@ describe('scanContent', () => {
       'https://api.lev' + 'er.co/v0/postings/acme?mode=json',
       'https://api.ashby' + 'hq.com/posting-api/job-board/acme',
       'the pipeline applies filters',
+      // Human-facing application pages are the handoff target, not submission endpoints.
+      LEVER,
+      ASHBY,
       '',
     ].join('\n');
     expect(scanContent(ok)).toEqual([]);
   });
   it('is case-insensitive on hosts and reports line numbers', () => {
-    expect(scanContent(`a\n${LEVER.toUpperCase()}`)[0].line).toBe(2);
+    expect(scanContent(`a\n${LEVER_API.toUpperCase()}`)[0].line).toBe(2);
   });
 });
 
@@ -57,11 +60,12 @@ describe('scanRepo', () => {
   };
   it('flags references outside the submit dir only', () => {
     root = mkdtempSync(join(tmpdir(), 'nosubmit-'));
-    put('packages/agent/src/submit/gh.ts', LEVER);
-    put('apps/web/lib/x.ts', LEVER);
-    put('workers/w/src/y.ts', ASHBY);
-    put('node_modules/z/index.js', LEVER);
-    put('docs/notes.md', LEVER);
+    put('packages/agent/src/submit/gh.ts', LEVER_API);
+    put('apps/web/lib/x.ts', LEVER_API);
+    put('workers/w/src/y.ts', ASHBY_API);
+    put('node_modules/z/index.js', LEVER_API);
+    put('docs/notes.md', LEVER_API);
+    put('apps/web/lib/handoff.ts', LEVER);
     put('packages/a/src/ok.ts', 'export const a = 1');
     const files = scanRepo(root).map((r) => r.file).sort();
     expect(files).toEqual(['apps/web/lib/x.ts', 'workers/w/src/y.ts']);

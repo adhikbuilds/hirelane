@@ -27,8 +27,7 @@ describe('task list and crontab', () => {
 
   it('crontab schedules heartbeat every minute for a registered task', () => {
     const items = parseCrontab(readFileSync(resolve(import.meta.dirname, '../crontab'), 'utf8'));
-    expect(items).toHaveLength(1);
-    expect(items[0]?.task).toBe('heartbeat');
+    expect(items.map((i) => i.task)).toContain('heartbeat');
     for (const item of items) expect(Object.keys(taskList)).toContain(item.task);
   });
 });

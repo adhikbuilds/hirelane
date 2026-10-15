@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@hirelane/db": "workspace:^",
+    "@hirelane/ingest": "workspace:^",
     "graphile-worker": "^0.18.0"
   }
 }

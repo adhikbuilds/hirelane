@@ -1,0 +1,24 @@
+{
+  "name": "@hirelane/ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "record": "vite-node src/record/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "ingest:run": "vite-node src/cli.ts --"
+  },
+  "dependencies": {
+    "@hirelane/db": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^5.9.3",
+    "vite-node": "^6.0.0",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "recorded_at": "2026-10-15T19:19:13.392Z",
+  "total_gz_bytes": 24570411,
+  "total_postings": 18860,
+  "kept": 119,
+  "trimmed_note": "For boards listed in \"trimmed\", description fields beyond the first 200 postings were blanked and the body re-serialised (not byte-exact).",
+  "trimmed": [],
+  "mini": [
+    "ashby:benchling",
+    "ashby:openai",
+    "ashby:temporal",
+    "greenhouse:airtable",
+    "lever:cred"
+  ],
+  "dropped": [
+    {
+      "ats": "ashby",
+      "token": "deel",
+      "reason": "empty"
+    },
+    {
+      "ats": "ashby",
+      "token": "retool",
+      "reason": "http_404"
+    },
+    {
+      "ats": "ashby",
+      "token": "rippling",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "amplitude",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "andurilindustries",
+      "reason": "too_large"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "chainalysis",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "clickhouse",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "cohesity",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "couchbase",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "dbtlabsinc",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "deepmind",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "grammarly",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "hashicorp",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "highspot",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "innovaccer",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "moveworks",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "nerdwallet",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "opendoor",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "patreon",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "phonepe",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "postman",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "remotecom",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "sentry",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "spacex",
+      "reason": "too_large"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "thoughtspot",
+      "reason": "http_404"
+    },
+    {
+      "ats": "greenhouse",
+      "token": "thumbtack",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "clevertap",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "eightfold",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "mistral",
+      "reason": "empty"
+    },
+    {
+      "ats": "lever",
+      "token": "plaid",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "razorpay",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "smallcase",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "unacademy",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "whatfix",
+      "reason": "http_404"
+    },
+    {
+      "ats": "lever",
+      "token": "whoop",
+      "reason": "empty"
+    }
+  ]
+}

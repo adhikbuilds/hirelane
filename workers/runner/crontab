@@ -1,3 +1,5 @@
 # graphile-worker crontab: minute hour day month weekday task
 # Liveness signal, once a minute.
 * * * * * heartbeat
+# Ingest: every 6 hours at minute 7.
+7 */6 * * * ingest:schedule

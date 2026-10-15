@@ -165,16 +165,16 @@ The intended schedule (PLAN §5.5) is:
 0 4 1 * *     company:logo          # monthly refresh; exact slot [assumption]
 ```
 
-**Built today:** only the `heartbeat` line (`* * * * * heartbeat`). The other entries are added by the phase that creates their task.
+**Built today:** `heartbeat` (`* * * * *`) and `ingest:schedule` (`7 */6 * * *`, Phase 1, uncommitted). The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
 
 ### 4.3 Task catalogue (PLAN §5.5, condensed)
 
 | Task | Trigger | Key / concurrency | Context | Phase | Status |
 |---|---|---|---|---|---|
 | `heartbeat` | every minute | singleton | system | 0 | Built. Inserts into `worker_heartbeats` and prunes rows older than one day |
-| `ingest:schedule` | cron `7 */6 * * *` | singleton | admin | 1 | Planned |
-| `ingest:source` | schedule | `ingest:{ats}:{token}:{run}`; 8 global, 1 per host | admin | 1 | Planned |
-| `ingest:finalize` | last source done, or a 45-minute timeout | per run | admin | 1 | Planned |
+| `ingest:schedule` | cron `7 */6 * * *` | singleton | admin | 1 | Built (uncommitted). Skips when a run is `running` and started within 2 hours. Inserts `ingest_runs`, enqueues one `ingest:source` per verified board and one `ingest:finalize`. See `docs/ingest.md` §3 |
+| `ingest:source` | schedule | `ingest:source:{runId}:{boardId}` key; queue `ingest-{ats}` (one per ATS host); `maxAttempts 5` | admin | 1 | Built (uncommitted). Fetches one board through `@hirelane/ingest` and commits it in one transaction. Failed fetches are recorded, not thrown. Worker concurrency is 4 (**Gap**: ingest expects 8) |
+| `ingest:finalize` | last source done, or a 45-minute timeout | per run; re-queues every 15 s | admin | 1 | Built (uncommitted). Records boards that never committed as failed, soft-closes postings with `missed_runs >= 2`, and writes run totals. See `docs/ingest.md` §4 |
 | `enrich:posting` | new or changed posting; `enrich_version` bump | per posting | admin | 2 | Planned |
 | `company:logo` | new company, or monthly | per company; SSRF-guarded | admin | 3 | Planned |
 | `embed:job` / `embed:resume` / `embed:reindex` | enrich, parse, provider change | per entity | admin / user | 2–4 | Planned |
@@ -246,6 +246,7 @@ hirelane/
 ├─ CLAUDE.md, PLAN.md             [built] working rules and the phased build plan
 ├─ docs/
 │  ├─ architecture.md             [built P0] this file
+│  ├─ ingest.md                   [built P1, uncommitted] Phase 1 ingest: sources, cadence, soft-close, fixtures, rate limits, per-ATS terms checklist (needs human review)
 │  ├─ recon/                      [built] Shortlist teardown notes and text (reference only; shots/ and *-text.md are gitignored)
 │  ├─ screens/phase-0.png, phase-0-mobile.png   [built P0] committed per phase
 │  └─ privacy-model.md            [planned P4]
@@ -256,15 +257,15 @@ hirelane/
 │  ├─ support/screens.ts          [built P0] savePhaseScreen(page, N)
 │  └─ phase-0-shell.spec.ts       [built P0] wordmark, Overpass loaded, paper background, health endpoint
 ├─ fixtures/
-│  ├─ full/{ats}/{token}.json.gz  [planned P1] recorder output, ≤ 25MB total
-│  └─ mini/                       [planned P1] 5 boards for unit tests
+│  ├─ full/{ats}/{token}.json.gz  [built P1, uncommitted] recorder output, 119 boards, 18,860 postings, 24.6 MB gzipped (budget 25 MB)
+│  └─ mini/                       [built P1, uncommitted] 5 boards: ashby openai, benchling, temporal; greenhouse airtable; lever cred
 ├─ packages/
 │  ├─ engine/                     [partial P0; real code P2] placeholder src/index.ts only. No package.json, no ENGINE_VERSION
 │  │  ├─ src/{salary,skills,requirements,classify,dedup,match,autopilot,replies,questions}/   [planned P2]
 │  │  └─ data/skills.json         [planned P2] seeds the skills table
 │  ├─ db/
 │  │  ├─ package.json             [built P0] exports ".", "./env"; scripts migrate, seed, reset, verify-schema, test, typecheck
-│  │  ├─ migrations/NNNN_*.sql    [built P0] 0001_foundation.sql. 0005_auth, 0006_profiles_resumes [planned P4]; others per phase
+│  │  ├─ migrations/NNNN_*.sql    [built P0] 0001_foundation.sql. 0002_companies_boards_postings.sql and 0003_ingest_runs.sql [built P1, uncommitted]. 0005_auth, 0006_profiles_resumes [planned P4]; others per phase
 │  │  ├─ test/                    [built P0] migrator.test.ts, verify-schema.test.ts, queue.test.ts, helpers.ts
 │  │  └─ src/
 │  │     ├─ client.ts            [built P0] getPool, getDb, withAdmin, withUser, close
@@ -274,6 +275,8 @@ hirelane/
 │  │     ├─ reset.ts             [built P0] drops graphile_worker and public; refuses non-local URLs
 │  │     ├─ seed.ts             [partial P0] stub: logs "nothing to seed yet"
 │  │     ├─ verify-schema.ts, verify-schema-lib.ts   [built P0] tables, columns, nullability
+│  │     ├─ ingest/persist.ts     [built P1, uncommitted] recordSourceSuccess (one-transaction board commit), recordSourceFailure, startRun, finalizeRun (soft-close), closeBoard, upsertCompanyBoard
+│  │     ├─ schema/ingest.ts      [built P1, uncommitted] companies, company_boards, postings, ingest_runs, ingest_source_runs
 │  │     ├─ queue.ts             [built P0] addJob over quickAddJob (owner connection, §2.3)
 │  │     ├─ schema/ops.ts        [built P0] worker_heartbeats, feature_flags, rate_limits
 │  │     ├─ schema/index.ts      [built P0]
@@ -281,7 +284,15 @@ hirelane/
 │  │     ├─ verify-auth.ts       [planned P4]
 │  │     ├─ auth.ts              [planned P4] scrypt plus opaque sessions
 │  │     └─ index.ts            [built P0] public exports
-│  ├─ ingest/src/                 [planned P1] greenhouse.ts, lever.ts, ashby.ts, recorder, persist/diff, boards.json
+│  ├─ ingest/                     [built P1, uncommitted] @hirelane/ingest. No src/index.ts yet (**Gap**: package.json names it as main and types). Workers import src/run/index and src/connectors/index directly
+│  │  ├─ boards.json, boards.candidates.json   [built P1] 119 verified boards (80 greenhouse, 28 ashby, 11 lever) and 154 candidates
+│  │  ├─ src/contract.ts          [built P1] RawPosting, Connector, FetchBoardResult, FetchPolicyError, NormalizedPosting
+│  │  ├─ src/normalize.ts         [built P1] normalize(), contentHash() (version v1)
+│  │  ├─ src/connectors/          [built P1] shared.ts (makeConnector, fixed URLs, token guard), greenhouse.ts, lever.ts, ashby.ts
+│  │  ├─ src/run/                 [built P1] run.ts (runIngest, ingestBoard, seedBoards), policy.ts (createPolicyFetch: 30 s timeout, 20 MB cap, host spacing), retry.ts, fixtures.ts (fixture transport), boards.ts, args.ts
+│  │  ├─ src/record/              [built P1] recordBoards (1 req/s per host; writes fixtures, boards.json, manifest), limiter.ts, fetch.ts, mini.ts (deriveMini), trim.ts, cli.ts (pnpm ingest:record)
+│  │  ├─ src/cli.ts               [built P1] pnpm ingest:run (fixture or live)
+│  │  └─ test/                    [built P1] 12 files, 166 tests (passing 2026-10-16)
 │  └─ agent/src/                  [planned P2]
 │     ├─ llm/                     [planned P2] AnthropicProvider, FixtureProvider, NullProvider
 │     ├─ embeddings/              [planned P2] hash; local [P4]
@@ -291,10 +302,12 @@ hirelane/
 │     └─ submit/                  [planned P9] flagged, isolated entry point
 ├─ workers/runner/                [built, partial P0] package name @hirelane/runner
 │  ├─ src/index.ts                [built P0] graphile-worker bootstrap, concurrency 4, pollInterval 2000
-│  ├─ src/tasks/index.ts          [built P0] taskList = { heartbeat }
+│  ├─ src/tasks/index.ts          [built P0, extended P1] taskList = { heartbeat, ...createIngestTasks() }
+│  ├─ src/tasks/ingest.ts         [built P1, uncommitted] ingest:schedule, ingest:source, ingest:finalize; deps injectable (IngestDeps)
+│  ├─ test/ingest.tasks.test.ts   [built P1, uncommitted]
 │  ├─ src/tasks/heartbeat.ts      [built P0]
 │  ├─ test/runner.test.ts         [built P0] heartbeat behaviour, task list, crontab
-│  └─ crontab                     [partial P0] heartbeat line only; full schedule in §4.2
+│  └─ crontab                     [partial P0, extended P1] heartbeat and `7 */6 * * * ingest:schedule`; full schedule in §4.2
 ├─ apps/web/                      [built, partial P0] Next 15, React 19, Tailwind v4, :3001
 │  ├─ app/layout.tsx, page.tsx, wordmark.tsx, globals.css, icon.svg, fonts/ (Overpass woff2 + OFL.txt)   [built P0]
 │  ├─ app/api/health/route.ts     [built P0]

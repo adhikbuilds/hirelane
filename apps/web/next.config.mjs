@@ -19,6 +19,13 @@ const nextConfig = {
   devIndicators: false,
   poweredByHeader: false,
   reactStrictMode: true,
+  transpilePackages: ["@hirelane/db"],
+  serverExternalPackages: ["pg", "graphile-worker"],
+  // Workspace packages are TypeScript sources that import siblings with NodeNext-style ".js" suffixes.
+  webpack(config) {
+    config.resolve.extensionAlias = { ".js": [".ts", ".tsx", ".js"], ".mjs": [".mts", ".mjs"] };
+    return config;
+  },
   async headers() {
     return [
       {
