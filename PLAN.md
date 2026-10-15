@@ -197,10 +197,14 @@ These are observed in `shots/sl-home-desktop.png`, `sl-jobs.png` and `sl-how.png
 ### 4.2 Direction: "the timetable"
 **Point of view.** A job search is logistics, not a lottery. The interface reads like a well-set timetable or dispatch ledger: dense, ruled, aligned, and every figure sourced. **Colour reports state; it never decorates.** This POV is written as the header comment of `apps/web/app/globals.css` (solum convention) and implemented as Tailwind v4 `@theme` tokens.
 
-- **Typography pair.** All fonts are self-hosted OFL woff2 through `next/font/local`, with license files vendored in `apps/web/app/fonts/`. We use `next/font/local` because `next/font/google` needs the network at build time.
-  - *Display:* **Instrument Serif** 400, used only for page titles and the wordmark, at 40 or 56px, never bold.
-  - *Text and UI:* **IBM Plex Sans** 400/500/600, with a 15px base and 1.45 line-height.
-  - *Figures:* **IBM Plex Mono** 400/500 with tabular numerals. It carries every salary, score, count, timestamp and job key.
+- **Typography: one family, road signage.** (Revised 2026-10-16: the original Instrument Serif + IBM Plex Mono pairing is the
+  generic AI-generated look the owner rejected.) **Overpass** (OFL; a libre take on Highway Gothic, the US road-sign face), installed
+  from `@fontsource-variable/overpass` so builds work offline, wired through `next/font/local`.
+  - *Display:* Overpass 800, tracking −0.025em, 40 / 56px, for page titles, the wordmark and the pay figure on a job page.
+  - *Text and UI:* Overpass 400/500/600, 15px base, 1.5 line-height.
+  - *Figures:* the same face with `font-variant-numeric: tabular-nums` for every salary, score, count and timestamp. **No monospace
+    face anywhere.** Source codes (`gh` / `lv` / `ab`) become small sign-shaped badges, not mono text.
+  - Labels are sentence case, never all caps.
 - **Palette (light; dark mode is deferred).**
 
   | Token | Hex | Use |
@@ -209,7 +213,7 @@ These are observed in `shots/sl-home-desktop.png`, `sl-jobs.png` and `sl-how.png
   | `--sheet` | `#FFFFFF` | Raised surfaces |
   | `--rule` | `#D5D9D3` | Hairlines |
   | `--rule-strong` | `#A9B0A8` | Section rules |
-  | `--ink` | `#101513` | Primary text |
+  | `--ink` | `#17302A` | Primary text: dark highway green, a real colour rather than tinted black |
   | `--ink-2` | `#4A524D` | Secondary text |
   | `--ink-3` | `#7C847E` | Tertiary text, stale timestamps |
   | `--lane` | `#1B4D3E` | Primary action, matched requirement, active state |
@@ -224,15 +228,15 @@ These are observed in `shots/sl-home-desktop.png`, `sl-jobs.png` and `sl-how.png
   - App pages use a 248px filter rail plus a fluid ledger.
   - The job page splits 8 / 4: the description held to a ≤ 72ch measure, and a ledger sidebar holding pay trace, requirements, freshness and Apply.
 - **The board is a ledger, not cards.**
-  - Columns: `Fresh` (mono "2h") · `Role` and company (16px logo) · `Where` (ISO codes plus workplace) · `Pay` (normalised annual, original string beneath) · `Match` (signed-in only: "82 · 9/11") · `Source` (mono `gh` / `lv` / `ab`).
+  - Columns: `Fresh` ("2h") · `Role` and company (16px logo) · `Where` (ISO codes plus workplace) · `Pay` (normalised annual, original string beneath) · `Match` (signed-in only: "82 · 9/11") · `Source` (sign badge `gh` / `lv` / `ab`).
   - Rows are 44px. On mobile they collapse to a two-line stacked row.
   - Keys: `/` to search, `j` / `k` to move, `Enter` to open.
 - **Signature components:**
-  - **Lane timeline:** an application drawn as a transit line, with stations (drafted, approved, handed off, sent, replied, interview, outcome) and mono timestamps.
+  - **Lane timeline:** an application drawn as a road lane with dashed markings, exits as stages (drafted, approved, handed off, sent, replied, interview, outcome) and tabular timestamps.
   - **Match ledger:** the score written as its equation. Each requirement row expands to show the resume evidence span.
   - **Docket (triage):** a single ruled sheet. A pass slides out 160ms and is gone.
-  - **Needs-you field:** a 4px `--signal` left rule (a lane marking) plus a mono reason label.
-  - **Undo bar:** a 4px `--signal` bar draining linearly over 4000ms at the top of the sheet, plus a mono countdown "3.2s". `U` or `Esc` undoes.
+  - **Needs-you field:** a 4px `--signal` left rule (a lane marking) plus a short reason label.
+  - **Undo bar:** a 4px `--signal` bar draining linearly over 4000ms at the top of the sheet, plus a tabular countdown "3.2s". `U` or `Esc` undoes.
 - **Motion:**
   - 120ms ease-out for hover and state changes.
   - 160ms `cubic-bezier(.4,0,1,1)` for the triage exit.
@@ -241,10 +245,10 @@ These are observed in `shots/sl-home-desktop.png`, `sl-jobs.png` and `sl-how.png
   - **None of:** scroll-triggered reveals, parallax, springs or bounce, skeleton shimmer.
   - Under `prefers-reduced-motion: reduce`, all transforms are removed, opacity transitions are capped at 80ms, and the undo is shown as a numeric countdown only.
 - **Landing page:**
-  - The H1 is one sentence in Instrument Serif.
+  - The H1 is one sentence in Overpass 800.
   - The hero is **the live ledger of the 12 freshest jobs**, server-rendered from the database, captioned "refreshed 2h 14m ago from 97 boards" (live values).
   - Below it, "How it works" is a single real application preview, rendered with the actual preview component and fixture data, then the pricing table. Nothing else.
-- **Brand:** a lowercase "hirelane" wordmark in Instrument Serif, preceded by two short parallel rules (lane markings). The favicon is two `--lane` bars on `--paper`. The SVGs live in `apps/web/public/brand/`. There is no mascot.
+- **Brand:** a lowercase "hirelane" wordmark in Overpass 800, preceded by two short parallel rules (lane markings). The favicon is two `--lane` bars on `--paper`. The SVGs live in `apps/web/public/brand/`. There is no mascot.
 - **Copy voice:** second person and plain. No exclamation marks, no "magic", no emoji. Limits are stated outright.
 
 ---
@@ -581,7 +585,7 @@ All public endpoints share these properties:
 | 0.3 | Root `package.json`: `pnpm@9.12.0`, `node >= 20`, and these scripts: `dev`, `worker`, `test`, `e2e`, `typecheck`, `lint:deps`, `verify`, `db:up`, `db:down`, `db:migrate`, `db:seed`, `db:reset`, `db:fresh` (reset, then migrate, then seed), `db:verify-rls`, `db:verify-auth`, `db:verify-schema`, `ingest:run`, `ingest:record`, `engine:eval`, `agent:eval`, `report:coverage`, `bench:board`. Also `pnpm-workspace.yaml` (`packages/*`, `apps/*`, `workers/*`), `tsconfig.base.json` (strict, `noUncheckedIndexedAccess`), and `.gitignore` (`.env`, `storage/`, `.mail/`, `.cache/`) | tdd-guide |
 | 0.4 | `docker-compose.yml`: service `postgres`, image **`pgvector/pgvector:pg16`** (solum's `postgres:16-alpine` has no pgvector), `container_name: hirelane-postgres`, `5433:5432`, `pg_isready` healthcheck, volume `hirelane-pgdata`. `.env.example` lists every variable in §5.3 and §10, with `DATABASE_URL=postgres://hirelane:hirelane@localhost:5433/hirelane` | tdd-guide |
 | 0.5 | `packages/db`: port `client.ts` (`withAdmin`, and `withUser`, which does `SET LOCAL ROLE hirelane_app` plus `set_config('hirelane.user_id', …, true)`), the `migrate.ts` checksum runner, `reset.ts`, `seed.ts`, the Drizzle setup, and `verify-schema.ts`. Migration `0001_foundation.sql`: `vector`, `pg_trgm`, `citext` and `pgcrypto` extensions; role `hirelane_app NOLOGIN`; `worker_heartbeats`; `feature_flags`; `rate_limits`. Tests: an edited migration is refused; a drift check catches a missing column | tdd-guide |
-| 0.6 | `apps/web`: Next 15, React 19, Tailwind v4 (`@tailwindcss/postcss`); `globals.css` with the POV header and the `@theme` tokens from §4.2; vendored Instrument Serif and IBM Plex Sans/Mono woff2 plus OFL texts through `next/font/local`; the wordmark SVG and favicon; layout shell with a one-line footer; `next dev -p 3001` and `next start -p 3001`; `lib/{queries,session,format}.ts` stubs | tdd-guide |
+| 0.6 | `apps/web`: Next 15, React 19, Tailwind v4 (`@tailwindcss/postcss`); `globals.css` with the POV header and the `@theme` tokens from §4.2; Overpass variable font from `@fontsource-variable/overpass` (OFL text vendored) through `next/font/local`; the wordmark SVG and favicon; layout shell with a one-line footer; `next dev -p 3001` and `next start -p 3001`; `lib/{queries,session,format}.ts` stubs | tdd-guide |
 | 0.7 | `workers/runner`: graphile-worker bootstrap, a crontab file, and a `heartbeat` task. `packages/db/src/queue.ts` provides the `addJob` wrapper | tdd-guide |
 | 0.8 | vitest workspace config. Playwright config (`webServer: pnpm dev`, `baseURL http://localhost:3001`, `reuseExistingServer`, globalSetup runs `db:fresh` in fixture mode). `e2e/support/screens.ts`. `e2e/phase-0-shell.spec.ts` | tdd-guide |
 | 0.9 | `scripts/brand-guard.ts` and `scripts/no-submit-guard.ts`, each with self-tests ("pipeline" passes, "Pip drafts" fails), wired into `verify` | tdd-guide |
