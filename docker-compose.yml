@@ -1,0 +1,23 @@
+# Local Postgres with pgvector. Bound to loopback only; host port 5433 (5432 belongs to another project).
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hirelane-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hirelane
+      POSTGRES_PASSWORD: hirelane
+      POSTGRES_DB: hirelane
+    ports:
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - hirelane-pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U hirelane -d hirelane']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  hirelane-pgdata:

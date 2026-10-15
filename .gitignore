@@ -9,3 +9,9 @@ test-results/
 # third-party reference material (kept local only)
 docs/recon/shots/
 docs/recon/*-text.md
+storage/
+.mail/
+.cache/
+*.tsbuildinfo
+test-results/
+playwright-report/

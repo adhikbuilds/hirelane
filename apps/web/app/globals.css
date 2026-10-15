@@ -1,0 +1,97 @@
+/*
+ * POV: the timetable.
+ * A job search is logistics, not a lottery. The interface reads like a
+ * well-set timetable or dispatch ledger: dense, ruled, aligned, and every
+ * figure sourced. Colour reports state; it never decorates.
+ *
+ * One family (Overpass, road signage), no serif, no monospace anywhere.
+ * Figures use tabular-nums. Labels are sentence case.
+ * Lane green is the action and the match. Signal yellow is reserved for
+ * Needs you and the undo countdown. Stop red is a missing requirement or an error.
+ * Motion: 120ms ease-out; nothing scroll-triggered, no springs, no shimmer.
+ */
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f3f4f1;
+  --color-sheet: #ffffff;
+  --color-rule: #d5d9d3;
+  --color-rule-strong: #a9b0a8;
+  --color-ink: #17302a;
+  --color-ink-2: #4a524d;
+  --color-ink-3: #7c847e;
+  --color-lane: #1b4d3e;
+  --color-lane-soft: #e3ece7;
+  --color-signal: #f2c230;
+  --color-stop: #a3261b;
+  --color-stop-soft: #f6e3e0;
+
+  --font-sans: var(--font-overpass), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-overpass), ui-sans-serif, system-ui, sans-serif;
+
+  --spacing: 4px;
+  --breakpoint-sm: 40rem;
+  --container-page: 1320px;
+
+  --ease-state: ease-out;
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-panel: cubic-bezier(0, 0, 0.2, 1);
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.figure,
+time,
+td.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.display {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+a,
+button {
+  transition: color 120ms ease-out, background-color 120ms ease-out;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-lane);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  z-index: 10;
+  background: var(--color-lane);
+  color: #fff;
+  padding: 8px 12px;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

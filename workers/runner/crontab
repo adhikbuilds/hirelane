@@ -1,0 +1,3 @@
+# graphile-worker crontab: minute hour day month weekday task
+# Liveness signal, once a minute.
+* * * * * heartbeat
