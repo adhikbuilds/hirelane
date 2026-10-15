@@ -1,6 +1,7 @@
 import {
   bigint,
   boolean,
+  char,
   index,
   integer,
   jsonb,
@@ -74,6 +75,10 @@ export const postings = pgTable(
     missedRuns: smallint('missed_runs').notNull().default(0),
     closedAt: ts('closed_at'),
     jobId: uuid('job_id'),
+    enrichedContentHash: text('enriched_content_hash'),
+    enrichedVersion: integer('enriched_version'),
+    geoCountries: char('geo_countries', { length: 2 }).array(),
+    geoLocations: text('geo_locations').array(),
     source: text('source').notNull(),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),

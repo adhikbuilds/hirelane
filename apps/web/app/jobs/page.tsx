@@ -52,7 +52,13 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                   <tr key={j.id} className="h-11 border-b border-rule align-middle">
                     <td className="num pr-3 text-ink-2">{formatAge(j.postedAt)}</td>
                     <td className="py-1 pr-3">
-                      <span className="block font-medium">{j.title}</span>
+                      {j.jobSlug ? (
+                        <Link href={`/job/${j.jobSlug}`} className="block font-medium hover:text-lane hover:underline">
+                          {j.title}
+                        </Link>
+                      ) : (
+                        <span className="block font-medium">{j.title}</span>
+                      )}
                       <span className="block text-[13px] text-ink-2">{j.company}</span>
                       <span className="block text-[13px] text-ink-3 sm:hidden">{j.where ?? "Not stated"}</span>
                     </td>

@@ -659,12 +659,12 @@ All public endpoints share these properties:
   - salary precision ≥ 0.98, recall ≥ 0.95, period and currency accuracy ≥ 0.98;
   - requirements must/nice F1 ≥ 0.85;
   - dedup with 0 false merges and ≥ 0.9 recall on the 200 pairs.
-- [ ] `pnpm report:coverage` on the full fixture shows:
+- [x] `pnpm report:coverage` on the full fixture shows:
   - salary coverage (target ≥ 50%), reported alongside the "stated anywhere" ceiling;
   - ≥ 1 must-have requirement on ≥ 90% of jobs;
   - a country, or "remote: worldwide", on ≥ 98% of jobs;
   - role family assigned on ≥ 95% of jobs.
-- [ ] With `ANTHROPIC_API_KEY` unset, a full enrichment completes with `llm_calls = 0`, and every job has a `salary_trace` whenever it has a salary.
+- [x] With `ANTHROPIC_API_KEY` unset, a full enrichment completes with `llm_calls = 0`, and every job has a `salary_trace` whenever it has a salary.
 - [ ] The app runs on :3001. `e2e/phase-2-job.spec.ts` passes (an INR LPA job shows "₹18–25 L/yr" with a trace that lists the period and fx steps), and `docs/screens/phase-2.png` is saved.
 
 ---

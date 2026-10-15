@@ -28,9 +28,10 @@
     "db:verify-schema": "pnpm --filter @hirelane/db verify-schema",
     "ingest:run": "pnpm --filter @hirelane/ingest ingest:run",
     "ingest:record": "pnpm --filter @hirelane/ingest record",
-    "engine:eval": "echo \"engine:eval: not implemented until Phase 2\"",
+    "engine:eval": "pnpm --filter @hirelane/engine eval",
     "agent:eval": "echo \"agent:eval: not implemented until Phase 4\"",
-    "report:coverage": "echo \"report:coverage: not implemented until Phase 1\"",
+    "enrich:run": "pnpm --filter @hirelane/runner enrich:run",
+    "report:coverage": "vite-node scripts/report-coverage.ts --",
     "bench:board": "echo \"bench:board: not implemented until Phase 3\""
   },
   "devDependencies": {

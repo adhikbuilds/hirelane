@@ -260,9 +260,15 @@ hirelane/
 │  ├─ full/{ats}/{token}.json.gz  [built P1, uncommitted] recorder output, 119 boards, 18,860 postings, 24.6 MB gzipped (budget 25 MB)
 │  └─ mini/                       [built P1, uncommitted] 5 boards: ashby openai, benchling, temporal; greenhouse airtable; lever cred
 ├─ packages/
-│  ├─ engine/                     [partial P0; real code P2] placeholder src/index.ts only. No package.json, no ENGINE_VERSION
-│  │  ├─ src/{salary,skills,requirements,classify,dedup,match,autopilot,replies,questions}/   [planned P2]
-│  │  └─ data/skills.json         [planned P2] seeds the skills table
+│  ├─ engine/                     [built P2, uncommitted] @hirelane/engine. Pure and deterministic, zero runtime deps. package.json (test, typecheck, eval scripts), tsconfig, vitest config. ENGINE_VERSION '1.0.0' in src/version.ts, ENRICH_VERSION 1, DOC_FORMAT_VERSION 1. 675 tests in 10 files, passing 2026-10-16. See docs/enrichment.md
+│  │  ├─ src/index.ts              [built P2] public exports
+│  │  ├─ src/{salary,fx,currency,requirements,skills,places,text,trace,dedup,errors,types,version}.ts   [built P2, uncommitted]
+│  │  ├─ src/classify/            [built P2] level, workplace, employment, roleFamily, visa; index.ts re-exports
+│  │  ├─ src/internal/tracer.ts   [built P2] evidence helper shared by classifiers and dedup
+│  │  ├─ src/{match,autopilot,replies,questions}/   [planned; not in Phase 2]
+│  │  ├─ data/                    [built P2] skills.json (1,182 skills), role-families.json, salary-bounds.json, fx_rates.json (illustrative, as of 2026-10-15), places.json
+│  │  ├─ scripts/{eval,score}.ts  [built P2] `pnpm engine:eval`; thresholds in score.ts. Corpora in test/corpus/
+│  │  └─ test/                    [built P2] one file per module plus corpus.test.ts and the three JSONL corpora
 │  ├─ db/
 │  │  ├─ package.json             [built P0] exports ".", "./env"; scripts migrate, seed, reset, verify-schema, test, typecheck
 │  │  ├─ migrations/NNNN_*.sql    [built P0] 0001_foundation.sql. 0002_companies_boards_postings.sql and 0003_ingest_runs.sql [built P1, uncommitted]. 0005_auth, 0006_profiles_resumes [planned P4]; others per phase
@@ -293,8 +299,10 @@ hirelane/
 │  │  ├─ src/record/              [built P1] recordBoards (1 req/s per host; writes fixtures, boards.json, manifest), limiter.ts, fetch.ts, mini.ts (deriveMini), trim.ts, cli.ts (pnpm ingest:record)
 │  │  ├─ src/cli.ts               [built P1] pnpm ingest:run (fixture or live)
 │  │  └─ test/                    [built P1] 12 files, 166 tests (passing 2026-10-16)
-│  └─ agent/src/                  [planned P2]
-│     ├─ llm/                     [planned P2] AnthropicProvider, FixtureProvider, NullProvider
+│  └─ agent/                      [built P2, uncommitted] @hirelane/agent. package.json exports "." and "./llm". Depends on @anthropic-ai/sdk, zod, @hirelane/db. 31 tests in 4 files, passing 2026-10-16
+│     ├─ src/index.ts             [built P2] re-exports llm/index.ts
+│     ├─ src/llm/                 [built P2, uncommitted] AnthropicProvider (anthropic.ts), FixtureProvider (fixture.ts), NullProvider (null.ts), factory.ts (HIRELANE_LLM_MODE: anthropic | fixture | off), prompt.ts, db-sink.ts (llm_calls metadata only), types.ts (DEFAULT_MODEL claude-opus-5-5). See docs/enrichment.md §5
+│     ├─ test/                    [built P2] llm-anthropic, llm-mode, llm-null-fixture, llm-prompt
 │     ├─ embeddings/              [planned P2] hash; local [P4]
 │     ├─ resume/                  [planned P4] parse (LLM plus section-heuristic fallback)
 │     ├─ draft/, approval/, handoff/, tailor/   [planned P5]

@@ -1,0 +1,56 @@
+{
+  "benchling": {
+    "source": "fetched",
+    "domain": "benchling.com",
+    "url": "https://www.benchling.com/apple-touch-icon.png",
+    "recordedAt": "2026-10-15T22:12:07.603Z"
+  },
+  "openai": {
+    "source": "monogram",
+    "domain": "openai.com",
+    "reason": "no_usable_icon",
+    "attempts": [
+      {
+        "url": "https://openai.com/",
+        "reason": "http_status"
+      },
+      {
+        "url": "https://openai.com/apple-touch-icon.png",
+        "reason": "http_status"
+      },
+      {
+        "url": "https://openai.com/favicon.ico",
+        "reason": "http_status"
+      }
+    ],
+    "recordedAt": "2026-10-15T22:12:08.106Z"
+  },
+  "temporal": {
+    "source": "fetched",
+    "domain": "temporal.io",
+    "url": "https://temporal.io/apple-touch-icon.png",
+    "recordedAt": "2026-10-15T22:12:09.949Z"
+  },
+  "airtable": {
+    "source": "fetched",
+    "domain": "airtable.com",
+    "url": "https://airtable.com/favicon.ico",
+    "recordedAt": "2026-10-15T22:12:12.013Z"
+  },
+  "cred": {
+    "source": "monogram",
+    "domain": "cred.club",
+    "reason": "no_usable_icon",
+    "attempts": [
+      {
+        "url": "https://cred.club/apple-touch-icon.png",
+        "reason": "http_status"
+      },
+      {
+        "url": "https://cred.club/favicon.ico",
+        "reason": "http_status"
+      }
+    ],
+    "recordedAt": "2026-10-15T22:12:12.426Z"
+  }
+}

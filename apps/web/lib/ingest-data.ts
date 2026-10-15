@@ -124,6 +124,7 @@ export type PostingRow = {
   ats: string;
   raw: unknown;
   url: string;
+  jobSlug: string | null;
 };
 
 export async function getPostingsPage(page: number): Promise<{ rows: PostingRow[]; total: number }> {
@@ -131,10 +132,11 @@ export async function getPostingsPage(page: number): Promise<{ rows: PostingRow[
     const total = (await db.query("SELECT count(*)::int AS n FROM postings WHERE closed_at IS NULL")).rows[0].n as number;
     const rows = (
       await db.query(
-        `SELECT p.id, p.title, c.name AS company, p.location_raw, p.raw, p.url, b.ats,
+        `SELECT p.id, p.title, c.name AS company, p.location_raw, p.raw, p.url, b.ats, j.slug AS job_slug,
                 COALESCE(p.posted_at, p.first_seen_at) AS fresh_at
            FROM postings p
            JOIN company_boards b ON b.id = p.board_id JOIN companies c ON c.id = b.company_id
+           LEFT JOIN jobs j ON j.id = p.job_id
           WHERE p.closed_at IS NULL
           ORDER BY fresh_at DESC, p.id LIMIT $1 OFFSET $2`,
         [PAGE_SIZE, pageOffset(page)],
@@ -149,6 +151,7 @@ export async function getPostingsPage(page: number): Promise<{ rows: PostingRow[
         ats: r.ats,
         raw: r.raw,
         url: r.url,
+        jobSlug: r.job_slug,
       }),
     );
     return { rows, total };

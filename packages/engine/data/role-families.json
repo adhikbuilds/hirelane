@@ -1,0 +1,241 @@
+{
+ "version": 1,
+ "titleRules": [
+  {
+   "id": "eng_manager",
+   "family": "engineering-manager",
+   "pattern": "\\bengineering (?:manager|director|lead|head|leader|management)\\b|\\b(?:software|development|platform|infrastructure|data|ml|ai|security|qa|sre|devops|hardware|firmware|mobile|backend|frontend|machine learning|site reliability|application|systems?) (?:engineering |development )?(?:manager|director|head|leader)\\b|\\b(?:manager|director|head|vp|vice president|svp|evp|senior director|group manager)[ ,]+(?:of )?(?:software |platform |infrastructure |data |ml |ai |security |hardware )?(?:engineering|software development)\\b|\\b(?:vp|svp|evp|head|director|vice president) (?:of )?(?:engineering|technology)\\b|\\bchief (?:technology|technical) officer\\b|\\bcto\\b|\\bdevelopment manager\\b"
+  },
+  {
+   "id": "mkt_ops",
+   "family": "marketing",
+   "pattern": "\\b(?:marketing|growth|demand|lifecycle|campaign) (?:operations|ops)\\b|\\bmarketing\\b"
+  },
+  {
+   "id": "legal_ops",
+   "family": "legal",
+   "pattern": "\\blegal\\b|\\b(?:counsel|attorney|lawyer|paralegal|general counsel|litigation|patent|trademark|corporate secretary|regulatory affairs|government affairs|public policy|privacy (?:counsel|officer|manager|analyst|program)|data protection|export control|trade compliance|contracts? (?:manager|administrator|specialist|analyst|negotiator|lead|attorney))\\b|\\b(?:aml|kyc|compliance) (?:analyst|specialist|manager|investigator|officer|associate|lead|director|head|partner)\\b|\\bcompliance\\b|\\bregulatory\\b"
+  },
+  {
+   "id": "people_ops",
+   "family": "people-recruiting",
+   "pattern": "\\b(?:recruiter|recruiting|recruitment|talent acquisition|sourcer|human resources|hrbp|hris|total rewards|headhunter|staffing)\\b|\\b(?:people|talent|hr|culture|employee|workforce) (?:operations|ops|partner|business partner|success|experience|analytics|programs?|manager|director|lead|specialist|generalist|coordinator|analyst|partner|head|vp|associate|team)\\b|\\b(?:learning and development|l and d|organizational development|diversity|inclusion)\\b|\\bpeople (?:and|&) culture\\b|\\bcompensation (?:analyst|manager|partner|director|specialist)\\b|\\bbenefits (?:manager|specialist|analyst|administrator|coordinator)\\b|\\btalent\\b|\\bhr\\b"
+  },
+  {
+   "id": "acct_exec",
+   "family": "sales",
+   "pattern": "\\baccount (?:executive|director|representative|rep|owner|partner)\\b|\\baccount manager\\b"
+  },
+  {
+   "id": "finance",
+   "family": "finance",
+   "pattern": "\\b(?:finance|financial (?:analyst|planning|reporting|controller|accountant|analysis|manager|director|associate|operations|systems analyst)|accounting|accountant|accounts (?:payable|receivable)|fp ?(?:and )?a|fpa|controller|controllership|treasury|treasurer|tax|auditor|audit|payroll|billing specialist|revenue accountant|bookkeeper|collections|cfo|investor relations|actuar(?:y|ial)|underwriter|underwriting|banker|credit (?:analyst|risk|manager)|procurement (?:analyst|manager|specialist)|capital markets|equity research|valuation|budget)\\b"
+  },
+  {
+   "id": "it",
+   "family": "it-corporate-systems",
+   "pattern": "\\b(?:it|information technology)(?: |$)(?!.*\\bsecurity\\b)|\\b(?:help ?desk|service desk|desktop support|end user (?:computing|support)|corporate it|business systems|enterprise applications?|enterprise systems|salesforce (?:admin|administrator|developer|architect)|sfdc|crm administrator|systems? analyst|business systems analyst|jira admin|okta admin|google workspace|office 365|m365|microsoft 365|gtm systems|revenue systems|sales systems|marketing systems|go to market systems|netsuite|workday (?:analyst|administrator|consultant|engineer|integration)|sap (?:analyst|consultant|developer|architect|engineer|basis)|erp|sysadmin|system administrator|systems administrator|servicenow|d365|dynamics 365|collaboration engineer|mdm|device management)\\b|\\btechnology (?:support|specialist|analyst|operations|services)\\b"
+  },
+  {
+   "id": "security",
+   "family": "security-engineer",
+   "pattern": "\\b(?:security|infosec|appsec|cybersecurity|cyber|devsecops|ciso)\\b|\\b(?:threat|detection|incident response|vulnerability|penetration|red team|blue team|soc) (?:engineer|analyst|researcher|hunter|investigator|intelligence|tester|specialist|lead|manager)\\b|\\bpenetration test(?:er|ing)\\b|\\bmalware\\b|\\breverse engineer(?:ing)?\\b|\\bgrc\\b|\\biam (?:engineer|analyst|architect)\\b|\\btrust and safety (?:engineer|analyst)\\b"
+  },
+  {
+   "id": "hardware",
+   "family": "hardware-embedded",
+   "pattern": "\\b(?:hardware|firmware|embedded|fpga|asic|rtl|silicon|vlsi|electrical|electronics?|mechanical|circuit|pcb|analog|photonics?|optical|mechatronics?|avionics|propulsion|aerospace|rf|thermal|mems|semiconductor|robotics?|machining|machinist|cad|industrial design|composites?|welding)\\b|\\b(?:manufacturing|test equipment|materials|structures?|systems integration|chemical|civil|supplier|battery|controls?|aircraft|vehicle|flight|launch|propulsion) (?:engineers?|technicians?|architect|scientist|designer)\\b|\\b(?:design verification|physical design|dft|firmware|device drivers?|bsp|bootloader|kernel)\\b"
+  },
+  {
+   "id": "design",
+   "family": "design",
+   "pattern": "\\b(?:product|ux|ui|ux ui|visual|graphic|brand|interaction|motion|web|game|industrial|communication|content|service|creative|systems?|instructional) (?:designer|design|artist|director)\\b|\\bdesigner\\b|\\billustrator\\b|\\banimator\\b|\\bart director\\b|\\bcreative director\\b|\\b(?:3d|2d|concept|technical|environment|character|vfx|ui) artist\\b|\\bux (?:researcher|writer|engineer)\\b|\\buser research(?:er)?\\b|\\bdesign (?:lead|manager|director|operations|ops|systems)\\b|\\bhead of design\\b|\\bvp design\\b"
+  },
+  {
+   "id": "ml_engineer",
+   "family": "ml-engineer",
+   "pattern": "\\b(?:machine learning|ml|ai|applied ai|deep learning|llm|nlp|computer vision|cv|mlops|genai|generative ai|inference|perception|agent|agentic|prompt|foundation model) (?:engineers?|developers?|architect|infrastructure|infra|platform|software engineer|systems?|lead|manager|ops)\\b|\\bmlops\\b|\\bapplied ai\\b|\\b(?:ml|ai) (?:infra|infrastructure|platform)\\b|\\bai (?:engineering|enablement)\\b|\\bmachine learning\\b|\\bllm\\b"
+  },
+  {
+   "id": "data_scientist",
+   "family": "data-scientist",
+   "pattern": "\\bdata scien(?:ce|tist)s?\\b|\\bdecision scien(?:ce|tist)\\b|\\bquantitative (?:researcher|analyst|developer|strategist)\\b|\\bquant\\b|\\bstatistician\\b|\\beconomist\\b|\\bmeasurement scien"
+  },
+  {
+   "id": "research",
+   "family": "research-scientist",
+   "pattern": "\\b(?:research|applied|staff|principal|postdoctoral|post ?doc|visiting) (?:scientist|researcher|fellow|engineer)\\b|\\bscientist\\b|\\bresearcher\\b|\\bresearch (?:lead|manager|fellow|associate|intern|director|head)\\b|\\bai research\\b|\\bpostdoc\\b"
+  },
+  {
+   "id": "data_analyst",
+   "family": "data-analyst",
+   "pattern": "\\b(?:data|business intelligence|bi|analytics|insights?|reporting|marketing analytics|product analytics|revenue analytics|sales analytics|people analytics|growth analytics|financial data|web analytics|customer insights|market research) (?:analysts?|analytics|specialist|associate|lead|manager|developer|consultant|reporter|partner)\\b|\\banalytics (?:manager|lead|associate|partner|director)\\b|\\bbi (?:developer|analyst|engineer)\\b|\\bpower bi\\b|\\btableau\\b|\\blooker\\b|\\bsql (?:developer|analyst)\\b|\\bdata analytics\\b|\\bbusiness intelligence\\b"
+  },
+  {
+   "id": "data_engineer",
+   "family": "data-engineer",
+   "pattern": "\\bdata (?:engineers?|engineering|platform|infrastructure|architect|warehouse|warehousing|pipeline|ops|integration|reliability|quality|developer|steward|governance|modeler|management|operations engineer)\\b|\\banalytics engineer\\b|\\betl (?:developer|engineer)\\b|\\bbig data\\b|\\bdatabase (?:engineer|administrator|developer|architect|reliability)\\b|\\bdba\\b|\\bdatabricks (?:engineer|developer)\\b|\\bdata ?lake\\b|\\bknowledge graph\\b|\\bsearch (?:engineer|infrastructure)\\b"
+  },
+  {
+   "id": "support_eng",
+   "family": "customer-success",
+   "pattern": "\\b(?:technical|customer|product|premier|enterprise|application|it|cloud|desktop|client|escalation|tier \\d) support (?:engineer|specialist|analyst|agent|representative|associate|lead|manager|architect|consultant)\\b|\\bsupport engineer\\b|\\btechnical support\\b|\\bcustomer support\\b"
+  },
+  {
+   "id": "infra",
+   "family": "infrastructure-sre",
+   "pattern": "\\b(?:site reliability|sre|devops|platform|infrastructure|infra|cloud|network|production|release|reliability|build|kubernetes|linux|storage|compute|observability|performance|capacity|deployment|datacenter|data center|virtualization|developer productivity|developer experience|developer tools|tooling|ci cd|systems?|operations?) (?:engineers?|architect|administrator|admin|developer|technician|operator|reliability)\\b|\\bsre\\b|\\bdevops\\b|\\bplatform (?:engineering|team)\\b|\\bcloud (?:architect|engineering|operations)\\b|\\bnetwork (?:engineering|operations|administrator)\\b|\\binfrastructure\\b|\\bdata ?center\\b|\\bnoc\\b|\\bkubernetes\\b|\\bsite reliability\\b|\\bsystems? engineer\\b"
+  },
+  {
+   "id": "qa",
+   "family": "qa-test-engineer",
+   "pattern": "\\bqa\\b|\\bsdet\\b|\\bquality assurance\\b|\\bquality engineer(?:ing)?\\b|\\btest (?:engineer|automation|lead|analyst|manager|developer|architect|specialist|technician)\\b|\\btester\\b|\\bsoftware engineer in test\\b|\\bsoftware quality\\b|\\bvalidation engineer\\b|\\bautomation test\\b"
+  },
+  {
+   "id": "solutions",
+   "family": "solutions-engineer",
+   "pattern": "\\bforward deployed\\b|\\bsolutions? (?:architects?|engineers?|consultants?|specialists?|leads?|advisors?|owner|strategist)\\b|\\b(?:sales|pre ?sales|customer|field|applications?|integration|value|partner|demo|deployment|enterprise|cloud|account|delivery|specialist|technical|principal|staff|senior) (?:solutions?|sales|customer|field|application|integration|value|presales) (?:engineers?|architects?)\\b|\\b(?:sales|customer|field|value|presales|application|integration|partner|channel|commercial) engineers?\\b|\\bpre ?sales\\b|\\bdeployment strategist\\b|\\bimplementation (?:engineer|consultant)\\b|\\btechnical consultant\\b"
+  },
+  {
+   "id": "mobile",
+   "family": "software-engineer-mobile",
+   "pattern": "\\b(?:ios|android|mobile|react native|flutter|watchos|tvos|xamarin)\\b"
+  },
+  {
+   "id": "fullstack",
+   "family": "software-engineer-fullstack",
+   "pattern": "\\bfull ?stack\\b"
+  },
+  {
+   "id": "frontend",
+   "family": "software-engineer-frontend",
+   "pattern": "\\bfront ?end\\b|\\bui (?:engineer|developer|software engineer)\\b|\\bweb (?:developer|engineer|engineering)\\b|\\b(?:react|angular|vue|javascript|typescript|css|html|web ui) (?:engineer|developer|software engineer|specialist)\\b|\\bweb (?:platform|performance|ui)\\b"
+  },
+  {
+   "id": "backend",
+   "family": "software-engineer-backend",
+   "pattern": "\\bback ?end\\b|\\bapi (?:engineer|developer|software engineer)\\b|\\bserver ?side\\b|\\bdistributed systems?\\b|\\b(?:java|python|golang|go|ruby|rails|php|scala|rust|node|nodejs|c\\+\\+|c#|\\.net|kotlin|elixir|erlang|django|spring|services?|payments?|billing|storage|database|networking|compiler|runtime|graphics|game|engine|low latency|trading|core|integration|microservices) (?:engineer|developer|software engineer|programmer)\\b"
+  },
+  {
+   "id": "swe",
+   "family": "software-engineer-general",
+   "pattern": "\\bsoftware (?:engineers?|developers?|engineering|development|architect|programmer|dev|design engineer|craftsman|craftsperson)\\b|\\b(?:swe|sde|mts)\\b|\\bmember of (?:the )?technical staff\\b|\\bprogrammer\\b|\\b(?:staff|principal|senior|lead|junior|associate|distinguished|founding|early) (?:engineer|developer|programmer)\\b|\\bdeveloper\\b|\\bengineers?\\b|\\bengineering (?:lead|fellow|resident|intern|associate)\\b|\\btech(?:nical)? lead\\b|\\barchitect\\b|\\bdevelopment engineer\\b|\\bsoftware\\b|\\bcoder\\b|\\bcomputer scientist\\b"
+  },
+  {
+   "id": "program",
+   "family": "program-manager",
+   "pattern": "\\b(?:technical program|program|project|delivery|release|engagement|portfolio|transformation|change|pmo|programme|construction|scrum|agile) (?:manager|management|lead|director|office|analyst|coordinator|specialist|master|owner)\\b|\\btpm\\b|\\bscrum master\\b|\\bpmo\\b|\\bprogram(?:me)? (?:coordinator|operations|ops)\\b|\\bproject (?:coordinator|controller|engineer|administrator)\\b|\\bdelivery lead\\b"
+  },
+  {
+   "id": "product",
+   "family": "product-manager",
+   "pattern": "\\bproduct (?:manager|management|owner|lead|director|leader|operations|ops|strategist|strategy|analyst|specialist|head|partner|vp)\\b|\\b(?:group|senior|principal|staff|associate|technical|platform|growth|ai|data|lead) (?:product manager|pm)\\b|\\b(?:head|director|vp|svp|chief) (?:of )?product\\b|\\bchief product officer\\b|\\bcpo\\b|\\bapm\\b|\\bpm\\b"
+  },
+  {
+   "id": "cs",
+   "family": "customer-success",
+   "pattern": "\\bcustomer (?:success|support|service|experience|care|advocate|onboarding|education|training|operations|trust|escalations?)\\b|\\bclient (?:success|services|onboarding|support|solutions)\\b|\\bsuccess (?:manager|specialist|lead|engineer|architect|associate|partner)\\b|\\bsupport (?:specialist|engineer|agent|representative|associate|lead|manager|analyst|operations|technician|team)\\b|\\btechnical support\\b|\\bhelp ?desk\\b|\\bcsm\\b|\\brenewals?\\b|\\bimplementation (?:manager|specialist|lead|analyst)\\b|\\bonboarding\\b|\\btechnical account (?:manager|management)\\b|\\bsupport\\b|\\bmanaged services\\b|\\bcommunity (?:manager|support|specialist)\\b|\\bmember (?:services|experience|support)\\b|\\bpatient (?:services|experience|care)\\b"
+  },
+  {
+   "id": "sales",
+   "family": "sales",
+   "pattern": "\\bsales\\b|\\baccount (?:executive|manager|director|representative|rep|owner|lead|development|partner|management)\\b|\\bbusiness development\\b|\\b(?:sdr|bdr|ae|bd)\\b|\\brevenue\\b|\\bpartnerships?\\b|\\bpartner (?:manager|director|lead|development|account|alliance|alliances|success|enablement|specialist)\\b|\\balliances?\\b|\\bchannel\\b|\\bterritory\\b|\\bgo to market\\b|\\bgtm\\b|\\bcommercial (?:manager|director|lead|account|executive|analyst|operations|strategy)\\b|\\bclient (?:executive|partner|director|manager|relationship)\\b|\\brelationship (?:manager|director|banker|executive)\\b|\\bbroker\\b|\\bretail (?:associate|sales|manager)\\b|\\bcloser\\b|\\bdeal desk\\b|\\bpricing (?:manager|analyst|strategist)\\b|\\bnew business\\b|\\bprospecting\\b|\\bwholesale\\b|\\bmerchandis(?:er|ing)\\b|\\bbuyer\\b|\\bdevelopment representative\\b|\\bcustomer (?:executive|growth)\\b"
+  },
+  {
+   "id": "marketing",
+   "family": "marketing",
+   "pattern": "\\bmarketing\\b|\\bmarketer\\b|\\b(?:brand|growth|content|community|social media|seo|sem|demand gen|demand generation|lifecycle|performance|communications|comms|pr|public relations|event|events|influencer|creator|copy|editorial|editor|writer|journalist|podcast|video|media|publicist|affiliate|crm|email|paid|acquisition|digital) (?:manager|director|lead|specialist|strategist|associate|coordinator|analyst|writer|editor|producer|head|vp|partner|marketer|officer|consultant|executive|designer|growth)\\b|\\bcopywriter\\b|\\bcontent (?:writer|creator|strategist|producer|editor)\\b|\\bcommunications?\\b|\\bevents?\\b|\\bgrowth\\b|\\bdeveloper (?:advocate|relations|evangelist)\\b|\\bdevrel\\b|\\bevangelist\\b|\\btechnical writer\\b|\\bseo\\b|\\bbrand\\b|\\bproducer\\b"
+  },
+  {
+   "id": "ops",
+   "family": "operations-strategy",
+   "pattern": "\\b(?:operations?|ops|strategy|strategic|strategist|chief of staff|bizops|biz ops|supply chain|logistics|procurement|purchasing|sourcing|vendor|facilities|executive assistant|administrative|admin|workplace|real estate|planner|planning|dispatcher|warehouse|fulfillment|inventory|driver|operator|clerk|receptionist|concierge|production|shipping|maintenance|installer|installation|mechanic|supervisor|inspector|laborator(?:y|ies)|clinical|nurse|pharmac(?:y|ist)|medical|physician|teacher|instructor|tutor|professor|policy|trust and safety|content moderator|moderator|reviewer|annotator|labeler|rater|evaluator|data labeling|linguist|translator|interpreter|technician|business (?:operations|analyst|analysis|partner|planning|strategy|process|excellence|associate|manager))\\b"
+  }
+ ],
+ "departmentRules": [
+  {
+   "pattern": "\\b(?:solutions? engineering|sales engineering|field engineering|solutions? consulting|pre ?sales|value engineering|solution architecture|forward deployed|technical solutions)\\b",
+   "family": "solutions-engineer"
+  },
+  {
+   "pattern": "\\b(?:product management|product)\\b",
+   "family": "product-manager"
+  },
+  {
+   "pattern": "\\b(?:program management|project management|pmo|delivery)\\b",
+   "family": "program-manager"
+  },
+  {
+   "pattern": "\\b(?:product design|design|ux|user experience|creative|brand design)\\b",
+   "family": "design"
+  },
+  {
+   "pattern": "\\b(?:customer success|customer support|customer experience|support|client services|customer care|account management|technical support|professional services|services|implementation|onboarding)\\b",
+   "family": "customer-success"
+  },
+  {
+   "pattern": "\\b(?:sales|enterprise sales|field sales|go to market|gtm|revenue|business development|partnerships|alliances|channel|commercial|inside sales|sales development|retail sales)\\b",
+   "family": "sales"
+  },
+  {
+   "pattern": "\\b(?:marketing|growth|communications|brand|content|demand generation|public relations|community|developer relations|devrel|events)\\b",
+   "family": "marketing"
+  },
+  {
+   "pattern": "\\b(?:finance|accounting|financial|treasury|tax|audit|fp ?a|g ?a)\\b",
+   "family": "finance"
+  },
+  {
+   "pattern": "\\b(?:legal|compliance|regulatory|privacy|policy|government affairs)\\b",
+   "family": "legal"
+  },
+  {
+   "pattern": "\\b(?:people|human resources|hr|talent|recruiting|recruitment|workplace experience|culture|total rewards)\\b",
+   "family": "people-recruiting"
+  },
+  {
+   "pattern": "\\b(?:it|information technology|corporate systems|business systems|enterprise applications|internal systems|enterprise systems|it operations|technology services)\\b",
+   "family": "it-corporate-systems"
+  },
+  {
+   "pattern": "\\b(?:operations|strategy|business operations|biz ?ops|supply chain|logistics|procurement|facilities|admin|administration|executive|office of the ceo|chief of staff|business|strategic|planning|real estate|business consulting)\\b",
+   "family": "operations-strategy"
+  },
+  {
+   "pattern": "\\b(?:security|information security|cyber)\\b",
+   "family": "security-engineer"
+  },
+  {
+   "pattern": "\\b(?:data science|data scientist|analytics|business intelligence|insights)\\b",
+   "family": "data-analyst"
+  },
+  {
+   "pattern": "\\b(?:data engineering|data platform|data)\\b",
+   "family": "data-engineer"
+  },
+  {
+   "pattern": "\\b(?:applied ai|ai ml|machine learning|ml|artificial intelligence|ai)\\b",
+   "family": "ml-engineer"
+  },
+  {
+   "pattern": "\\b(?:research|research and science|science|scientific|lab)\\b",
+   "family": "research-scientist"
+  },
+  {
+   "pattern": "\\b(?:hardware|silicon|electrical|mechanical|embedded|firmware|manufacturing|aircraft|aerospace|avionics)\\b",
+   "family": "hardware-embedded"
+  },
+  {
+   "pattern": "\\b(?:quality assurance|qa|quality)\\b",
+   "family": "qa-test-engineer"
+  },
+  {
+   "pattern": "\\b(?:infrastructure|devops|sre|cloud|operations engineering|network|datacenter|data center)\\b",
+   "family": "infrastructure-sre"
+  },
+  {
+   "pattern": "\\b(?:software|engineering|technology|r d|research and development|developer|platform|application)\\b",
+   "family": "software-engineer-general"
+  }
+ ]
+}

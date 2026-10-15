@@ -6,17 +6,21 @@
   "main": "./src/index.ts",
   "scripts": {
     "start": "vite-node src/index.ts",
+    "enrich:run": "vite-node src/enrich-cli.ts --",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.1",
     "typescript": "^5.9.3",
     "vite-node": "^6.0.0",
     "vitest": "^5.0.5"
   },
   "dependencies": {
     "@hirelane/db": "workspace:^",
+    "@hirelane/engine": "workspace:^",
     "@hirelane/ingest": "workspace:^",
     "graphile-worker": "^0.18.0"
   }

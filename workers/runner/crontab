@@ -3,3 +3,5 @@
 * * * * * heartbeat
 # Ingest: every 6 hours at minute 7.
 7 */6 * * * ingest:schedule
+# Enrichment: every 6 hours at minute 37 (30 minutes after ingest); it only touches postings that changed.
+37 */6 * * * enrich:schedule
