@@ -316,8 +316,8 @@ Boundaries are enforced by `pnpm lint:deps` (dependency-cruiser, `.dependency-cr
 | `off` | Deterministic fallback only |
 
 **Models.**
-- `HIRELANE_MODEL_DRAFT=claude-sonnet-5-5` for resume parsing, answer drafting and tailoring.
-- `HIRELANE_MODEL_BULK=claude-haiku-5-5` for skills, salary, requirement and reply-classification fallback.
+- `HIRELANE_MODEL_DRAFT=claude-opus-5-5` for resume parsing, answer drafting and tailoring.
+- `HIRELANE_MODEL_BULK=claude-opus-5-5` (override to a cheaper model only if the owner chooses) for skills, salary, requirement and reply-classification fallback.
 - Calls use tool-use JSON schemas, with output validated by zod.
 - `llm_calls` logs model, purpose, tokens, latency and status. **It never stores content.**
 
