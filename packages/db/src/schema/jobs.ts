@@ -7,6 +7,7 @@ import {
   integer,
   jsonb,
   numeric,
+  pgMaterializedView,
   pgTable,
   primaryKey,
   real,
@@ -66,6 +67,8 @@ export const jobs = pgTable(
     descriptionMd: text('description_md'),
     descriptionText: text('description_text'),
     docHash: text('doc_hash').notNull(),
+    searchText: text('search_text').notNull().default(''),
+    contentUpdatedAt: ts('content_updated_at').notNull().defaultNow(),
     salaryMinMinor: bigint('salary_min_minor', { mode: 'number' }),
     salaryMaxMinor: bigint('salary_max_minor', { mode: 'number' }),
     salaryCurrency: char('salary_currency', { length: 3 }),
@@ -126,3 +129,14 @@ export const jobRequirements = pgTable(
   },
   (t) => [unique('job_requirements_job_ord_uq').on(t.jobId, t.ord)],
 );
+
+/** Counts per grain, refreshed by the `facets:refresh` task. Declared `.existing()`: migration 0005 owns the DDL. */
+export const jobFacets = pgMaterializedView('job_facets', {
+  k: text('k').notNull(),
+  grain: text('grain').notNull(),
+  roleFamily: text('role_family'),
+  country: text('country'),
+  remote: boolean('remote'),
+  hasSalary: boolean('has_salary'),
+  n: integer('n').notNull(),
+}).existing();

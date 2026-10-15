@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hirelane:public:jobs:v1",
+  "title": "GET /api/public/jobs response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jobs", "page", "pageSize", "pages", "total", "links"],
+  "properties": {
+    "jobs": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/JobSummary" } },
+    "page": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "pageSize": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "pages": { "type": "integer", "minimum": 1, "maximum": 100, "description": "max(1, min(100, ceil(total / pageSize)))" },
+    "total": { "type": "integer", "minimum": 0, "description": "True count of matching open jobs; not capped by the 100-page limit" },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self", "next", "prev"],
+      "properties": {
+        "self": { "type": "string", "description": "Canonical path + query, e.g. /api/public/jobs?role=data-engineer&country=IN" },
+        "next": { "type": ["string", "null"] },
+        "prev": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "Iso": { "type": "string", "format": "date-time" },
+    "AnnualRange": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": ["integer", "null"], "minimum": 0 },
+        "max": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "Salary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "currency", "period", "kind", "display", "annualUsd", "annualInr", "source", "fxDate"],
+      "properties": {
+        "min": { "type": ["integer", "null"], "minimum": 0, "description": "Minor units of currency" },
+        "max": { "type": ["integer", "null"], "minimum": 0, "description": "Minor units of currency" },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "period": { "enum": ["hour", "day", "week", "month", "year"] },
+        "kind": { "enum": ["base", "ote", null] },
+        "display": { "type": "string" },
+        "annualUsd": { "$ref": "#/$defs/AnnualRange", "description": "Cents per year" },
+        "annualInr": { "$ref": "#/$defs/AnnualRange", "description": "Paise per year" },
+        "source": { "enum": ["ats_structured", "text", "llm"] },
+        "fxDate": { "type": ["string", "null"], "format": "date" }
+      },
+      "anyOf": [
+        { "properties": { "min": { "type": "integer" } } },
+        { "properties": { "max": { "type": "integer" } } }
+      ]
+    },
+    "JobSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slug", "url", "markdownUrl", "title", "company", "roleFamily", "level", "workplace", "employment",
+        "remote", "remoteScope", "countries", "locations", "visa", "salary", "skills",
+        "postedAt", "firstSeenAt", "lastSeenAt", "freshAt", "ats", "fixture"
+      ],
+      "properties": {
+        "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,199}$" },
+        "url": { "type": "string", "description": "Absolute URL of /job/{slug}" },
+        "markdownUrl": { "type": "string", "description": "Absolute URL of /job/{slug}.md" },
+        "title": { "type": "string" },
+        "company": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["slug", "name", "logoUrl"],
+          "properties": {
+            "slug": { "type": "string" },
+            "name": { "type": "string" },
+            "logoUrl": { "type": ["string", "null"] }
+          }
+        },
+        "roleFamily": { "type": ["string", "null"] },
+        "level": {
+          "enum": ["intern", "entry", "mid", "senior", "lead", "executive", null],
+          "description": "Stored value; the level filter maps experienced -> senior|lead|executive"
+        },
+        "workplace": { "enum": ["remote", "hybrid", "onsite", null] },
+        "employment": { "enum": ["fulltime", "parttime", "contract", "intern", null] },
+        "remote": { "type": "boolean" },
+        "remoteScope": { "enum": ["none", "countries", "region", "worldwide"] },
+        "countries": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z]{2}$" }, "uniqueItems": true },
+        "locations": { "type": "array", "items": { "type": "string" } },
+        "visa": { "enum": ["yes", "no", "unknown"] },
+        "salary": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/Salary" }],
+          "description": "null means not stated; never estimated"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": { "id": { "type": "string" }, "label": { "type": "string" } }
+          }
+        },
+        "postedAt": { "type": ["string", "null"], "format": "date-time" },
+        "firstSeenAt": { "$ref": "#/$defs/Iso" },
+        "lastSeenAt": { "$ref": "#/$defs/Iso" },
+        "freshAt": { "$ref": "#/$defs/Iso", "description": "coalesce(postedAt, firstSeenAt); the fresh sort key" },
+        "ats": { "enum": ["greenhouse", "lever", "ashby"] },
+        "fixture": { "type": "boolean", "description": "true when source = 'fixture'" }
+      }
+    },
+    "JobDetail": {
+      "description": "GET /api/public/jobs/{slug}: JobSummary plus the fields below",
+      "allOf": [{ "$ref": "#/$defs/JobSummary" }],
+      "properties": {
+        "descriptionMd": { "type": ["string", "null"] },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "text", "category", "yearsMin", "spanStart", "spanEnd"],
+            "properties": {
+              "kind": { "enum": ["must", "nice"] },
+              "text": { "type": "string" },
+              "category": { "enum": ["skill", "experience", "education", "language", "location", "authorization", "other"] },
+              "yearsMin": { "type": ["integer", "null"] },
+              "spanStart": { "type": "integer" },
+              "spanEnd": { "type": "integer" }
+            }
+          }
+        },
+        "salaryTrace": { "type": ["array", "null"], "items": { "type": "object" } },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ats", "url"],
+            "properties": { "ats": { "enum": ["greenhouse", "lever", "ashby"] }, "url": { "type": "string" } }
+          }
+        },
+        "closedAt": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {
+            "code": { "enum": ["invalid_param", "page_out_of_range", "rate_limited", "not_found"] },
+            "message": { "type": "string" },
+            "param": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

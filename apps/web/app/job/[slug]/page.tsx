@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buildJobPostingLd, jsonLdScript } from "@/components/board/job-posting-ld";
+import { dedupeLocations } from "@/components/board/locations";
+import { appOrigin } from "@/lib/queries/jobs";
 import { formatAge } from "@/lib/format";
 import { getJobBySlug, type JobDetail, type JobRequirementRow } from "@/lib/job-data";
 import {
@@ -21,7 +24,12 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const job = isJobSlug(slug) ? await getJobBySlug(slug) : null;
-  return job ? { title: `${job.title} at ${job.companyName}` } : { title: "Job not found" };
+  if (!job) return { title: "Job not found", robots: { index: false } };
+  return {
+    title: `${job.title} at ${job.companyName}`,
+    robots: job.closedAt ? { index: false, follow: true } : undefined,
+    alternates: { canonical: `/job/${job.slug}` },
+  };
 }
 
 const WORKPLACE: Record<string, string> = { remote: "Remote", hybrid: "Hybrid", onsite: "On-site" };
@@ -184,9 +192,13 @@ export default async function JobPage({ params }: Props) {
   const fresh = job.postedAt ?? job.firstSeenAt;
   const where = job.countries.length > 0 ? job.countries.join(", ") : null;
   const apply = safeHttpUrl(job.applyUrl);
+  const locations = dedupeLocations(job.locations);
+  const ld = buildJobPostingLd(job, appOrigin());
+  const paragraphs = (job.descriptionText ?? "").split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
 
   return (
     <div className="mx-auto w-full max-w-page px-4 py-8 sm:px-8">
+      {ld ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(ld) }} /> : null}
       <p className="text-[13px]">
         <Link href="/jobs" className="text-lane">Jobs</Link>
       </p>
@@ -195,7 +207,9 @@ export default async function JobPage({ params }: Props) {
         <Logo name={job.companyName} logoPath={job.logoPath} />
         <div className="min-w-0">
           <h1 className="display break-words text-[32px] sm:text-[40px]" data-testid="job-title">{job.title}</h1>
-          <p className="mt-1 text-[17px] text-ink-2" data-testid="job-company">{job.companyName}</p>
+          <p className="mt-1 text-[17px] text-ink-2" data-testid="job-company">
+            <Link href={`/company/${job.companySlug}`} className="hover:text-lane hover:underline">{job.companyName}</Link>
+          </p>
         </div>
       </header>
 
@@ -207,7 +221,7 @@ export default async function JobPage({ params }: Props) {
             <h2 id="where-h" className="text-[15px] font-semibold">Where and what</h2>
             <dl className="mt-1" data-testid="job-facts">
               <Fact label="Country">{where ?? <span className="text-ink-3">Not stated</span>}</Fact>
-              {job.locations.length > 0 ? <Fact label="Locations">{job.locations.join("; ")}</Fact> : null}
+              {locations.length > 0 ? <Fact label="Locations">{locations.join("; ")}</Fact> : null}
               <Fact label="Workplace">
                 {job.workplace ? WORKPLACE[job.workplace] ?? job.workplace : <span className="text-ink-3">Not stated</span>}
                 {job.remoteScope === "worldwide" ? ", worldwide" : ""}
@@ -261,6 +275,18 @@ export default async function JobPage({ params }: Props) {
             )}
           </section>
           <Requirements job={job} />
+          <section aria-labelledby="desc-h" className="mt-8">
+            <h2 id="desc-h" className="border-b-2 border-rule-strong pb-2 text-[22px] font-extrabold tracking-tight">Description</h2>
+            {paragraphs.length === 0 ? (
+              <p className="py-3 text-ink-3">The employer did not publish a description.</p>
+            ) : (
+              <div className="max-w-[72ch] py-3" data-testid="job-description">
+                {paragraphs.map((p, i) => (
+                  <p key={i} className="mb-3 whitespace-pre-line break-words">{p}</p>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </div>

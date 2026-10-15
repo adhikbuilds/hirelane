@@ -19,7 +19,7 @@ const nextConfig = {
   devIndicators: false,
   poweredByHeader: false,
   reactStrictMode: true,
-  transpilePackages: ["@hirelane/db"],
+  transpilePackages: ["@hirelane/db", "@hirelane/engine"],
   serverExternalPackages: ["pg", "graphile-worker"],
   // Workspace packages are TypeScript sources that import siblings with NodeNext-style ".js" suffixes.
   webpack(config) {
@@ -37,6 +37,8 @@ const nextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
       },
+      // The job page has a markdown twin chosen by Accept (middleware), so caches must key on it.
+      { source: "/job/:slug", headers: [{ key: "Vary", value: "Accept" }] },
     ];
   },
 };

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Local copy of the sitemaps.org 0.9 urlset schema (the original is a network resource), without the extension hooks. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+           targetNamespace="http://www.sitemaps.org/schemas/sitemap/0.9" elementFormDefault="qualified">
+  <xs:element name="urlset">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="url" minOccurs="1" maxOccurs="50000"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="url">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="loc" type="tLoc"/>
+        <xs:element name="lastmod" type="tLastmod" minOccurs="0"/>
+        <xs:element name="changefreq" type="tChangeFreq" minOccurs="0"/>
+        <xs:element name="priority" type="tPriority" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="tLoc"><xs:restriction base="xs:anyURI"><xs:minLength value="12"/><xs:maxLength value="2048"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="tLastmod"><xs:union memberTypes="xs:date xs:dateTime"/></xs:simpleType>
+  <xs:simpleType name="tChangeFreq">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="always"/><xs:enumeration value="hourly"/><xs:enumeration value="daily"/>
+      <xs:enumeration value="weekly"/><xs:enumeration value="monthly"/><xs:enumeration value="yearly"/><xs:enumeration value="never"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tPriority"><xs:restriction base="xs:decimal"><xs:minInclusive value="0.0"/><xs:maxInclusive value="1.0"/></xs:restriction></xs:simpleType>
+</xs:schema>

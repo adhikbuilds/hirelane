@@ -56,7 +56,8 @@ test.describe("phase 2 job page", () => {
 
   test("a /jobs row for an enriched posting links to its job page", async ({ page }) => {
     await page.goto("/jobs");
-    const link = page.getByTestId("jobs-ledger").locator('a[href^="/job/"]').first();
+    // The ledger is cached for 300 s and specs seed short-lived e2e-* jobs, so a stale first row can be a deleted seed.
+    const link = page.getByTestId("jobs-ledger").locator('a[href^="/job/"]:not([href^="/job/e2e-"])').first();
     await expect(link).toBeVisible();
     await link.click();
     await expect(page).toHaveURL(/\/job\/[a-z0-9-]+$/);

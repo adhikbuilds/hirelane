@@ -1,6 +1,6 @@
 # Hirelane architecture
 
-> Status: Phase 0 (task 0.2, architect), reconciled against the working tree on 2026-10-16.
+> Status: Phase 0 (task 0.2, architect), reconciled against the working tree on 2026-10-16. The public board and API (Phase 3) were added to the codemap on the same date; their contract is in `docs/public-api.md`.
 > Each section says whether it describes what is **built** or what is **planned**. Every path in the codemap (§6) is tagged with the phase that creates it. Nothing tagged P1 or later exists yet.
 > PLAN.md §5, §6 and §10 are the source of truth. Where this document goes beyond them, or where the build differs from them, it says so under **Gap** or **Note**.
 > `doc-updater` keeps this codemap current (task 0.11).
@@ -36,7 +36,7 @@
 | `packages/ingest` | `@hirelane/ingest` | Connectors (`greenhouse.ts`, `lever.ts`, `ashby.ts`) → `RawPosting`, recorder, `boards.json`, fixtures, persistence and diff | `db` | Enrichment or LLM calls | Planned (P1) |
 | `packages/agent` | `@hirelane/agent` | `llm/`, `embeddings/`, resume parsing, drafting, approval state machine, handoff payload and per-ATS capabilities, tailoring, `mail/`, `submit/` (P9, flagged) | `engine`, `db` | Any HTTP call to an ATS application endpoint outside `src/submit/` | Planned (P2 onward) |
 | `workers/runner` | `@hirelane/runner` | graphile-worker bootstrap, tasks, crontab | all packages | Contain UI | Built, partially (P0): `heartbeat` task and crontab only |
-| `apps/web` | `@hirelane/web` | Pages, server actions, route handlers, `lib/{queries,session,format}.ts` | `db`, `engine`, `agent` | Import `ingest` or `workers` | Built, partially (P0): layout, wordmark, `/api/health`, `lib` stubs. It does not yet depend on `@hirelane/db` |
+| `apps/web` | `@hirelane/web` | Pages, server actions, route handlers, `lib/{queries,session,format}.ts` | `db`, `engine`, `agent` | Import `ingest` or `workers` | Built, P0 to P3 (uncommitted): the public board, job, list and company pages, the public API route handlers, markdown negotiation, `llms.txt`, sitemaps and `robots.txt`. It depends on `@hirelane/db` (`withAdmin`) and `@hirelane/engine` (role families, places). **Still stubs:** `lib/queries.ts` (`getFreshestJobs`) and `lib/session.ts`. Sessions arrive in P4 |
 
 ### 2.2 Forbidden edges
 
@@ -236,7 +236,6 @@ hirelane/
 ├─ pnpm-workspace.yaml            [built P0] packages/*, apps/*, workers/*
 ├─ tsconfig.base.json             [built P0] strict, noUncheckedIndexedAccess
 ├─ vitest.config.ts               [built P0] root config, `projects` for packages/*, workers/*, scripts (ADR said vitest.workspace.ts)
-├─ apps/web/playwright.config.ts  [partial P0] webServer `pnpm dev`, baseURL :3001, desktop and mobile projects. No globalSetup running db:fresh yet
 ├─ .dependency-cruiser.cjs        [built P0] rules in §2.2 (partial set)
 ├─ docker-compose.yml             [built P0] pgvector/pgvector:pg16, 127.0.0.1:5433, hirelane-pgdata
 ├─ docker/initdb/                 [built P0] 01-create-test-db.sql creates hirelane_test
@@ -247,15 +246,21 @@ hirelane/
 ├─ docs/
 │  ├─ architecture.md             [built P0] this file
 │  ├─ ingest.md                   [built P1, uncommitted] Phase 1 ingest: sources, cadence, soft-close, fixtures, rate limits, per-ATS terms checklist (needs human review)
+│  ├─ enrichment.md               [built P2] enrichment engine (Phase 2 notes and known gaps)
+│  ├─ public-api.md               [built P3, uncommitted] public JSON API, markdown negotiation, llms.txt, sitemaps, CORS, ETag, rate limits
 │  ├─ recon/                      [built] Shortlist teardown notes and text (reference only; shots/ and *-text.md are gitignored)
-│  ├─ screens/phase-0.png, phase-0-mobile.png   [built P0] committed per phase
+│  ├─ screens/                    [built] phase-0 to phase-3 screenshots (desktop and mobile), committed per phase
 │  └─ privacy-model.md            [planned P4]
 ├─ scripts/
 │  ├─ brand-guard.ts              [built P0] self-tests in scripts/test/brand-guard.test.ts
 │  └─ no-submit-guard.ts          [built P0] self-tests in scripts/test/no-submit-guard.test.ts
 ├─ e2e/
 │  ├─ support/screens.ts          [built P0] savePhaseScreen(page, N)
-│  └─ phase-0-shell.spec.ts       [built P0] wordmark, Overpass loaded, paper background, health endpoint
+│  ├─ phase-0-shell.spec.ts       [built P0] wordmark, Overpass loaded, paper background, health endpoint
+│  ├─ phase-1-ingest.spec.ts      [built P1] /ops/ingest is a 404 without the token
+│  ├─ phase-2-job.spec.ts         [built P2] INR LPA job shows its pay and the trace
+│  ├─ phase-3-board.spec.ts       [built P3] remote, salary-only and country=IN change the count and URL
+│  └─ phase-3-a11y.spec.ts        [built P3] axe finds no serious or critical violations on public pages
 ├─ fixtures/
 │  ├─ full/{ats}/{token}.json.gz  [built P1, uncommitted] recorder output, 119 boards, 18,860 postings, 24.6 MB gzipped (budget 25 MB)
 │  └─ mini/                       [built P1, uncommitted] 5 boards: ashby openai, benchling, temporal; greenhouse airtable; lever cred
@@ -316,13 +321,48 @@ hirelane/
 │  ├─ src/tasks/heartbeat.ts      [built P0]
 │  ├─ test/runner.test.ts         [built P0] heartbeat behaviour, task list, crontab
 │  └─ crontab                     [partial P0, extended P1] heartbeat and `7 */6 * * * ingest:schedule`; full schedule in §4.2
-├─ apps/web/                      [built, partial P0] Next 15, React 19, Tailwind v4, :3001
-│  ├─ app/layout.tsx, page.tsx, wordmark.tsx, globals.css, icon.svg, fonts/ (Overpass woff2 + OFL.txt)   [built P0]
-│  ├─ app/api/health/route.ts     [built P0]
-│  ├─ app/ public pages [P1/P3], app pages [P4–P7], /ops [P1→P8], webhooks [P6/P7], /api/public [P3]   [planned]
-│  ├─ lib/{queries,session,format}.ts   [built P0] stubs (queries returns no jobs; session returns null)
-│  ├─ public/brand/               [built P0] hirelane-mark.svg, hirelane-wordmark.svg
-│  └─ tests/                      [built P0] config, format, health, stubs
+├─ apps/web/                      [built P0 to P3, uncommitted] Next 15, React 19, Tailwind v4, :3001. Depends on @hirelane/db and @hirelane/engine
+│  ├─ middleware.ts               [built P3] markdown negotiation for /job/{slug} (lib/negotiate.ts). Rewrites to /md/job/{slug}, 404s direct /md/*, adds Vary and a Link alternate to HTML
+│  ├─ app/layout.tsx, wordmark.tsx, source-badge.tsx, globals.css, icon.svg, fonts/   [built P0] shell, wordmark, ATS source marks, Overpass
+│  ├─ app/                        [built P3] pages:
+│  │  ├─ page.tsx                 `/` home
+│  │  ├─ jobs/page.tsx            `/jobs` ledger with URL-state filters; only the bare ledger is indexable
+│  │  ├─ job/[slug]/page.tsx      `/job/{slug}` HTML job page (open or closed)
+│  │  ├─ companies/page.tsx, company/[slug]/page.tsx   `/companies`, `/company/{slug}`
+│  │  ├─ lists/page.tsx, lists/[slug]/page.tsx         `/lists`, `/lists/{slug}` (ISR, no paging)
+│  │  ├─ how-it-works/, compare/, about/, status/      product pages
+│  │  ├─ api-docs/page.tsx        `/api-docs`, rendered from buildOpenApi()
+│  │  └─ ops/ingest/page.tsx, ops/session/route.ts    `/ops/ingest`, guarded by the ops token cookie (lib/ops-auth.ts)
+│  ├─ app/api/health/route.ts     [built P0] `/api/health`
+│  ├─ app/api/public/             [built P3] the public JSON API
+│  │  ├─ _lib/handlers.ts         createJobsHandler, createJobDetailHandler: rate-limit gate, strict parsing, cachedJson, 500 on error. Deps are injectable for tests
+│  │  ├─ _lib/http.ts             CORS_HEADERS, errorResponse, weakEtag, etagMatches, cachedJson, optionsResponse
+│  │  ├─ _lib/detail.ts           getPublicJobDetail: one job by slug with requirements, salary trace and sources
+│  │  ├─ jobs/route.ts            GET, OPTIONS: `/api/public/jobs`
+│  │  └─ jobs/[slug]/route.ts     GET, OPTIONS: `/api/public/jobs/{slug}`
+│  ├─ app/openapi.json/route.ts   [built P3] OpenAPI 3.1 document (force-static, revalidate 3600; APP_ORIGIN is read at build time)
+│  ├─ app/llms.txt/route.ts       [built P3] llms.txt body (1 h cache)
+│  ├─ app/robots.txt/route.ts     [built P3] robots.txt
+│  ├─ app/sitemap.xml/route.ts    [built P3] sitemap index
+│  ├─ app/sitemaps/               [built P3] jobs/[file] (chunks of 50,000), companies.xml, lists.xml
+│  ├─ app/md/job/[slug]/route.ts  [built P3] markdown for one job; internal, reached only through the middleware rewrite
+│  ├─ lib/queries/jobs.ts         [built P3] the board query: filter, total, page and facets in one parameterised statement; appOrigin(); toPublicJob()
+│  ├─ lib/queries.ts, lib/session.ts   [stub P0] getFreshestJobs and getSession are placeholders
+│  ├─ lib/public-api-params.ts    [built P3] API_PARAM_ORDER, parseStrict (400 on bad values), serializeApi (canonical links)
+│  ├─ lib/public-api-schema.ts    [built P3] schemas derived from lib/contracts/jobs.schema.json (JobDetail merged, Error codes enumerated)
+│  ├─ lib/contracts/jobs.schema.json   [built P3] committed JSON Schema contract for the list envelope and job detail
+│  ├─ lib/openapi.ts              [built P3] buildOpenApi(origin): paths, parameters, responses, components
+│  ├─ lib/llms.ts                 [built P3] llmsTxt(origin) and PARAM_DOCS
+│  ├─ lib/negotiate.ts           [built P3] prefersMarkdown, routeJobPath (q-values, most specific range wins)
+│  ├─ lib/rate-limit.ts          [built P3] checkRateLimit (fixed window in rate_limits), clientIp (TRUST_PROXY_HOPS)
+│  ├─ lib/sitemap.ts, sitemap-http.ts, robots.ts   [built P3] sitemap builders and readers, the route wrapper (503 without error text), robots body
+│  ├─ lib/lists.ts, lists-data.ts [built P3] SEO list registry (publish at 20 or more open jobs) and its database reads
+│  ├─ lib/job-data.ts, job-view.ts, job-markdown.ts, job-markdown-data.ts, markdown.ts, pay.ts, format.ts   [built P1 to P3] job page data and view rules, markdown rendering and HTML-to-markdown, pay display and trace, formatting
+│  ├─ lib/ledger.ts               [built P3] page size and page parsing for the ledger
+│  ├─ lib/ingest-data.ts, ops-auth.ts   [built P1] ops reads and the ops token check (timing-safe)
+│  ├─ tests/                      [built P0 to P3] 29 Vitest files. DB-backed suites use TEST_DATABASE_URL and helpers/public-api-seed.ts. llms-openapi-sync.test.ts keeps llms.txt parameter names equal to /openapi.json
+│  ├─ playwright.config.ts        [partial P0] webServer `pnpm dev`, baseURL :3001, desktop and mobile projects. No globalSetup running db:fresh yet
+│  └─ public/brand/               [built P0] hirelane-mark.svg, hirelane-wordmark.svg
 ├─ storage/                       [planned P4] gitignored; encrypted blobs (BlobStore local disk)
 ├─ .mail/                         [planned P6] gitignored; dev mail outbox
 └─ .cache/                        [planned P4] gitignored; local embedding models

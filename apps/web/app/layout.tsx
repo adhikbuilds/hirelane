@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 
 const nav = [
   { href: "/jobs", label: "Jobs" },
+  { href: "/companies", label: "Companies" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/login", label: "Sign in" },
@@ -44,7 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <nav aria-label="Primary">
               <ul className="flex items-center gap-4 sm:gap-6 text-[15px] font-medium">
                 {nav.map((n) => (
-                  <li key={n.href}>
+                  <li key={n.href} className={n.href === "/companies" ? "hidden sm:list-item" : undefined}>
                     <Link href={n.href} className="text-ink-2 hover:text-lane">
                       {n.label}
                     </Link>

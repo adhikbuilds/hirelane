@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Local copy of the sitemaps.org 0.9 sitemapindex schema, without the extension hooks. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+           targetNamespace="http://www.sitemaps.org/schemas/sitemap/0.9" elementFormDefault="qualified">
+  <xs:element name="sitemapindex">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sitemap" minOccurs="1" maxOccurs="50000"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sitemap">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="loc" type="tLoc"/>
+        <xs:element name="lastmod" type="tLastmod" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="tLoc"><xs:restriction base="xs:anyURI"><xs:minLength value="12"/><xs:maxLength value="2048"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="tLastmod"><xs:union memberTypes="xs:date xs:dateTime"/></xs:simpleType>
+</xs:schema>

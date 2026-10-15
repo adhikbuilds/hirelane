@@ -2,7 +2,7 @@
  * Runs enrichment in-process (no graphile queue): `pnpm enrich:run [--concurrency=4] [--company=<uuid>] [--version=<n>]`.
  * Same code path as the enrich:company task. Never calls an LLM.
  */
-import { close, getPool, listPendingCompanies } from '@hirelane/db';
+import { close, getPool, listPendingCompanies, refreshJobFacets } from '@hirelane/db';
 import { ENRICH_VERSION } from '@hirelane/engine';
 import { enrichCompany, ensureReferenceData, loadEngineFx, syncJobLifecycle, type EnrichStats } from './tasks/enrich-core.js';
 
@@ -62,6 +62,8 @@ async function main(): Promise<void> {
   const tail = await pool.connect();
   try {
     console.log(`lifecycle: ${JSON.stringify(await syncJobLifecycle(tail))}`);
+    await refreshJobFacets(tail);
+    console.log('job_facets refreshed');
   } finally {
     tail.release();
   }

@@ -1,5 +1,7 @@
-/** Seed stub. Later phases add companies, boards and demo users. */
-import { close } from './client.js';
+/** Seed stub. Later phases add companies, boards and demo users. The facet view is rebuilt last so lists see fresh counts. */
+import { close, withAdmin } from './client.js';
+import { refreshJobFacets } from './enrich/persist.js';
 
-console.log('seed: nothing to seed yet (Phase 0).');
+await withAdmin((c) => refreshJobFacets(c));
+console.log('seed: job_facets refreshed (no other seed data yet).');
 await close();

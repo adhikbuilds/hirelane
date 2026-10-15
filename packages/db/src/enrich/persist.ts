@@ -131,7 +131,38 @@ export async function seedSkills(client: Queryable, rows: readonly SkillRow[]): 
             IS DISTINCT FROM (EXCLUDED.label, EXCLUDED.aliases, EXCLUDED.category, EXCLUDED.adjacent)`,
     [JSON.stringify(rows)],
   );
+  // job_search_text embeds skill labels, so a changed label must reach the jobs that carry the skill.
+  if ((rowCount ?? 0) > 0) await rebuildSearchText(client);
   return rowCount ?? 0;
+}
+
+/** Recomputes jobs.search_text (company rename, skills reseed). Scope to one company, or pass none for all jobs. */
+export async function rebuildSearchText(client: Queryable, companyId?: string): Promise<number> {
+  const { rowCount } = await client.query(
+    `UPDATE jobs j SET search_text = job_search_text(j.title, j.company_id, j.skills)
+      WHERE ${companyId ? 'j.company_id = $1 AND ' : ''}j.search_text IS DISTINCT FROM job_search_text(j.title, j.company_id, j.skills)`,
+    companyId ? [companyId] : [],
+  );
+  return rowCount ?? 0;
+}
+
+/**
+ * Rebuilds job_facets. CONCURRENTLY never blocks readers but needs a populated view and cannot share a transaction
+ * with other statements that matter; use the plain form for seeding and tests.
+ */
+export async function refreshJobFacets(client: Queryable, opts: { concurrently?: boolean } = {}): Promise<void> {
+  if (opts.concurrently) {
+    await client.query("SET lock_timeout = '5s'");
+    await client.query("SET statement_timeout = '60s'");
+    try {
+      await client.query('REFRESH MATERIALIZED VIEW CONCURRENTLY job_facets');
+    } finally {
+      await client.query('RESET lock_timeout');
+      await client.query('RESET statement_timeout');
+    }
+  } else {
+    await client.query('REFRESH MATERIALIZED VIEW job_facets');
+  }
 }
 
 export async function seedFxRates(client: Queryable, snap: FxSnapshotRow): Promise<number> {
@@ -298,8 +329,13 @@ const ph = (i: number, cast?: string): string => `$${i}${cast ? `::${cast}` : ''
 
 /** Inserts a job. first/last_seen_at are placeholders until refreshJobLifecycle derives them from the postings. */
 export async function insertJob(client: Queryable, w: JobWrite): Promise<string> {
-  const cols = ['slug', ...COLUMNS.map((c) => c.col), 'first_seen_at', 'last_seen_at'];
-  const vals = ph(1) + COLUMNS.map((c, i) => `, ${ph(i + 2, c.cast)}`).join('') + ', now(), now()';
+  const cols = ['slug', ...COLUMNS.map((c) => c.col), 'first_seen_at', 'last_seen_at', 'search_text', 'content_updated_at'];
+  const t = COLUMNS.findIndex((c) => c.col === 'title') + 2;
+  const co = COLUMNS.findIndex((c) => c.col === 'company_id') + 2;
+  const sk = COLUMNS.findIndex((c) => c.col === 'skills') + 2;
+  const vals =
+    ph(1) + COLUMNS.map((c, i) => `, ${ph(i + 2, c.cast)}`).join('') +
+    `, now(), now(), job_search_text($${t}, $${co}, $${sk}), now()`;
   const { rows } = await client.query<{ id: string }>(
     `INSERT INTO jobs (${cols.join(', ')}) VALUES (${vals}) RETURNING id`,
     [w.slug, ...COLUMNS.map((c) => c.get(w))],
@@ -310,10 +346,15 @@ export async function insertJob(client: Queryable, w: JobWrite): Promise<string>
 /** Overwrites every derived column; identity (id, slug, created_at) and lifecycle are untouched. */
 export async function updateJob(client: Queryable, id: string, w: JobWrite): Promise<void> {
   const sets = COLUMNS.map((c, i) => `${c.col} = ${ph(i + 2, c.cast)}`).join(', ');
-  await client.query(`UPDATE jobs SET ${sets}, updated_at = now() WHERE id = $1`, [id, ...COLUMNS.map((c) => c.get(w))]);
+  const t = COLUMNS.findIndex((c) => c.col === 'title') + 2;
+  const co = COLUMNS.findIndex((c) => c.col === 'company_id') + 2;
+  const sk = COLUMNS.findIndex((c) => c.col === 'skills') + 2;
+  await client.query(
+    `UPDATE jobs SET ${sets}, search_text = job_search_text($${t}, $${co}, $${sk}), content_updated_at = now(), updated_at = now() WHERE id = $1`, [id, ...COLUMNS.map((c) => c.get(w))]);
 }
 
 export async function replaceRequirements(client: Queryable, jobId: string, reqs: readonly RequirementWrite[]): Promise<void> {
+  await client.query('UPDATE jobs SET content_updated_at = now() WHERE id = $1', [jobId]);
   await client.query('DELETE FROM job_requirements WHERE job_id = $1', [jobId]);
   if (reqs.length === 0) return;
   await client.query(
@@ -351,7 +392,8 @@ export async function refreshJobLifecycle(client: Queryable, companyId?: string)
   const scope = companyId ? 'AND j.company_id = $1' : '';
   const args = companyId ? [companyId] : [];
   const upd = await client.query(
-    `UPDATE jobs j SET first_seen_at = a.f, last_seen_at = a.l, closed_at = a.c, updated_at = now()
+    `UPDATE jobs j SET first_seen_at = a.f, last_seen_at = a.l, closed_at = a.c, updated_at = now(),
+            content_updated_at = CASE WHEN j.closed_at IS DISTINCT FROM a.c THEN now() ELSE j.content_updated_at END
        FROM (SELECT job_id, min(first_seen_at) AS f, max(last_seen_at) AS l,
                     CASE WHEN bool_or(closed_at IS NULL) THEN NULL ELSE max(closed_at) END AS c
                FROM postings WHERE job_id IS NOT NULL GROUP BY job_id) a
@@ -362,7 +404,7 @@ export async function refreshJobLifecycle(client: Queryable, companyId?: string)
   // A canonical job speaks for all its open postings (or all of them, once every one is closed): union their geo.
   // Postings enriched before geo was recorded carry NULL, and then the job keeps what it has.
   const geo = await client.query(
-    `UPDATE jobs j SET countries = g.countries, locations = (CASE WHEN jsonb_typeof(j.locations) = 'object' THEN j.locations ELSE '{}'::jsonb END) || jsonb_build_object('all', to_jsonb(g.locs)), updated_at = now()
+    `UPDATE jobs j SET countries = g.countries, locations = (CASE WHEN jsonb_typeof(j.locations) = 'object' THEN j.locations ELSE '{}'::jsonb END) || jsonb_build_object('all', to_jsonb(g.locs)), updated_at = now(), content_updated_at = now()
        FROM (SELECT p.job_id,
                     coalesce(array_agg(DISTINCT c ORDER BY c) FILTER (WHERE c IS NOT NULL), '{}')::char(2)[] AS countries,
                     coalesce(array_agg(DISTINCT l ORDER BY l) FILTER (WHERE l IS NOT NULL), '{}') AS locs

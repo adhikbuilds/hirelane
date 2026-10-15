@@ -32,9 +32,10 @@
     "agent:eval": "echo \"agent:eval: not implemented until Phase 4\"",
     "enrich:run": "pnpm --filter @hirelane/runner enrich:run",
     "report:coverage": "vite-node scripts/report-coverage.ts --",
-    "bench:board": "echo \"bench:board: not implemented until Phase 3\""
+    "bench:board": "vite-node scripts/bench-board.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "dependency-cruiser": "^18.6.0",
