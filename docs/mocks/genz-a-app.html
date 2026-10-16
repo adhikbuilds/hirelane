@@ -1,0 +1,111 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Hirelane mock A: app map + hub screens</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B0B0F;--lane:#0F5C45;--lime:#C8FF3D;--pink:#FF4FA3;--blue:#3D5AFE;--sun:#FFC83D;--cream:#FFF6E8}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#141418;color:#fff;padding:36px 40px}
+h1.t{font-size:15px;font-weight:500;opacity:.6;margin-bottom:18px}
+/* app map */
+.map{background:#1d1d23;border-radius:28px;padding:22px 26px;margin-bottom:30px}
+.map h2{font-size:26px;font-weight:800;letter-spacing:-.03em;margin-bottom:14px}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.tab{border-radius:20px;padding:14px;color:var(--ink)}
+.tab b{font-size:20px;letter-spacing:-.02em}
+.tab ul{list-style:none;margin-top:8px;font-size:13px;line-height:1.7}
+.tab li::before{content:"→ ";opacity:.5}
+.flows{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;font-size:13px}
+.flow{background:#2a2a32;border-radius:99px;padding:7px 12px}
+.flow b{color:var(--lime)}
+/* phones */
+.row{display:flex;gap:24px;justify-content:center}
+.ph{width:280px;height:600px;border-radius:40px;background:#000;padding:9px;box-shadow:0 24px 60px rgba(0,0,0,.5);flex:none}
+.sc{width:100%;height:100%;border-radius:32px;overflow:hidden;position:relative;padding:16px 14px 70px}
+.lab{font-size:12px;opacity:.55;text-align:center;margin-top:10px}
+.big{font-weight:800;line-height:.92;letter-spacing:-.045em}
+.card{background:#fff;color:var(--ink);border-radius:18px;padding:11px}
+.small{font-size:11.5px;opacity:.7}
+.ch{display:inline-block;padding:5px 9px;border-radius:99px;font-size:11.5px;font-weight:500;margin:3px 3px 0 0}
+.tb{position:absolute;left:0;right:0;bottom:0;height:62px;background:var(--ink);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;text-align:center;font-size:10.5px;color:#888}
+.tb div.on{color:var(--lime);font-weight:800}
+.tb i{display:block;width:18px;height:18px;border-radius:6px;margin:0 auto 3px;background:currentColor;opacity:.9}
+.story{width:52px;flex:none;text-align:center;font-size:10px}
+.story span{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;font-weight:800;border:3px solid var(--lime);color:#fff}
+.tile{border-radius:18px;padding:12px;font-weight:800;color:var(--ink);min-height:84px;position:relative}
+.tile small{display:block;font-weight:500;font-size:11px;opacity:.75;margin-top:2px}
+.search{background:#fff;color:#777;border-radius:99px;padding:10px 14px;font-size:13px}
+</style></head><body>
+<h1 class="t">MOCK A · "Wrapped stories" · how the app is organised (not one linear flow) · hub screens with the tab bar · real companies/roles from the board · Asha is a labelled sample</h1>
+<div class="map">
+ <h2>App map: five places, many paths</h2>
+ <div class="tabs">
+  <div class="tab" style="background:var(--lime)"><b>Home</b><ul><li>Today's picks (swipe stack)</li><li>Fresh drops (company stories)</li><li>Streak + week recap</li><li>Needs-you inbox</li></ul></div>
+  <div class="tab" style="background:var(--pink)"><b>Discover</b><ul><li>Search + filters sheet</li><li>Collections: Internships, Fresher-friendly, Remote, Pay stated</li><li>Job detail</li></ul></div>
+  <div class="tab" style="background:var(--sun)"><b>Companies</b><ul><li>Follow companies</li><li>Company page: hiring now, pay, BITSians here</li><li>Hiring heatmap</li></ul></div>
+  <div class="tab" style="background:#7FA4FF"><b>Network</b><ul><li>Alumni + coworkers graph</li><li>Warm intro drafts</li><li>Import LinkedIn export</li></ul></div>
+  <div class="tab" style="background:var(--cream)"><b>You</b><ul><li>Tracker (all applications)</li><li>Saved jobs</li><li>Resume versions, preferences</li><li>Monthly recap</li></ul></div>
+ </div>
+ <div class="flows">
+  <div class="flow"><b>Apply:</b> any job → swipe/Apply → Needs-you → Send → undo → Tracker</div>
+  <div class="flow"><b>Explore:</b> Discover → collection → job → company → follow</div>
+  <div class="flow"><b>Warm path:</b> Company → BITSians here → intro draft → copy &amp; open</div>
+  <div class="flow"><b>Habit:</b> notification → Home picks → streak → weekly recap → share</div>
+ </div>
+</div>
+<div class="row">
+ <!-- HOME -->
+ <div><div class="ph"><div class="sc" style="background:var(--ink)">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">|| hirelane</b><span style="background:var(--sun);color:var(--ink);border-radius:99px;padding:4px 9px;font-weight:800;font-size:12px">🔥 5</span></div>
+  <div class="big" style="font-size:30px;margin-top:10px">Hey Asha, 12 new<br>for you today.</div>
+  <div style="display:flex;gap:8px;margin-top:12px;overflow:hidden">
+   <div class="story"><span style="background:var(--blue)">V</span>Veeva</div><div class="story"><span style="background:var(--pink)">S</span>SpotDraft</div><div class="story"><span style="background:var(--lane)">H</span>Hevo</div><div class="story"><span style="background:#B55">F</span>FamPay</div>
+  </div>
+  <div class="small" style="margin-top:2px;color:var(--lime);opacity:1">Fresh drops from companies you follow</div>
+  <div class="card" style="margin-top:12px;background:var(--lime);transform:rotate(-2deg)"><div style="display:flex;justify-content:space-between"><b>Today's picks</b><b>5 →</b></div><div class="small">Swipe through your best 5</div></div>
+  <div class="card" style="margin-top:10px;background:var(--sun)"><b>1 question waiting</b><div class="small">Veeva asks when you can join</div></div>
+  <div class="card" style="margin-top:10px;background:var(--pink);color:#fff"><b>Your week so far</b><div class="small" style="opacity:.9">9 swiped · 3 applied · tap to replay</div></div>
+  <div class="tb"><div class="on"><i></i>Home</div><div><i></i>Discover</div><div><i></i>Companies</div><div><i></i>Network</div><div><i></i>You</div></div>
+ </div></div><div class="lab">Home: picks, fresh drops (stories), questions, recap</div></div>
+ <!-- DISCOVER -->
+ <div><div class="ph"><div class="sc" style="background:var(--pink)">
+  <div class="big" style="font-size:38px">Discover</div>
+  <div class="search" style="margin-top:10px">🔎 Role, skill or company</div>
+  <div style="margin-top:8px"><span class="ch" style="background:var(--ink);color:var(--lime)">Bengaluru</span><span class="ch" style="background:#fff;color:var(--ink)">Remote</span><span class="ch" style="background:#fff;color:var(--ink)">0–1 yr</span><span class="ch" style="background:#fff;color:var(--ink)">Filters ⚙</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+   <div class="tile" style="background:var(--lime);grid-column:span 2"><span class="big" style="font-size:28px">Internships</span><small>live now, India</small></div>
+   <div class="tile" style="background:var(--sun)">Fresher-friendly<small>0–1 yr asked</small></div>
+   <div class="tile" style="background:#fff">Pay stated<small>numbers in the post</small></div>
+   <div class="tile" style="background:var(--blue);color:#fff">Remote<small style="opacity:.9">work from anywhere</small></div>
+   <div class="tile" style="background:var(--lane);color:var(--lime)">SDE<small style="opacity:.9">software roles</small></div>
+  </div>
+  <div class="tb"><div><i></i>Home</div><div class="on"><i></i>Discover</div><div><i></i>Companies</div><div><i></i>Network</div><div><i></i>You</div></div>
+ </div></div><div class="lab">Discover: search, filters, collections as colour blocks</div></div>
+ <!-- COMPANY -->
+ <div><div class="ph"><div class="sc" style="background:var(--sun);color:var(--ink)">
+  <div style="display:flex;gap:10px;align-items:center"><div style="width:52px;height:52px;border-radius:16px;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-weight:800;font-size:22px">S</div><div><div class="big" style="font-size:28px">SpotDraft</div><div class="small">spotdraft.com · read 2h ago</div></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+   <div class="card" style="background:var(--ink);color:#fff"><div class="big" style="font-size:34px;color:var(--lime)">14</div><div class="small">open roles</div></div>
+   <div class="card"><div class="big" style="font-size:34px">10</div><div class="small">in India</div></div>
+  </div>
+  <div class="card" style="margin-top:8px;background:var(--pink);color:#fff"><b>2 BITSians here</b><div class="small" style="opacity:.9">Sample network · tap for intro</div></div>
+  <div style="margin-top:10px;font-weight:800">Hiring for</div>
+  <div style="margin-top:4px;font-size:12px"><div style="display:flex;align-items:center;gap:6px"><span style="width:60%;height:10px;background:var(--lane);border-radius:6px;display:inline-block"></span>Customer success</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><span style="width:35%;height:10px;background:var(--blue);border-radius:6px;display:inline-block"></span>Product</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><span style="width:25%;height:10px;background:var(--pink);border-radius:6px;display:inline-block"></span>Engineering</div></div>
+  <div class="card" style="margin-top:10px"><b>Associate Product Manager</b><div class="small">Onsite · fits you 88%</div></div>
+  <div class="tb"><div><i></i>Home</div><div><i></i>Discover</div><div class="on"><i></i>Companies</div><div><i></i>Network</div><div><i></i>You</div></div>
+ </div></div><div class="lab">Company: hiring now, role mix, BITSians here, follow</div></div>
+ <!-- YOU -->
+ <div><div class="ph"><div class="sc" style="background:var(--cream);color:var(--ink)">
+  <div style="display:flex;gap:10px;align-items:center"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" style="width:56px;height:56px;border-radius:16px;object-fit:cover" alt="Asha, sample (AI-generated)"><div><div class="big" style="font-size:26px">Asha</div><div class="small">BITS Pilani '26 · sample</div></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px;text-align:center">
+   <div class="card" style="background:var(--lane);color:var(--lime)"><div class="big" style="font-size:24px">5</div><div class="small" style="opacity:.9">applied</div></div>
+   <div class="card" style="background:var(--sun)"><div class="big" style="font-size:24px">8</div><div class="small">saved</div></div>
+   <div class="card" style="background:var(--pink);color:#fff"><div class="big" style="font-size:24px">1</div><div class="small" style="opacity:.9">reply</div></div>
+  </div>
+  <div style="margin-top:12px;font-weight:800">Tracker</div>
+  <div class="card" style="margin-top:6px;display:flex;justify-content:space-between"><span><b>SpotDraft</b><br><span class="small">Associate PM</span></span><b style="color:var(--pink)">Reply</b></div>
+  <div class="card" style="margin-top:6px;display:flex;justify-content:space-between"><span><b>Veeva Systems</b><br><span class="small">Associate SWE</span></span><b style="color:var(--lane)">Handed off</b></div>
+  <div style="margin-top:12px;font-weight:800">Resume</div>
+  <div class="card" style="margin-top:6px;display:flex;justify-content:space-between"><span>v2 · SDE focus</span><b>Edit</b></div>
+  <div class="tb"><div><i></i>Home</div><div><i></i>Discover</div><div><i></i>Companies</div><div><i></i>Network</div><div class="on"><i></i>You</div></div>
+ </div></div><div class="lab">You: tracker, saved, resume versions, recap</div></div>
+</div>
+</body></html>
