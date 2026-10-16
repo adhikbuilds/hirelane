@@ -190,11 +190,19 @@ similar carousel                                          /network: sample graph
 | # | Milestone | Owner sees | Gate to continue |
 |---|---|---|---|
 | M0 | This plan | This doc plus wireframes | Owner approves or edits the plan |
+| M0.5 | **Style tile**, one screen at `/preview/style-tile`: palette, type scale, buttons and chips, and one JobCard M inside the PhoneFrame, at 1440 and 390 | Screenshots | Owner approves the look (light warm theme, card) before any component work |
 | M1 | Foundations + `/dev/kit` gallery: tokens, type, colour, elevation, motion, every base component and state | Screenshots of the gallery at 1440 and 390 | Owner: "the system looks right" |
 | M2 | The five key screens (section 6), hi-fi in code | Screenshots plus a 15 s recording of the loop | Owner approves the card, hero and diagram |
 | M3 | Landing story, built with the approved pieces | Live page, screenshots, recording | Owner approves the landing |
 | M4 | Pages: How it works, Companies, Company, Jobs, Job, Pricing, Network, Start, About | Screenshots per page | Owner approves page by page (in batches) |
 | M5 | Polish: detailing, empty/error states, a11y, performance; deploy preview | Lighthouse and axe results plus a walkthrough | Ship |
+
+**How we work (rules that change the old process):**
+- **`/` and the live site do not change until M3 is approved.** All M0.5–M2 work lives under preview routes
+  (`/preview/*` and `/dev/kit`), with tokens scoped to a wrapper. No agent edits the shell, global tokens or `/` before
+  then, so the owner never judges half-built pages.
+- **Small checkpoints:** one or two agents per checkpoint, about 30–60 minutes each. No eight-agent hour-long runs.
+- The owner is told when a checkpoint is ready and gets screenshots; they don't need to watch localhost.
 
 **Every milestone:**
 - built by ECC agents with the UI skills (ui-ux-pro-max, shadcn, ui-styling, fixing-accessibility and
