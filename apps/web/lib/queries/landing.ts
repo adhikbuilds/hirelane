@@ -198,3 +198,37 @@ async function loadLanding(): Promise<LandingSnapshot> {
 /** Everything the landing page reads from the database, cached for 300 s under tag `jobs`. */
 export const getLandingSnapshot = unstable_cache(loadLanding, ["landing:v1"], { revalidate: 300, tags: ["jobs"] });
 // end landing
+
+// landing v3
+/**
+ * Per-card extras for the landing swipe stack: when each job was posted, how many roles its company has open and
+ * the posting URL. Read from the same jobs the demo uses; nothing here is invented. JSON-safe, cached 300 s.
+ */
+export type StackExtraRow = { freshAt: string | null; openRoles: number | null; postingUrl: string | null };
+
+async function loadStackExtras(slugs: string[]): Promise<Record<string, StackExtraRow>> {
+  if (slugs.length === 0) return {};
+  const rows = await withAdmin(async (db) =>
+    (
+      await db.query(
+        `SELECT j.slug, coalesce(j.posted_at, j.first_seen_at) AS fresh_at, p.url AS posting_url,
+                (SELECT count(*)::int FROM jobs o WHERE o.company_id = j.company_id AND o.closed_at IS NULL) AS open_roles
+           FROM jobs j LEFT JOIN postings p ON p.id = j.primary_posting_id
+          WHERE j.slug = ANY($1::text[])`,
+        [slugs],
+      )
+    ).rows,
+  );
+  const out: Record<string, StackExtraRow> = {};
+  for (const r of rows) {
+    out[r.slug as string] = {
+      freshAt: r.fresh_at ? iso(r.fresh_at) : null,
+      openRoles: num(r.open_roles),
+      postingUrl: typeof r.posting_url === "string" ? r.posting_url : null,
+    };
+  }
+  return out;
+}
+
+export const getStackExtras = unstable_cache(loadStackExtras, ["landing-v3:stack-extras"], { revalidate: 300, tags: ["jobs"] });
+// end landing v3

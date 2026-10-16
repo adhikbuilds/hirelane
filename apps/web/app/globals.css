@@ -6,6 +6,7 @@
  * Old v1 token names (paper, sheet, rule, lane-soft, stop) stay as aliases of the v2 tokens.
  */
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme {
   /* v2 tokens */
@@ -199,4 +200,148 @@ button {
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+ * Landing v3 ("Highway sign", docs/design/landing-v3.md). Everything below is scoped to
+ * [data-landing="v3"], so /jobs, /job/[slug] and the other v2 pages are untouched.
+ * The shadcn variable contract (--background, --primary, ...) is mapped onto the Forest-and-lime palette.
+ * Portalled shadcn content (Select, Dialog, Tooltip, Sonner) carries data-landing="v3" itself,
+ * because portals render outside the page wrapper.
+ * Grounds: forest is the default; data-ground="black" and data-ground="white" re-map the same contract.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-control: var(--control);
+  --color-control-foreground: var(--control-foreground);
+  --color-sign: var(--sign);
+  --animate-accordion-down: accordion-down 0.25s var(--ease-out-expo);
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@layer base {
+  [data-landing="v3"] {
+    --radius: 12px;
+    /* Deep forest ground (default). */
+    --background: #0f1f10;
+    --foreground: #ffffff;
+    --card: #162a17;
+    --card-foreground: #ffffff;
+    --popover: #162a17;
+    --popover-foreground: #ffffff;
+    --primary: #c6f19d;
+    --primary-foreground: #0f1f10;
+    --secondary: #162a17;
+    --secondary-foreground: #ffffff;
+    --muted: #162a17;
+    --muted-foreground: #a3ada3;
+    --accent: #1f3a21;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --input: #2b432c;
+    --ring: #c6f19d;
+    /* Slider range, switch on-state: lime on dark grounds, sign green on white. */
+    --control: #c6f19d;
+    --control-foreground: #0f1f10;
+    --sign: #0f5c45;
+    font-variant-numeric: tabular-nums;
+  }
+  [data-landing="v3"][data-ground="black"] {
+    --background: #000000;
+    --card: #101010;
+    --popover: #101010;
+    --secondary: #151515;
+    --muted: #151515;
+    --muted-foreground: #a8a8a8;
+    --accent: #232323;
+    --input: #2c2c2c;
+  }
+  [data-landing="v3"][data-ground="white"] {
+    --background: #ffffff;
+    --foreground: #0f1f10;
+    --card: #eef3ee;
+    --card-foreground: #0f1f10;
+    --popover: #eef3ee;
+    --popover-foreground: #0f1f10;
+    --primary: #c6f19d;
+    --primary-foreground: #0f1f10;
+    --secondary: #eef3ee;
+    --secondary-foreground: #0f1f10;
+    --muted: #eef3ee;
+    --muted-foreground: #4b5a4d;
+    --accent: #dfe8df;
+    --accent-foreground: #0f1f10;
+    --input: #cfdacf;
+    --ring: #0f5c45;
+    --control: #0f5c45;
+    --control-foreground: #ffffff;
+  }
+}
+
+/* The five landing type steps. Nothing on the landing sets another size (interface text inside data-ui fragments aside). */
+@utility t-display {
+  font-size: clamp(56px, 7.5vw, 120px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+@utility t-heading {
+  font-size: clamp(32px, 3.6vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+@utility t-statement {
+  font-size: 24px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+@utility t-body {
+  font-size: 18px;
+  line-height: 1.55;
+}
+@utility t-small {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* v2's global :focus-visible ring is lane green, invisible on forest. Landing v3 uses its own --ring. */
+[data-landing="v3"] :focus-visible,
+[data-landing="v3"]:focus-visible {
+  outline-color: var(--ring);
 }

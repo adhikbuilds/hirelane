@@ -575,6 +575,39 @@ All public endpoints share these properties:
 
 ---
 
+### Amendment A (owner-approved 2026-10-16): warm intros are the core; India coverage
+
+Hirelane's reason to exist is **jobs where you have a warm path in**. It combines this job data with a relationship
+graph ported from WarmPath. The full plan, options, constraints and WarmPath source map are in `docs/network-plan.md`.
+
+Changes to the phases below:
+- **Phase 4 grows a Network track (4N),** built right after accounts, encryption and companies land.
+  - It adds `packages/engine/src/network.ts` and `contacts-import.ts`, both pure, test-first and returning a Trace.
+    They port WarmPath's warmth formula, coverage and gap types, and explanations.
+  - It adds `packages/network`: persistence, plus an import task that runs in the worker.
+  - Contact sources are user-provided only: your LinkedIn `Connections.csv` export, vCard or CSV, or manual add.
+    Google Contacts via OAuth comes later.
+  - Isolation and privacy: FORCE RLS per user, envelope encryption, and a separate "use my contacts in drafts"
+    consent toggle.
+  - Surfaces:
+    - "You know N here" on the triage stack, the board (signed-in only) and company pages
+    - a strongest-contact row with warmth written as its equation
+    - a "has a contact" filter and a "match, then warmth" sort
+    - a coverage view
+    - one-key contact ratings
+  - v1 is honest first-degree only: you, then a contact at the company. Two-hop paths wait for opt-in sharing.
+- **Phase 5 adds intro and referral request drafts.** They use WarmPath's warm-intro prompt and output schema, go
+  through the same evidence validator, and follow approve, 4 s undo and copy handoff. Hirelane never sends intro
+  messages itself.
+- **Phase 7:** Autopilot rule option "only companies where I know someone".
+- **Phase 8:** export, delete and retention cover contacts, imports and intro drafts. The log PII scan includes the
+  synthetic contact fixture.
+- **Never:** scraping LinkedIn or any site, Proxycurl, Happenstance or Crustdata as data sources, or cross-user
+  aggregates ("3 Hirelane users know someone at Stripe").
+- **India coverage (owner decision):** add Indian companies' public ATS boards (Greenhouse, Lever and Ashby, verified
+  one by one) to the Phase 1 board list. Today only 1,178 of 16,320 open roles (7%, at 61 companies) are in India, yet
+  pricing and positioning are India-first.
+
 ### Phase 0: Scaffold
 **Goal:** a monorepo that is empty but real, runs offline end to end, and follows solum conventions.
 

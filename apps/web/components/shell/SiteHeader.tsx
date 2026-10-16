@@ -7,6 +7,7 @@ import { Wordmark } from "../../app/wordmark";
 import { buttonClasses } from "../ui/Button";
 import { cn } from "../ui/cn";
 import { MobileMenu } from "./MobileMenu";
+import { LandingHeader } from "../landing-v3/header";
 import { isActive, NAV, START_FREE } from "./nav";
 
 /** 64px bar. Over the landing hero it is transparent and overlaps the hero; after a little scroll, and everywhere else, it is solid with a blur. */
@@ -21,6 +22,9 @@ export function SiteHeader() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // "/" gets the v3 floating bar; every other route keeps this one. (Hooks above run for both.)
+  if (overHero) return <LandingHeader />;
 
   const solid = !overHero || scrolled;
 

@@ -15,3 +15,6 @@ storage/
 *.tsbuildinfo
 test-results/
 playwright-report/
+
+# taste-skill working files (inspector screenshots); the chosen sheet is kept in docs/design
+.taste-skill/

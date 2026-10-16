@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
+import { FooterGate } from "@/components/shell/FooterGate";
 import { SiteFooter } from "@/components/shell/SiteFooter";
 import { SiteHeader } from "@/components/shell/SiteHeader";
 import "./globals.css";
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <main id="main" className="flex-1">
           {children}
         </main>
-        <SiteFooter />
+        <FooterGate>
+          <SiteFooter />
+        </FooterGate>
       </body>
     </html>
   );

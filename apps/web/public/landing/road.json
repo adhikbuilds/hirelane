@@ -1,0 +1,61 @@
+{
+  "note": "AI-generated with a local model; sign = the blank sign panel rectangle in percent of the image",
+  "photos": [
+    {
+      "file": "/landing/road-0000.jpg",
+      "time": "00:00 UTC",
+      "label": "midnight",
+      "width": 1440,
+      "height": 960,
+      "sign": {
+        "x": 20.56,
+        "y": 26.04,
+        "w": 61.4,
+        "h": 20.83
+      },
+      "alt": "An elevated road in Bengaluru at midnight under a blank green overhead sign (AI-generated illustration)"
+    },
+    {
+      "file": "/landing/road-0600.jpg",
+      "time": "06:00 UTC",
+      "label": "dawn",
+      "width": 1440,
+      "height": 960,
+      "sign": {
+        "x": 22.85,
+        "y": 20.83,
+        "w": 58.33,
+        "h": 23.75
+      },
+      "alt": "An elevated road in Bengaluru at dawn under a blank green overhead sign (AI-generated illustration)"
+    },
+    {
+      "file": "/landing/road-1200.jpg",
+      "time": "12:00 UTC",
+      "label": "noon",
+      "width": 1440,
+      "height": 960,
+      "sign": {
+        "x": 21.74,
+        "y": 20.52,
+        "w": 60.83,
+        "h": 24.17
+      },
+      "alt": "An elevated road in Bengaluru at noon under a blank green overhead sign (AI-generated illustration)"
+    },
+    {
+      "file": "/landing/road-1800.jpg",
+      "time": "18:00 UTC",
+      "label": "dusk",
+      "width": 1440,
+      "height": 960,
+      "sign": {
+        "x": 22.85,
+        "y": 20.62,
+        "w": 59.65,
+        "h": 24.79
+      },
+      "alt": "An elevated road in Bengaluru at dusk under a blank green overhead sign (AI-generated illustration)"
+    }
+  ]
+}
