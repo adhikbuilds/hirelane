@@ -5,9 +5,9 @@
     "ats": "ashby",
     "token": "airbyte",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 12
+    "postings": 13
   },
   {
     "name": "Atlan",
@@ -15,7 +15,7 @@
     "ats": "ashby",
     "token": "atlan",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 7
   },
@@ -25,9 +25,9 @@
     "ats": "ashby",
     "token": "baseten",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 106
+    "postings": 107
   },
   {
     "name": "Benchling",
@@ -35,9 +35,9 @@
     "ats": "ashby",
     "token": "benchling",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 55
+    "postings": 56
   },
   {
     "name": "Clay",
@@ -45,9 +45,9 @@
     "ats": "ashby",
     "token": "claylabs",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 57
+    "postings": 58
   },
   {
     "name": "Cohere",
@@ -55,9 +55,19 @@
     "ats": "ashby",
     "token": "cohere",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 117
+    "postings": 118
+  },
+  {
+    "name": "Composio",
+    "domain": "composio.dev",
+    "ats": "ashby",
+    "token": "composio",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 30
   },
   {
     "name": "Cursor",
@@ -65,7 +75,7 @@
     "ats": "ashby",
     "token": "cursor",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 134
   },
@@ -75,9 +85,9 @@
     "ats": "ashby",
     "token": "decagon",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 142
+    "postings": 140
   },
   {
     "name": "ElevenLabs",
@@ -85,9 +95,9 @@
     "ats": "ashby",
     "token": "elevenlabs",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 151
+    "postings": 149
   },
   {
     "name": "Harvey",
@@ -95,9 +105,9 @@
     "ats": "ashby",
     "token": "harvey",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 338
+    "postings": 344
   },
   {
     "name": "Hex",
@@ -105,7 +115,7 @@
     "ats": "ashby",
     "token": "hex",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 40
   },
@@ -115,9 +125,9 @@
     "ats": "ashby",
     "token": "langchain",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 99
+    "postings": 100
   },
   {
     "name": "Linear",
@@ -125,7 +135,7 @@
     "ats": "ashby",
     "token": "linear",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 31
   },
@@ -135,7 +145,7 @@
     "ats": "ashby",
     "token": "modal",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 43
   },
@@ -145,7 +155,7 @@
     "ats": "ashby",
     "token": "notion",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 129
   },
@@ -155,9 +165,9 @@
     "ats": "ashby",
     "token": "openai",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 803
+    "postings": 802
   },
   {
     "name": "Perplexity",
@@ -165,9 +175,9 @@
     "ats": "ashby",
     "token": "perplexity",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 130
+    "postings": 131
   },
   {
     "name": "PostHog",
@@ -175,9 +185,9 @@
     "ats": "ashby",
     "token": "posthog",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 11
+    "postings": 10
   },
   {
     "name": "Ramp",
@@ -185,9 +195,9 @@
     "ats": "ashby",
     "token": "ramp",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 164
+    "postings": 163
   },
   {
     "name": "Replit",
@@ -195,9 +205,9 @@
     "ats": "ashby",
     "token": "replit",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 66
+    "postings": 65
   },
   {
     "name": "Resend",
@@ -205,7 +215,7 @@
     "ats": "ashby",
     "token": "resend",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 14
   },
@@ -215,7 +225,7 @@
     "ats": "ashby",
     "token": "runway",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 3
   },
@@ -225,9 +235,19 @@
     "ats": "ashby",
     "token": "sierra",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 186
+  },
+  {
+    "name": "SpotDraft",
+    "domain": "spotdraft.com",
+    "ats": "ashby",
+    "token": "spotdraft",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 14
   },
   {
     "name": "Supabase",
@@ -235,9 +255,19 @@
     "ats": "ashby",
     "token": "supabase",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 54
+    "postings": 53
+  },
+  {
+    "name": "Tekion",
+    "domain": "tekion.com",
+    "ats": "ashby",
+    "token": "tekion",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 92
   },
   {
     "name": "Temporal",
@@ -245,7 +275,7 @@
     "ats": "ashby",
     "token": "temporal",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 69
   },
@@ -255,9 +285,9 @@
     "ats": "ashby",
     "token": "vanta",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 82
+    "postings": 86
   },
   {
     "name": "Warp",
@@ -265,7 +295,7 @@
     "ats": "ashby",
     "token": "warp",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 22
   },
@@ -275,7 +305,7 @@
     "ats": "ashby",
     "token": "zapier",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 11
   },
@@ -285,9 +315,9 @@
     "ats": "greenhouse",
     "token": "addepar1",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 111
+    "postings": 113
   },
   {
     "name": "Affirm",
@@ -295,9 +325,9 @@
     "ats": "greenhouse",
     "token": "affirm",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 208
+    "postings": 212
   },
   {
     "name": "Airbnb",
@@ -305,9 +335,9 @@
     "ats": "greenhouse",
     "token": "airbnb",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 163
+    "postings": 168
   },
   {
     "name": "Airtable",
@@ -315,7 +345,7 @@
     "ats": "greenhouse",
     "token": "airtable",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 5
   },
@@ -325,9 +355,9 @@
     "ats": "greenhouse",
     "token": "anthropic",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 649
+    "postings": 652
   },
   {
     "name": "Asana",
@@ -335,7 +365,7 @@
     "ats": "greenhouse",
     "token": "asana",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 106
   },
@@ -345,7 +375,7 @@
     "ats": "greenhouse",
     "token": "betterment",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 24
   },
@@ -355,7 +385,7 @@
     "ats": "greenhouse",
     "token": "braze",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 320
   },
@@ -365,9 +395,9 @@
     "ats": "greenhouse",
     "token": "brex",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 261
+    "postings": 256
   },
   {
     "name": "Calendly",
@@ -375,7 +405,7 @@
     "ats": "greenhouse",
     "token": "calendly",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 9
   },
@@ -385,9 +415,9 @@
     "ats": "greenhouse",
     "token": "carta",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 73
+    "postings": 72
   },
   {
     "name": "Celonis",
@@ -395,9 +425,9 @@
     "ats": "greenhouse",
     "token": "celonis",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 203
+    "postings": 202
   },
   {
     "name": "Checkr",
@@ -405,7 +435,7 @@
     "ats": "greenhouse",
     "token": "checkr",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 43
   },
@@ -415,9 +445,9 @@
     "ats": "greenhouse",
     "token": "chime",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 71
+    "postings": 72
   },
   {
     "name": "CircleCI",
@@ -425,7 +455,7 @@
     "ats": "greenhouse",
     "token": "circleci",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 13
   },
@@ -435,9 +465,9 @@
     "ats": "greenhouse",
     "token": "cloudflare",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 439
+    "postings": 436
   },
   {
     "name": "Cockroach Labs",
@@ -445,7 +475,7 @@
     "ats": "greenhouse",
     "token": "cockroachlabs",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 18
   },
@@ -455,9 +485,9 @@
     "ats": "greenhouse",
     "token": "coinbase",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 226
+    "postings": 229
   },
   {
     "name": "CoreWeave",
@@ -465,9 +495,9 @@
     "ats": "greenhouse",
     "token": "coreweave",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 304
+    "postings": 307
   },
   {
     "name": "Databricks",
@@ -475,9 +505,9 @@
     "ats": "greenhouse",
     "token": "databricks",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 898
+    "postings": 899
   },
   {
     "name": "Datadog",
@@ -485,9 +515,9 @@
     "ats": "greenhouse",
     "token": "datadog",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 440
+    "postings": 435
   },
   {
     "name": "DigitalOcean",
@@ -495,9 +525,9 @@
     "ats": "greenhouse",
     "token": "digitalocean98",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 197
+    "postings": 199
   },
   {
     "name": "Discord",
@@ -505,9 +535,9 @@
     "ats": "greenhouse",
     "token": "discord",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 48
+    "postings": 49
   },
   {
     "name": "Dropbox",
@@ -515,9 +545,9 @@
     "ats": "greenhouse",
     "token": "dropbox",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 24
+    "postings": 21
   },
   {
     "name": "Druva",
@@ -525,7 +555,7 @@
     "ats": "greenhouse",
     "token": "druva",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 34
   },
@@ -535,9 +565,9 @@
     "ats": "greenhouse",
     "token": "duolingo",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 61
+    "postings": 63
   },
   {
     "name": "Elastic",
@@ -545,9 +575,9 @@
     "ats": "greenhouse",
     "token": "elastic",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 380
+    "postings": 379
   },
   {
     "name": "Epic Games",
@@ -555,9 +585,9 @@
     "ats": "greenhouse",
     "token": "epicgames",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 140
+    "postings": 138
   },
   {
     "name": "Faire",
@@ -565,7 +595,7 @@
     "ats": "greenhouse",
     "token": "faire",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 79
   },
@@ -575,9 +605,9 @@
     "ats": "greenhouse",
     "token": "fastly",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 52
+    "postings": 51
   },
   {
     "name": "Figma",
@@ -585,9 +615,9 @@
     "ats": "greenhouse",
     "token": "figma",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 142
+    "postings": 143
   },
   {
     "name": "Fivetran",
@@ -595,9 +625,9 @@
     "ats": "greenhouse",
     "token": "fivetran",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 186
+    "postings": 179
   },
   {
     "name": "Flatiron Health",
@@ -605,9 +635,9 @@
     "ats": "greenhouse",
     "token": "flatironhealth",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 20
+    "postings": 19
   },
   {
     "name": "Flexport",
@@ -615,9 +645,9 @@
     "ats": "greenhouse",
     "token": "flexport",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 208
+    "postings": 212
   },
   {
     "name": "Gemini",
@@ -625,7 +655,7 @@
     "ats": "greenhouse",
     "token": "gemini",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 32
   },
@@ -635,9 +665,19 @@
     "ats": "greenhouse",
     "token": "gitlab",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 215
+    "postings": 221
+  },
+  {
+    "name": "Glance",
+    "domain": "glance.com",
+    "ats": "greenhouse",
+    "token": "glance",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 36
   },
   {
     "name": "Glean",
@@ -645,9 +685,9 @@
     "ats": "greenhouse",
     "token": "gleanwork",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 135
+    "postings": 134
   },
   {
     "name": "Grafana Labs",
@@ -655,9 +695,19 @@
     "ats": "greenhouse",
     "token": "grafanalabs",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 108
+    "postings": 106
+  },
+  {
+    "name": "Groww",
+    "domain": "groww.in",
+    "ats": "greenhouse",
+    "token": "groww",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 10
   },
   {
     "name": "Gusto",
@@ -665,7 +715,7 @@
     "ats": "greenhouse",
     "token": "gusto",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 101
   },
@@ -675,7 +725,7 @@
     "ats": "greenhouse",
     "token": "hackerrank",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 32
   },
@@ -685,9 +735,19 @@
     "ats": "greenhouse",
     "token": "harnessinc",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 64
+    "postings": 65
+  },
+  {
+    "name": "InMobi",
+    "domain": "inmobi.com",
+    "ats": "greenhouse",
+    "token": "inmobi",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 79
   },
   {
     "name": "Instacart",
@@ -695,7 +755,7 @@
     "ats": "greenhouse",
     "token": "instacart",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 122
   },
@@ -705,7 +765,7 @@
     "ats": "greenhouse",
     "token": "intercom",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 108
   },
@@ -715,7 +775,7 @@
     "ats": "greenhouse",
     "token": "khanacademy",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 6
   },
@@ -725,9 +785,9 @@
     "ats": "greenhouse",
     "token": "klaviyo",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 148
+    "postings": 151
   },
   {
     "name": "Lattice",
@@ -735,7 +795,7 @@
     "ats": "greenhouse",
     "token": "lattice",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 9
   },
@@ -745,9 +805,9 @@
     "ats": "greenhouse",
     "token": "launchdarkly",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 53
+    "postings": 55
   },
   {
     "name": "Lyft",
@@ -755,9 +815,9 @@
     "ats": "greenhouse",
     "token": "lyft",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 176
+    "postings": 172
   },
   {
     "name": "Mixpanel",
@@ -765,9 +825,9 @@
     "ats": "greenhouse",
     "token": "mixpanel",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 52
+    "postings": 50
   },
   {
     "name": "MongoDB",
@@ -775,7 +835,7 @@
     "ats": "greenhouse",
     "token": "mongodb",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 402
   },
@@ -785,9 +845,9 @@
     "ats": "greenhouse",
     "token": "mozilla",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 92
+    "postings": 97
   },
   {
     "name": "Netlify",
@@ -795,7 +855,7 @@
     "ats": "greenhouse",
     "token": "netlify",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 5
   },
@@ -805,9 +865,9 @@
     "ats": "greenhouse",
     "token": "netskope",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 135
+    "postings": 134
   },
   {
     "name": "Neuralink",
@@ -815,7 +875,7 @@
     "ats": "greenhouse",
     "token": "neuralink",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 80
   },
@@ -825,9 +885,19 @@
     "ats": "greenhouse",
     "token": "nuro",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 109
+  },
+  {
+    "name": "Observe.AI",
+    "domain": "observe.ai",
+    "ats": "greenhouse",
+    "token": "observeai",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 9
   },
   {
     "name": "Okta",
@@ -835,9 +905,9 @@
     "ats": "greenhouse",
     "token": "okta",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 381
+    "postings": 376
   },
   {
     "name": "Oscar Health",
@@ -845,7 +915,7 @@
     "ats": "greenhouse",
     "token": "oscar",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 231
   },
@@ -855,7 +925,7 @@
     "ats": "greenhouse",
     "token": "pagerduty",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 56
   },
@@ -865,9 +935,9 @@
     "ats": "greenhouse",
     "token": "pinterest",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 157
+    "postings": 156
   },
   {
     "name": "Pure Storage",
@@ -875,9 +945,9 @@
     "ats": "greenhouse",
     "token": "purestorage",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 376
+    "postings": 377
   },
   {
     "name": "Reddit",
@@ -885,7 +955,7 @@
     "ats": "greenhouse",
     "token": "reddit",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 149
   },
@@ -895,9 +965,9 @@
     "ats": "greenhouse",
     "token": "ripple",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 110
+    "postings": 108
   },
   {
     "name": "Robinhood",
@@ -905,9 +975,9 @@
     "ats": "greenhouse",
     "token": "robinhood",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 153
+    "postings": 154
   },
   {
     "name": "Roblox",
@@ -915,9 +985,9 @@
     "ats": "greenhouse",
     "token": "roblox",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 259
+    "postings": 260
   },
   {
     "name": "Rubrik",
@@ -925,9 +995,9 @@
     "ats": "greenhouse",
     "token": "rubrik",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 133
+    "postings": 142
   },
   {
     "name": "Samsara",
@@ -935,9 +1005,9 @@
     "ats": "greenhouse",
     "token": "samsara",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 260
+    "postings": 265
   },
   {
     "name": "Scale AI",
@@ -945,9 +1015,9 @@
     "ats": "greenhouse",
     "token": "scaleai",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 180
+    "postings": 181
   },
   {
     "name": "Squarespace",
@@ -955,7 +1025,7 @@
     "ats": "greenhouse",
     "token": "squarespace",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 34
   },
@@ -965,9 +1035,9 @@
     "ats": "greenhouse",
     "token": "stripe",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 728
+    "postings": 729
   },
   {
     "name": "Sumo Logic",
@@ -975,9 +1045,9 @@
     "ats": "greenhouse",
     "token": "sumologic",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 12
+    "postings": 10
   },
   {
     "name": "Toast",
@@ -985,9 +1055,9 @@
     "ats": "greenhouse",
     "token": "toast",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 309
+    "postings": 314
   },
   {
     "name": "Twilio",
@@ -995,9 +1065,9 @@
     "ats": "greenhouse",
     "token": "twilio",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 135
+    "postings": 134
   },
   {
     "name": "Vercel",
@@ -1005,9 +1075,9 @@
     "ats": "greenhouse",
     "token": "vercel",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 91
+    "postings": 92
   },
   {
     "name": "Verkada",
@@ -1015,9 +1085,9 @@
     "ats": "greenhouse",
     "token": "verkada",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 317
+    "postings": 318
   },
   {
     "name": "Waymo",
@@ -1025,7 +1095,7 @@
     "ats": "greenhouse",
     "token": "waymo",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 361
   },
@@ -1035,9 +1105,9 @@
     "ats": "greenhouse",
     "token": "webflow",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 22
+    "postings": 20
   },
   {
     "name": "Wiz",
@@ -1045,7 +1115,7 @@
     "ats": "greenhouse",
     "token": "wizinc",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 118
   },
@@ -1055,7 +1125,7 @@
     "ats": "greenhouse",
     "token": "xai",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 304
   },
@@ -1065,7 +1135,7 @@
     "ats": "greenhouse",
     "token": "yugabyte",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 15
   },
@@ -1075,9 +1145,9 @@
     "ats": "greenhouse",
     "token": "zocdoc",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 58
+    "postings": 59
   },
   {
     "name": "Binance",
@@ -1085,9 +1155,9 @@
     "ats": "lever",
     "token": "binance",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 28
+    "postings": 27
   },
   {
     "name": "CRED",
@@ -1095,9 +1165,29 @@
     "ats": "lever",
     "token": "cred",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 7
+  },
+  {
+    "name": "FamPay",
+    "domain": "famapp.in",
+    "ats": "lever",
+    "token": "fampay",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 17
+  },
+  {
+    "name": "Hevo Data",
+    "domain": "hevodata.com",
+    "ats": "lever",
+    "token": "hevodata",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 54
   },
   {
     "name": "Meesho",
@@ -1105,9 +1195,9 @@
     "ats": "lever",
     "token": "meesho",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 58
+    "postings": 59
   },
   {
     "name": "Mindtickle",
@@ -1115,7 +1205,7 @@
     "ats": "lever",
     "token": "mindtickle",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 20
   },
@@ -1125,9 +1215,9 @@
     "ats": "lever",
     "token": "palantir",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 312
+    "postings": 309
   },
   {
     "name": "Paytm",
@@ -1135,9 +1225,19 @@
     "ats": "lever",
     "token": "paytm",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 181
+    "postings": 182
+  },
+  {
+    "name": "Pocket FM",
+    "domain": "pocketfm.com",
+    "ats": "lever",
+    "token": "pocketfm",
+    "hires_in_india": true,
+    "verified_at": "2026-10-16T13:30:56.018Z",
+    "http_status": 200,
+    "postings": 10
   },
   {
     "name": "Shield AI",
@@ -1145,7 +1245,7 @@
     "ats": "lever",
     "token": "shieldai",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 618
   },
@@ -1155,9 +1255,9 @@
     "ats": "lever",
     "token": "spotify",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 84
+    "postings": 82
   },
   {
     "name": "Veeva Systems",
@@ -1165,9 +1265,9 @@
     "ats": "lever",
     "token": "veeva",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
-    "postings": 925
+    "postings": 929
   },
   {
     "name": "Zeta",
@@ -1175,7 +1275,7 @@
     "ats": "lever",
     "token": "zeta",
     "hires_in_india": true,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 24
   },
@@ -1185,7 +1285,7 @@
     "ats": "lever",
     "token": "zoox",
     "hires_in_india": false,
-    "verified_at": "2026-10-15T19:19:13.392Z",
+    "verified_at": "2026-10-16T13:30:56.018Z",
     "http_status": 200,
     "postings": 239
   }

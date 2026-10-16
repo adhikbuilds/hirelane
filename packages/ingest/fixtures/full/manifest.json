@@ -1,8 +1,8 @@
 {
-  "recorded_at": "2026-10-15T19:19:13.392Z",
-  "total_gz_bytes": 24570411,
-  "total_postings": 18860,
-  "kept": 119,
+  "recorded_at": "2026-10-16T13:30:56.018Z",
+  "total_gz_bytes": 25330623,
+  "total_postings": 19242,
+  "kept": 129,
   "trimmed_note": "For boards listed in \"trimmed\", description fields beyond the first 200 postings were blanked and the body re-serialised (not byte-exact).",
   "trimmed": [],
   "mini": [
