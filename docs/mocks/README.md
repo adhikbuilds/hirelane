@@ -12,6 +12,7 @@ build:
 | `genz-a-screens-3.html` | Companies, Network, Inbox, Search, Internships collection, Saved, Privacy, Welcome | ✅ good |
 | `genz-a-extra.html` | Instahyre-informed: skip with a reason, India preferences, "You got hired" | ✅ good |
 | `genz-a-swipe.html` | The main swipe screen in detail (rest, drag right, drag left, applied + undo, details) | ✅ good (the owner asked to apply this level of detail) |
+| `genz-a-hubs-states.html` | Hub interaction states in the approved style: story open, swiping picks, typing suggestions, filter drag, follow toast, alumni sheet, application timeline, recap replay | 🆕 for review |
 | `genz-a-hubs-detail.html` | Photo-heavy hub states | ❌ rejected (owner: last two rounds bad) |
 | `genz-photo-led.html` | Dating-app, photo-led, serif | ❌ rejected ("very bad") |
 | `genz-a-landing.html` | Landing draft with photo blocks | ⚠️ not reviewed; redo in the approved style |
