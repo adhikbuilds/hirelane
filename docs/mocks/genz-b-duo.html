@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Hirelane mock B: Duo playful</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1F2A24;--lane:#1A9E6B;--lane-d:#0F6E49;--lime:#B6F36A;--sky:#4FB7FF;--sky-d:#2A8FD6;--sun:#FFC93C;--sun-d:#E0A400;--red:#FF5A5F;--red-d:#D63A40;--bg:#FFFFFF;--line:#E7ECEA}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Nunito',system-ui,sans-serif;background:#F2F5F3;color:var(--ink);padding:48px 56px}
+h1.t{font-size:15px;font-weight:600;opacity:.6;margin-bottom:28px}
+.row{display:flex;gap:40px;justify-content:center;align-items:flex-start}
+.phone{width:360px;height:740px;border-radius:48px;background:#1F2A24;padding:12px;box-shadow:0 30px 70px rgba(31,42,36,.25)}
+.screen{width:100%;height:100%;border-radius:38px;overflow:hidden;position:relative;background:var(--bg);padding:20px}
+.top{display:flex;align-items:center;gap:10px;font-weight:900}
+.prog{flex:1;height:16px;border-radius:99px;background:var(--line);overflow:hidden}.prog i{display:block;height:100%;width:45%;background:var(--lane);border-radius:99px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12)}
+.streak{color:#FF8A00;font-size:18px}
+.card{border:2px solid var(--line);border-bottom-width:6px;border-radius:24px;padding:16px;margin-top:22px;background:#fff}
+.logo{width:46px;height:46px;border-radius:14px;background:var(--sky);color:#fff;display:grid;place-items:center;font-weight:900;font-size:20px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
+.ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--lane) 0 91%,var(--line) 0);display:grid;place-items:center;margin-left:auto}
+.ring b{width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:900;font-size:15px}
+.ch{display:inline-block;padding:6px 12px;border-radius:12px;border:2px solid var(--line);border-bottom-width:4px;font-weight:800;font-size:13px;margin:6px 6px 0 0}
+.why{margin-top:12px;border-radius:14px;background:#E9FBE0;color:var(--lane-d);padding:9px 12px;font-weight:800;font-size:14px}
+.btn{display:flex;align-items:center;justify-content:center;height:56px;border-radius:16px;font-weight:900;font-size:17px;letter-spacing:.04em;text-transform:uppercase}
+.btn.go{background:var(--lane);color:#fff;box-shadow:0 5px 0 var(--lane-d)}
+.btn.skip{background:#fff;color:#7A8A82;border:2px solid var(--line);box-shadow:0 5px 0 var(--line)}
+.btns{position:absolute;left:20px;right:20px;bottom:24px;display:grid;grid-template-columns:1fr 2fr;gap:12px}
+.hey{display:flex;gap:10px;align-items:center;margin-top:16px}
+.hey img{width:48px;height:48px;border-radius:16px;object-fit:cover;border:2px solid var(--line);border-bottom-width:4px}
+.bubble{background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 12px;font-weight:800;font-size:14px}
+/* screen 2 */
+.s2{background:#D7FFB8}
+.burst{position:absolute;top:120px;left:0;right:0;text-align:center}
+.burst .bigt{font-size:44px;font-weight:900;color:var(--lane-d);line-height:1}
+.conf{position:absolute;width:12px;height:12px;border-radius:3px}
+.need{border:2px solid #F3D36B;border-bottom-width:6px;background:#FFF6CC;border-radius:20px;padding:14px;position:absolute;left:20px;right:20px;top:300px}
+.opt{display:inline-block;padding:9px 14px;border-radius:14px;background:#fff;border:2px solid #F3D36B;border-bottom-width:4px;font-weight:900;margin:8px 8px 0 0}
+.opt.sel{background:var(--sun);border-color:var(--sun-d)}
+.undo{position:absolute;left:20px;right:20px;bottom:100px;background:var(--ink);color:#fff;border-radius:16px;padding:12px 14px;font-weight:800;font-size:14px}
+/* screen 3 */
+.flame{font-size:110px;text-align:center;margin-top:30px;line-height:1}
+.days{display:flex;justify-content:space-between;margin-top:20px}
+.d{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:var(--line);color:#8A9A92}
+.d.on{background:#FF9600;color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.st{border:2px solid var(--line);border-bottom-width:5px;border-radius:18px;padding:12px;font-weight:800;font-size:13px;color:#6B7B73}
+.st b{display:block;font-size:28px;color:var(--ink);font-weight:900}
+.note{max-width:1180px;margin:30px auto 0;font-size:14px;opacity:.7;line-height:1.5}
+</style></head><body>
+<h1 class="t">MOCK B · "Duo playful" · chunky pressable buttons, streaks, celebrations, one thing per screen · no mascot · sample profile: Asha, BITS Pilani '26</h1>
+<div class="row">
+ <div class="phone"><div class="screen">
+  <div class="top"><span style="font-size:22px">||</span><div class="prog"><i></i></div><span class="streak">🔥 4</span></div>
+  <div class="hey"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" alt="Asha, sample profile (AI-generated)"><div class="bubble">3 new jobs fit you today, Asha!</div></div>
+  <div class="card">
+   <div style="display:flex;gap:12px;align-items:center"><div class="logo">H</div><div><div style="font-weight:900">Hevo Data</div><div style="font-size:13px;color:#7A8A82;font-weight:700">Bengaluru · Hybrid · 2h</div></div><div class="ring"><b>91%</b></div></div>
+   <div style="font-size:22px;font-weight:900;margin-top:12px;line-height:1.15">Associate Software Development Engineer</div>
+   <div><span class="ch">Python</span><span class="ch">SQL</span><span class="ch">DSA</span></div>
+   <div class="why">✓ 7 of 8 skills · fresher-friendly</div>
+  </div>
+  <div class="btns"><div class="btn skip">Skip</div><div class="btn go">Apply</div></div>
+ </div></div>
+ <div class="phone"><div class="screen s2">
+  <div class="top"><span style="font-size:22px">||</span><div class="prog"><i style="width:70%"></i></div><span class="streak">🔥 4</span></div>
+  <div class="conf" style="background:var(--sun);top:90px;left:60px;transform:rotate(20deg)"></div><div class="conf" style="background:var(--sky);top:110px;right:70px;transform:rotate(-15deg)"></div><div class="conf" style="background:var(--red);top:170px;left:40px"></div><div class="conf" style="background:var(--lane);top:150px;right:40px;transform:rotate(45deg)"></div>
+  <div class="burst"><div class="bigt">Nice! Form filled.</div><div style="font-weight:800;margin-top:8px;color:var(--lane-d)">Just one question first</div></div>
+  <div class="need"><div style="font-weight:900">Needs you: When can you start?</div><div style="font-size:13px;font-weight:700;color:#7A6A20;margin-top:4px">Not on your resume, so we ask instead of guessing.</div>
+   <span class="opt">Now</span><span class="opt sel">After graduation</span><span class="opt">Next month</span></div>
+  <div class="undo">Sending to Hevo Data in 3s <span style="float:right;color:var(--lime)">UNDO</span></div>
+  <div class="btns" style="grid-template-columns:1fr"><div class="btn go">Send it</div></div>
+ </div></div>
+ <div class="phone"><div class="screen">
+  <div class="top"><span style="font-size:22px">||</span><div class="prog"><i style="width:100%"></i></div><span class="streak">🔥 5</span></div>
+  <div class="flame">🔥</div>
+  <div style="text-align:center;font-size:34px;font-weight:900;color:#FF8A00">5-day streak!</div>
+  <div style="text-align:center;font-weight:800;color:#7A8A82;margin-top:6px">You applied every day this week.</div>
+  <div class="days"><div class="d on">M</div><div class="d on">T</div><div class="d on">W</div><div class="d on">T</div><div class="d on">F</div><div class="d">S</div><div class="d">S</div></div>
+  <div class="stats"><div class="st"><b>5</b>applied today</div><div class="st"><b>0</b>forms you typed</div><div class="st"><b>12</b>jobs swiped</div><div class="st"><b>4 min</b>spent</div></div>
+  <div class="btns" style="grid-template-columns:1fr"><div class="btn go">Continue</div></div>
+ </div></div>
+</div>
+<p class="note">Static mock for direction only. In the build: buttons press down on tap, Apply bursts confetti, Skip wobbles, the streak counts real days you applied, jobs and pay are live. Sample person is AI-generated and labelled. Emoji used only as decoration here; icons become SVG in the build.</p>
+</body></html>

@@ -1,0 +1,82 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Hirelane mock A: Wrapped stories</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B0B0F;--lane:#0F5C45;--lime:#C8FF3D;--pink:#FF4FA3;--blue:#3D5AFE;--sun:#FFC83D;--cream:#FFF6E8}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#141418;color:#fff;padding:48px 56px}
+h1.t{font-size:15px;font-weight:500;opacity:.6;letter-spacing:.02em;margin-bottom:28px}
+.row{display:flex;gap:40px;justify-content:center;align-items:flex-start}
+.phone{width:360px;height:740px;border-radius:48px;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.screen{width:100%;height:100%;border-radius:38px;overflow:hidden;position:relative;padding:22px 20px}
+.bars{display:flex;gap:4px;margin-bottom:18px}.bars i{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.35)}.bars i.on{background:#fff}
+.cap{font-size:13px;opacity:.75;margin-top:8px}
+/* screen 1 */
+.s1{background:var(--lane)}
+.big{font-weight:800;line-height:.9;letter-spacing:-.04em}
+.s1 .big{font-size:64px;color:var(--lime)}
+.card{background:#fff;color:var(--ink);border-radius:26px;padding:18px;position:absolute;left:20px;right:20px;bottom:96px;transform:rotate(-3deg)}
+.card.back{transform:rotate(4deg) translateY(-14px);background:var(--sun);bottom:110px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800}
+.ch{display:inline-block;padding:6px 10px;border-radius:99px;background:#F1F1F4;font-size:12px;margin:3px 4px 0 0;font-weight:500}
+.match{font-size:40px;font-weight:800;color:var(--lane);line-height:1}
+.why{margin-top:10px;background:#EAFBD0;border-radius:12px;padding:8px 10px;font-size:13px}
+.btns{position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:center;gap:22px}
+.b{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:24px;font-weight:800;border:3px solid #fff}
+.b.x{background:transparent;color:#fff}.b.y{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+/* screen 2 */
+.s2{background:var(--pink)}
+.stamp{position:absolute;top:220px;left:24px;right:24px;text-align:center;font-size:92px;font-weight:800;letter-spacing:-.05em;color:var(--lime);transform:rotate(-8deg);text-shadow:6px 6px 0 var(--ink)}
+.toast{position:absolute;left:20px;right:20px;bottom:30px;background:var(--ink);border-radius:20px;padding:14px 16px;font-size:14px}
+.drain{height:5px;border-radius:5px;background:#333;margin-top:10px;overflow:hidden}.drain i{display:block;width:62%;height:100%;background:var(--sun)}
+.flycard{position:absolute;top:400px;left:70px;width:250px;background:#fff;color:var(--ink);border-radius:22px;padding:14px;transform:rotate(14deg) translateX(60px);opacity:.95}
+/* screen 3 */
+.s3{background:var(--sun);color:var(--ink)}
+.s3 .bars i{background:rgba(0,0,0,.2)}.s3 .bars i.on{background:var(--ink)}
+.stat{font-size:120px;font-weight:800;letter-spacing:-.06em;line-height:.85}
+.lbl{font-size:20px;font-weight:800;margin-top:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.tile{border-radius:20px;padding:14px;font-weight:800}
+.tile span{display:block;font-size:40px;letter-spacing:-.04em}
+.asha{display:flex;gap:10px;align-items:center;position:absolute;bottom:26px;left:20px;right:20px;background:var(--ink);color:#fff;border-radius:18px;padding:10px}
+.asha img{width:44px;height:44px;border-radius:12px;object-fit:cover;filter:grayscale(1) contrast(1.1);mix-blend-mode:luminosity}
+.share{margin-left:auto;background:var(--lime);color:var(--ink);border-radius:99px;padding:8px 12px;font-size:13px;font-weight:800}
+.note{max-width:1180px;margin:30px auto 0;font-size:14px;opacity:.7;line-height:1.5}
+</style></head><body>
+<h1 class="t">MOCK A · "Wrapped stories" · loud colour blocks, giant type, story cards · Hirelane (sample profile: Asha, BITS Pilani '26)</h1>
+<div class="row">
+ <div class="phone"><div class="screen s1">
+  <div class="bars"><i class="on"></i><i></i><i></i><i></i></div>
+  <div style="font-weight:800;font-size:15px">|| hirelane</div>
+  <div class="big" style="margin-top:22px">Swipe.<br>Apply.<br>Done.</div>
+  <div class="cap">Your first job, one swipe at a time.</div>
+  <div class="card back"></div>
+  <div class="card">
+   <div style="display:flex;gap:10px;align-items:center"><div class="logo">H</div><div><div style="font-weight:800">Hevo Data</div><div style="font-size:12px;opacity:.6">Bengaluru · Hybrid · 2h</div></div><div style="margin-left:auto;text-align:right"><div class="match">91%</div><div style="font-size:11px;opacity:.6">match</div></div></div>
+   <div style="font-size:21px;font-weight:800;margin-top:10px;line-height:1.1">Associate Software Development Engineer</div>
+   <div><span class="ch">Python</span><span class="ch">SQL</span><span class="ch">DSA</span></div>
+   <div class="why">✓ 7 of 8 skills match · fresher-friendly</div>
+  </div>
+  <div class="btns"><div class="b x">✕</div><div class="b y">✓</div></div>
+ </div></div>
+ <div class="phone"><div class="screen s2">
+  <div class="bars"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+  <div class="big" style="font-size:44px">Nice pick,<br>Asha.</div>
+  <div class="flycard"><div style="font-weight:800">Hevo Data</div><div style="font-size:14px">Associate SDE</div></div>
+  <div class="stamp">APPLIED</div>
+  <div class="toast">We filled the form. Sending to Hevo Data in 3s <b style="float:right;color:var(--lime)">Undo</b><div class="drain"><i></i></div></div>
+ </div></div>
+ <div class="phone"><div class="screen s3">
+  <div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+  <div style="font-weight:800;font-size:16px">Your week on Hirelane</div>
+  <div class="stat" style="margin-top:18px">14</div><div class="lbl">jobs swiped</div>
+  <div class="grid">
+   <div class="tile" style="background:var(--lane);color:var(--lime)"><span>5</span>applied</div>
+   <div class="tile" style="background:var(--pink);color:#fff"><span>1</span>question you answered</div>
+   <div class="tile" style="background:var(--blue);color:#fff"><span>0</span>forms typed by you</div>
+   <div class="tile" style="background:#fff;color:var(--ink)"><span>4m</span>total time</div>
+  </div>
+  <div class="asha"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" alt="Asha, sample profile (AI-generated)"><div><div style="font-weight:800">Asha · sample</div><div style="font-size:12px;opacity:.7">BITS Pilani '26 · CS</div></div><div class="share">Share ↗</div></div>
+ </div></div>
+</div>
+<p class="note">Static mock for direction only. In the build: story bars advance on tap, cards drag with stamps, the week card is generated from what you did, numbers come from the live board. Sample person is AI-generated and labelled.</p>
+</body></html>
