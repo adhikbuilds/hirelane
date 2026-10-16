@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Hirelane mock: photo-led (dating-app grammar for jobs)</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--cream:#F6F1E9;--lime:#D4FF3A;--muted:#8a857c}
+*{box-sizing:border-box;margin:0}body{font-family:Inter,system-ui,sans-serif;background:#e9e4da;color:var(--ink);padding:34px}
+h1.t{font-size:14px;font-weight:600;color:#6b665e;margin-bottom:22px}
+.row{display:flex;gap:26px;justify-content:center}
+.ph{width:300px;height:640px;border-radius:46px;background:#111;padding:9px;box-shadow:0 30px 60px rgba(0,0,0,.25);flex:none}
+.sc{width:100%;height:100%;border-radius:38px;overflow:hidden;position:relative;background:var(--cream)}
+.serif{font-family:'Instrument Serif',serif;font-weight:400;letter-spacing:-.01em}
+.lab{font-size:12.5px;color:#55514a;text-align:center;margin-top:12px;max-width:300px;line-height:1.45}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 10px;font-weight:800;font-size:13px}
+.full{position:absolute;inset:0;background-size:cover;background-position:center}
+.grad{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,transparent 25%,transparent 45%,rgba(0,0,0,.85) 100%)}
+.btn{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.prompt{background:#fff;border-radius:22px;padding:18px;margin:10px 12px}
+.prompt small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.prompt .serif{font-size:26px;line-height:1.1}
+.chip{display:inline-block;border:1px solid #d9d3c8;border-radius:99px;padding:6px 11px;font-size:12px;font-weight:600;margin:4px 4px 0 0;background:#fff}
+</style></head><body>
+<h1 class="t">MOCK · photo-led, dating-app grammar for jobs (after studying Hinge, Bumble, Tinder, BeReal) · photos are AI-generated illustrations · quotes come from the job posting itself · Asha is a sample</h1>
+<div class="row">
+<!-- 1: the card -->
+<div><div class="ph"><div class="sc" style="background:#111;color:#fff">
+ <div class="full" style="background-image:url(img/office-c.jpg)"></div><div class="grad"></div>
+ <div class="top" style="position:relative"><span>hirelane</span><span style="display:flex;gap:6px;align-items:center"><span style="background:rgba(255,255,255,.2);backdrop-filter:blur(6px);border-radius:99px;padding:4px 9px">5 picks today</span></span></div>
+ <div style="position:absolute;left:18px;right:18px;bottom:120px">
+  <div style="display:inline-block;background:var(--lime);color:#111;border-radius:99px;padding:4px 10px;font-weight:800;font-size:12px">88% your vibe</div>
+  <div class="serif" style="font-size:44px;line-height:1;margin-top:10px">Associate Product Manager</div>
+  <div style="font-weight:600;margin-top:6px;opacity:.9">SpotDraft · Bengaluru · today</div>
+ </div>
+ <div style="position:absolute;bottom:26px;left:0;right:0;display:flex;justify-content:center;gap:22px"><div class="btn" style="color:#111">✕</div><div class="btn" style="background:var(--lime);color:#111">♥</div></div>
+</div></div><div class="lab"><b>1 · The card is the photo.</b> One big candid image, the role in a serif, one "your vibe" score. ✕ or ♥, or swipe.</div></div>
+<!-- 2: scroll inside card, prompts -->
+<div><div class="ph"><div class="sc">
+ <div style="height:200px;background:url(img/office-b.jpg) center/cover;border-radius:0 0 26px 26px;position:relative"><div style="position:absolute;left:16px;bottom:12px;color:#fff"><div class="serif" style="font-size:26px;line-height:1">Associate Product Manager</div><div style="font-size:12px;font-weight:600">SpotDraft</div></div></div>
+ <div class="prompt"><small>From the posting</small><div class="serif">"You'll talk to users every week and turn it into product."</div></div>
+ <div class="prompt"><small>Why it fits you</small><div style="font-size:14px;line-height:1.5">You match 6 of 7 asks. <span style="color:var(--muted)">Customer research isn't on your resume yet.</span></div><div><span class="chip">Product sense ✓</span><span class="chip">SQL ✓</span><span class="chip">Writing ✓</span></div></div>
+ <div class="prompt" style="background:#111;color:#fff"><small style="color:#bbb">People you know there</small><div style="display:flex;align-items:center;gap:10px"><div style="width:38px;height:38px;border-radius:50%;background:#e8a;display:grid;place-items:center;font-weight:800;color:#111">MS</div><div style="font-size:14px"><b>Meera</b>, BITS '22 · sample</div></div></div>
+</div></div><div class="lab"><b>2 · Scroll inside the card,</b> like a profile: posting quotes as prompts, why it fits, who you know. Pay shows only if stated.</div></div>
+<!-- 3: applied, form auto -->
+<div><div class="ph"><div class="sc" style="background:#111;color:#fff">
+ <div class="full" style="background-image:url(img/office-c.jpg);filter:blur(10px) brightness(.5);transform:scale(1.1)"></div>
+ <div style="position:absolute;left:20px;right:20px;top:120px;text-align:center">
+  <div class="serif" style="font-size:52px;line-height:1;color:var(--lime)">Sent with love.</div>
+  <div style="margin-top:12px;font-size:14px;opacity:.9">We filled SpotDraft's form with your resume.<br>One question was yours to answer.</div>
+ </div>
+ <div style="position:absolute;left:24px;right:24px;top:330px;background:#fff;color:#111;border-radius:20px;padding:14px"><div style="font-size:12px;color:var(--muted);font-weight:600">You answered</div><div class="serif" style="font-size:22px">"I can join after graduation, July 2026."</div></div>
+ <div style="position:absolute;left:20px;right:20px;bottom:28px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:99px;padding:13px 16px;font-weight:600;font-size:14px;display:flex;justify-content:space-between"><span>Sending in 3s</span><b style="color:var(--lime)">Undo</b></div>
+</div></div><div class="lab"><b>3 · Apply.</b> A soft, warm moment instead of a loud stamp. 4 seconds to undo.</div></div>
+<!-- 4: it's a match -->
+<div><div class="ph"><div class="sc" style="background:var(--lime)">
+ <div style="position:absolute;left:0;right:0;top:110px;text-align:center"><div class="serif" style="font-size:58px;line-height:.95">It's a match.</div><div style="font-weight:600;margin-top:8px">SpotDraft wants to talk to you.</div></div>
+ <div style="position:absolute;left:40px;top:250px;width:120px;height:150px;border-radius:22px;background:url(../../apps/web/public/landing/asha/asha-portrait.jpg) center/cover;transform:rotate(-8deg);border:5px solid #fff;box-shadow:0 14px 30px rgba(0,0,0,.2)"></div>
+ <div style="position:absolute;right:40px;top:262px;width:120px;height:150px;border-radius:22px;background:url(img/office-c.jpg) center/cover;transform:rotate(7deg);border:5px solid #fff;box-shadow:0 14px 30px rgba(0,0,0,.2)"></div>
+ <div style="position:absolute;left:20px;right:20px;top:440px;background:#fff;border-radius:18px;padding:12px;font-size:13.5px"><span style="color:var(--muted);font-weight:600">Recruiter wrote</span><br>"Hi Asha, can you do a call Thursday?"</div>
+ <div style="position:absolute;left:20px;right:20px;bottom:26px;background:#111;color:#fff;border-radius:99px;padding:14px;text-align:center;font-weight:800">Reply</div>
+</div></div><div class="lab"><b>4 · It's a match.</b> When a company replies, that's the payoff: you and them, side by side. Shareable.</div></div>
+</div></body></html>

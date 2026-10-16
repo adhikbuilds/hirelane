@@ -1,106 +1,101 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hirelane landing mock (Wrapped stories)</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0B0B0F;--lane:#0F5C45;--lime:#C8FF3D;--pink:#FF4FA3;--blue:#3D5AFE;--sun:#FFC83D;--cream:#FFF6E8}
+:root{--ink:#0B0B0F;--lane:#0F5C45;--lime:#C8FF3D;--pink:#FF4FA3;--blue:#3D5AFE;--sun:#FFC83D;--cream:#FFF6E8;--red:#FF5A4F}
 *{box-sizing:border-box;margin:0}body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--ink);color:#fff}
-.big{font-weight:800;line-height:.9;letter-spacing:-.05em}
-.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.big{font-weight:800;line-height:.9;letter-spacing:-.05em}.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
 nav{display:flex;justify-content:space-between;align-items:center;padding:22px 32px;max-width:1240px;margin:0 auto}
-nav a{color:#fff;text-decoration:none;font-weight:500;margin-left:26px;font-size:15px}
-.cta{background:var(--lime);color:var(--ink)!important;border-radius:99px;padding:12px 20px;font-weight:800!important}
-section{padding:90px 0;position:relative;overflow:hidden}
-.split{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+nav a{color:#fff;text-decoration:none;font-weight:500;margin-left:24px;font-size:15px}
+.cta{background:var(--lime);color:var(--ink)!important;border-radius:99px;padding:12px 20px;font-weight:800!important;text-decoration:none}
+section{padding:90px 0;position:relative;overflow:hidden}.split{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
 .ph{width:300px;height:610px;border-radius:44px;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.45);margin:0 auto;position:relative}
-.sc{width:100%;height:100%;border-radius:35px;overflow:hidden;position:relative;padding:22px 16px}
-.card{background:#fff;color:var(--ink);border-radius:20px;padding:13px}
-.small{font-size:12px;opacity:.72}
-.ch{display:inline-block;padding:7px 12px;border-radius:99px;font-size:13px;font-weight:800;margin:4px 4px 0 0}
-.stat{display:inline-block;background:rgba(255,255,255,.1);border-radius:16px;padding:12px 16px;margin:0 8px 8px 0}
-.stat b{display:block;font-size:30px;letter-spacing:-.03em}
-.sticker{position:absolute;background:#fff;color:var(--ink);border-radius:18px;padding:10px 12px;font-weight:800;font-size:13px;box-shadow:0 10px 26px rgba(0,0,0,.25)}
-.marq{display:flex;gap:40px;white-space:nowrap;font-weight:800;font-size:28px;letter-spacing:-.03em;padding:22px 0;color:var(--ink)}
-.chapter-k{display:inline-block;font-weight:800;font-size:14px;border:2px solid currentColor;border-radius:99px;padding:5px 12px;margin-bottom:16px}
+.sc{width:100%;height:100%;border-radius:35px;overflow:hidden;position:relative;background:var(--ink)}
+.card{position:absolute;left:14px;right:14px;top:80px;height:390px;border-radius:26px;background:#fff;color:var(--ink);overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.card .img{height:170px;background-size:cover;background-position:center;position:relative}
+.logo{position:absolute;left:12px;bottom:-18px;width:46px;height:46px;border-radius:14px;color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px;border:3px solid #fff}
+.m{position:absolute;right:10px;top:10px;background:var(--ink);color:var(--lime);border-radius:99px;padding:5px 10px;font-weight:800;font-size:14px}
+.body{padding:24px 14px 12px}.ttl{font-weight:800;font-size:22px;line-height:1.05;letter-spacing:-.03em}
+.ch{display:inline-block;padding:6px 10px;border-radius:99px;font-size:12px;font-weight:800;margin:6px 4px 0 0;background:#F1F1F4}
+.stamp{position:absolute;top:36px;font-weight:800;font-size:34px;border:5px solid;border-radius:14px;padding:2px 12px;z-index:3}
+.btns{position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:center;gap:16px;align-items:center}
+.b{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:800}
+.stat{display:inline-block;background:rgba(255,255,255,.12);border-radius:16px;padding:12px 16px;margin:0 8px 8px 0}.stat b{display:block;font-size:30px;letter-spacing:-.03em}
+.sticker{position:absolute;background:#fff;color:var(--ink);border-radius:18px;padding:10px 12px;font-weight:800;font-size:13px;box-shadow:0 10px 26px rgba(0,0,0,.25);z-index:4}
+.k{display:inline-block;font-weight:800;font-size:14px;border:2px solid currentColor;border-radius:99px;padding:5px 12px;margin-bottom:16px}
+.photo{border-radius:28px;background-size:cover;background-position:center;position:relative;overflow:hidden}
+.mq{display:flex;gap:16px;padding:18px 32px;overflow:hidden}.mq div{flex:none;display:flex;gap:10px;align-items:center;background:#fff;color:var(--ink);border-radius:99px;padding:6px 14px 6px 6px;font-weight:800}
+.mq span{width:34px;height:34px;border-radius:50%;background-size:cover;background-position:center}
 .price{border-radius:28px;padding:26px;color:var(--ink)}
 .faq{border-bottom:2px solid rgba(255,255,255,.15);padding:18px 0;display:flex;justify-content:space-between;font-weight:800;font-size:20px}
-footer{padding:40px 32px;max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;font-size:13px;opacity:.7}
-@media (max-width:700px){.split{grid-template-columns:1fr}.hero-h{font-size:64px!important}.sec-h{font-size:46px!important}nav a:not(.cta){display:none}.prices{grid-template-columns:1fr!important}.ph{transform:scale(.9)}section{padding:60px 0}}
+footer{padding:36px 32px;max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;gap:20px;font-size:13px;opacity:.7}
+@media (max-width:700px){.split{grid-template-columns:1fr}.hh{font-size:66px!important}.sh{font-size:46px!important}nav a:not(.cta){display:none}.prices{grid-template-columns:1fr!important}section{padding:60px 0}.ph{transform:scale(.92)}.sticker{display:none}footer{flex-direction:column}}
 </style></head><body>
-<!-- HERO -->
 <div style="background:var(--lane)">
 <nav><b style="font-size:20px">|| hirelane</b><div><a href="#">Jobs</a><a href="#">Companies</a><a href="#">How it works</a><a href="#">Pricing</a><a class="cta" href="#">Get started free</a></div></nav>
-<section style="padding-top:30px"><div class="wrap split">
- <div>
-  <div class="big hero-h" style="font-size:118px;color:var(--lime)">Swipe.<br>Apply.<br>Done.</div>
+<section style="padding-top:24px"><div class="wrap split">
+ <div><div class="big hh" style="font-size:120px;color:var(--lime)">Swipe.<br>Apply.<br>Done.</div>
   <div style="font-size:22px;margin-top:20px;max-width:520px;font-weight:500">Your first job, one swipe at a time. We read 127 career sites every six hours and fill the forms. You approve every one.</div>
-  <div style="margin-top:26px;display:flex;gap:12px;align-items:center"><a class="cta" style="font-size:18px;padding:16px 26px;text-decoration:none" href="#">Get started free</a><span style="font-weight:800;text-decoration:underline">Browse 16,828 jobs</span></div>
-  <div style="margin-top:26px"><div class="stat"><b>16,828</b>live jobs</div><div class="stat"><b>1,424</b>in India</div><div class="stat"><b>0</b>forms you type</div></div>
- </div>
+  <div style="margin-top:26px;display:flex;gap:14px;align-items:center"><a class="cta" style="font-size:18px;padding:16px 26px" href="#">Get started free</a><span style="font-weight:800;text-decoration:underline">Browse 16,828 jobs</span></div>
+  <div style="margin-top:24px"><div class="stat"><b>16,828</b>live jobs</div><div class="stat"><b>1,424</b>in India</div><div class="stat"><b>0</b>forms you type</div></div></div>
  <div style="position:relative">
-  <div class="ph"><div class="sc" style="background:var(--ink)">
-   <div style="display:flex;justify-content:space-between"><b>|| hirelane</b><span style="background:var(--sun);color:var(--ink);border-radius:99px;padding:3px 9px;font-weight:800;font-size:12px">🔥 5</span></div>
-   <div class="big" style="font-size:28px;margin-top:12px">12 new for<br>you today.</div>
-   <div class="card" style="position:absolute;left:24px;right:30px;top:170px;height:240px;background:var(--pink);transform:rotate(6deg)"></div>
-   <div class="card" style="position:absolute;left:18px;right:22px;top:160px;transform:rotate(-3deg)">
-    <div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:8px;align-items:center"><div style="width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800">H</div><div><b>Hevo Data</b><div class="small">Bengaluru · Hybrid</div></div></div><b style="font-size:30px;color:var(--lane)">91%</b></div>
-    <div class="big" style="font-size:24px;margin-top:10px">Associate Software Development Engineer</div>
-    <div><span class="ch" style="background:#f1f1f4">Python</span><span class="ch" style="background:#f1f1f4">SQL</span><span class="ch" style="background:#f1f1f4">DSA</span></div>
-    <div style="margin-top:10px;background:#EAFBD0;border-radius:12px;padding:8px 10px;font-size:13px;font-weight:800">✓ 7 of 8 skills · fresher-friendly</div>
-   </div>
-   <div style="position:absolute;bottom:30px;left:0;right:0;display:flex;justify-content:center;gap:22px"><span style="width:58px;height:58px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-size:22px;font-weight:800">✕</span><span style="width:58px;height:58px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-size:22px;font-weight:800">✓</span></div>
+  <div class="ph"><div class="sc">
+   <div style="display:flex;justify-content:space-between;padding:22px 18px 0;font-weight:800;font-size:14px"><span>Today's picks · 5</span><span style="background:var(--sun);color:var(--ink);border-radius:99px;padding:2px 8px">🔥 5</span></div>
+   <div style="position:absolute;left:24px;right:24px;top:74px;height:390px;border-radius:26px;background:var(--pink);transform:rotate(3deg)"></div>
+   <div class="card" style="transform:translateX(46px) rotate(8deg)"><div style="position:absolute;inset:0;background:rgba(200,255,61,.28);z-index:2"></div><div class="stamp" style="left:14px;color:var(--lane);border-color:var(--lane);background:var(--lime);transform:rotate(-14deg)">APPLY</div>
+    <div class="img" style="background-image:url(img/office-a.jpg)"><span class="m">91% match</span><div class="logo" style="background:var(--blue)">H</div></div>
+    <div class="body"><div style="font-weight:800;font-size:13px;opacity:.7">Hevo Data · Bengaluru · Hybrid</div><div class="ttl">Associate Software Development Engineer</div><div><span class="ch">Python</span><span class="ch">SQL</span><span class="ch">DSA</span></div></div></div>
+   <div class="btns"><div class="b" style="border:3px solid #fff;opacity:.45">✕</div><div class="b" style="background:var(--lime);color:var(--ink);transform:scale(1.18);box-shadow:0 0 0 6px rgba(200,255,61,.25)">✓</div></div>
   </div></div>
-  <div class="sticker" style="top:60px;left:-10px;transform:rotate(-6deg)">🔔 SpotDraft replied</div>
-  <div class="sticker" style="bottom:120px;right:-6px;transform:rotate(5deg);background:var(--sun)">Pay read from the posting</div>
-  <div class="sticker" style="bottom:40px;left:0;display:flex;gap:8px;align-items:center;transform:rotate(-3deg)"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" style="width:34px;height:34px;border-radius:10px;object-fit:cover" alt="Asha, sample (AI-generated)">Asha · BITS Pilani '26 <span class="small">sample</span></div>
- </div>
-</div></section></div>
-<!-- MARQUEE -->
-<div style="background:var(--lime)"><div class="marq wrap" style="overflow:hidden">Hiring now → Tekion · Hevo Data · InMobi · Glance · Groww · SpotDraft · FamPay · Veeva · Paytm · Atlan</div></div>
-<!-- CH1 -->
+  <div class="sticker" style="top:70px;left:-14px;transform:rotate(-6deg)">🔔 SpotDraft replied</div>
+  <div class="sticker" style="top:300px;right:-10px;transform:rotate(5deg);background:var(--sun)">Pay read from<br>the posting</div>
+  <div class="sticker" style="bottom:40px;left:-6px;display:flex;gap:8px;align-items:center;transform:rotate(-3deg)"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" style="width:36px;height:36px;border-radius:10px;object-fit:cover" alt="Asha (sample, AI)">Asha · BITS Pilani '26 <span style="font-weight:500;opacity:.6">sample</span></div>
+ </div></div></section></div>
+<div style="background:var(--lime);color:var(--ink)"><div class="mq"><b style="align-self:center;margin-right:6px">Hiring now</b>
+ <div><span style="background-image:url(img/office-a.jpg)"></span>Hevo Data · 52</div><div><span style="background-image:url(img/office-c.jpg)"></span>SpotDraft · 14</div><div><span style="background-image:url(img/office-b.jpg)"></span>InMobi · 43</div><div><span style="background-image:url(img/office-d.jpg)"></span>Groww · 10</div><div><span style="background-image:url(img/office-a.jpg)"></span>Tekion · 71</div><div><span style="background-image:url(img/office-c.jpg)"></span>Glance · 20</div></div></div>
 <section style="background:var(--blue)"><div class="wrap split">
- <div><div class="chapter-k" style="color:var(--lime)">01 · You</div><div class="big sec-h" style="font-size:84px;color:var(--lime)">Drop your<br>resume.</div><div style="font-size:20px;margin-top:16px;max-width:460px">Read in your browser. Skills, roles, what you want. Fix anything in a tap.</div></div>
- <div class="ph"><div class="sc" style="background:var(--cream);color:var(--ink)"><div style="display:flex;gap:10px;align-items:flex-end"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" style="width:84px;height:104px;border-radius:16px;object-fit:cover;filter:grayscale(1) contrast(1.1)" alt="Asha, sample (AI-generated)"><div><div class="big" style="font-size:36px">Asha</div><div class="small">Sample · CS, final year</div></div></div><div style="margin-top:12px;border-radius:16px;overflow:hidden;height:150px;position:relative"><img src="../../apps/web/public/landing/campus/bits-campus.jpg" style="width:100%;height:100%;object-fit:cover" alt="BITS Pilani campus"><span style="position:absolute;left:8px;bottom:8px;background:var(--ink);color:var(--lime);border-radius:9px;padding:4px 8px;font-weight:800;font-size:13px">BITS Pilani '26</span></div><div style="font-size:10px;opacity:.55;margin-top:3px">Photo: Vinwe, CC BY-SA 3.0, Wikimedia Commons</div><div style="margin-top:10px"><span class="ch" style="background:var(--lime)">Python</span><span class="ch" style="background:var(--sun)">SQL</span><span class="ch" style="background:var(--pink);color:#fff">DSA</span><span class="ch" style="background:var(--ink);color:#fff">React</span><span class="ch" style="background:#fff;border:1px solid #ddd">₹8 LPA+</span></div></div></div>
-</div></section>
-<!-- CH2 -->
+ <div><div class="k" style="color:var(--lime)">01 · You</div><div class="big sh" style="font-size:86px;color:var(--lime)">Drop your<br>resume.</div><div style="font-size:20px;margin-top:16px;max-width:460px">Read in your browser. Your skills, your campus, what you want. Fix anything in a tap.</div></div>
+ <div style="position:relative;height:520px">
+  <div class="photo" style="position:absolute;right:0;top:0;width:78%;height:300px;background-image:url(../../apps/web/public/landing/campus/bits-campus.jpg)"><span style="position:absolute;left:14px;bottom:14px;background:var(--ink);color:var(--lime);border-radius:12px;padding:6px 12px;font-weight:800">BITS Pilani '26</span></div>
+  <div style="position:absolute;left:0;top:190px;width:260px;background:var(--cream);color:var(--ink);border-radius:26px;padding:16px;transform:rotate(-4deg);box-shadow:0 20px 40px rgba(0,0,0,.3)"><div style="display:flex;gap:10px;align-items:center"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" style="width:64px;height:64px;border-radius:18px;object-fit:cover" alt="Asha (sample, AI)"><div><div class="big" style="font-size:30px">Asha</div><div style="font-size:12px;opacity:.65">sample · CS, final year</div></div></div><div style="margin-top:8px"><span class="ch" style="background:var(--lime)">Python</span><span class="ch" style="background:var(--sun)">SQL</span><span class="ch" style="background:var(--pink);color:#fff">DSA</span><span class="ch">₹8 LPA+</span></div></div>
+  <div style="position:absolute;right:20px;bottom:30px;font-size:11px;opacity:.75">Campus photo: Vinwe, CC BY-SA 3.0</div>
+ </div></div></section>
 <section style="background:var(--pink)"><div class="wrap split">
- <div class="ph"><div class="sc" style="background:var(--pink)"><div class="big" style="font-size:40px">Nice pick,<br>Asha.</div><div style="position:absolute;top:220px;left:10px;right:10px;text-align:center" class="big"><span style="font-size:76px;color:var(--lime);display:inline-block;transform:rotate(-8deg);text-shadow:5px 5px 0 var(--ink)">APPLIED</span></div><div style="position:absolute;left:16px;right:16px;bottom:24px;background:var(--ink);border-radius:18px;padding:13px;font-size:14px">We filled the form. Sending in 3s <b style="float:right;color:var(--lime)">Undo</b><div style="height:5px;background:#333;border-radius:5px;margin-top:9px"><i style="display:block;width:62%;height:100%;background:var(--sun);border-radius:5px"></i></div></div></div></div>
- <div><div class="chapter-k">02 · Swipe</div><div class="big sec-h" style="font-size:84px">Right to apply.<br>Left to skip.</div><div style="font-size:20px;margin-top:16px;max-width:460px">We fill the employer's own form. You get 4 seconds to change your mind.</div></div>
-</div></section>
-<!-- CH3 -->
-<section style="background:var(--sun);color:var(--ink)"><div class="wrap split">
- <div><div class="chapter-k">03 · Honest</div><div class="big sec-h" style="font-size:84px">It asks.<br>It never guesses.</div><div style="font-size:20px;margin-top:16px;max-width:460px">Not on your resume? You answer it. Pay not stated? We say so.</div></div>
- <div class="ph"><div class="sc" style="background:var(--sun);color:var(--ink)"><div class="big" style="font-size:150px;line-height:.8">?</div><div class="card" style="margin-top:14px;border:3px solid var(--ink)"><b>When can you join?</b><div class="small">Veeva Systems asks this.</div><div style="margin-top:8px"><span class="ch" style="background:#f1f1f4">Now</span><span class="ch" style="background:var(--ink);color:var(--lime)">After graduation</span></div></div><div class="card" style="margin-top:10px"><b>Pay</b><div class="small">Not stated by the employer. We never guess.</div></div></div></div>
-</div></section>
-<!-- CH4 network -->
-<section style="background:var(--ink)"><div class="wrap split">
- <div class="ph"><div class="sc" style="background:#141418"><div style="color:var(--lime);font-weight:800;font-size:13px">Warm intro · sample network</div><div class="big" style="font-size:40px;margin-top:8px">2 BITSians work at SpotDraft.</div><div class="card" style="margin-top:16px;font-size:13px;line-height:1.5"><b>Draft to Meera</b><br>"Hi Meera, I'm a final-year CS student at BITS Pilani applying for SpotDraft's Associate PM role…"</div><div style="position:absolute;left:16px;right:16px;bottom:24px;background:var(--lime);color:var(--ink);border-radius:99px;padding:13px;text-align:center;font-weight:800">Copy &amp; open</div></div></div>
- <div><div class="chapter-k" style="color:var(--lime)">04 · Your people</div><div class="big sec-h" style="font-size:84px">Your seniors<br>are already there.</div><div style="font-size:20px;margin-top:16px;max-width:460px">See alumni at the companies you match, and send an intro you wrote with us. Coming soon, from your own contacts only.</div></div>
-</div></section>
-<!-- CH5 recap -->
-<section style="background:var(--lime);color:var(--ink)"><div class="wrap" style="text-align:center">
- <div class="chapter-k">05 · Wrapped</div><div class="big sec-h" style="font-size:96px">Your month,<br>in one card.</div>
- <div style="display:flex;justify-content:center;gap:18px;margin-top:40px;flex-wrap:wrap">
-  <div class="price" style="background:var(--blue);color:#fff;width:230px;transform:rotate(-4deg);text-align:left"><div class="small" style="color:#fff">Your October</div><div class="big" style="font-size:90px;color:var(--lime)">38</div><b>applications</b></div>
-  <div class="price" style="background:var(--pink);color:#fff;width:230px;transform:rotate(3deg);text-align:left"><div class="big" style="font-size:60px">0</div><b>forms typed by you</b></div>
-  <div class="price" style="background:var(--ink);color:#fff;width:230px;transform:rotate(-2deg);text-align:left"><div class="big" style="font-size:60px;color:var(--sun)">94%</div><b>best match</b></div>
+ <div style="display:flex;gap:18px;justify-content:center">
+  <div class="ph" style="width:250px;height:510px;margin:0"><div class="sc"><div class="card" style="top:40px;height:330px;transform:translateX(-40px) rotate(-10deg)"><div style="position:absolute;inset:0;background:rgba(255,90,79,.25);z-index:2"></div><div class="stamp" style="right:12px;color:#fff;border-color:#fff;background:var(--red);transform:rotate(14deg);font-size:28px">SKIP</div><div class="img" style="background-image:url(img/office-b.jpg);height:150px"><div class="logo" style="background:#C2410C">F</div></div><div class="body"><div class="ttl" style="font-size:18px">Copy Intern</div><div style="font-size:12px;opacity:.6">FamPay</div></div></div></div></div>
+  <div class="ph" style="width:250px;height:510px;margin:40px 0 0"><div class="sc"><div class="card" style="top:40px;height:330px;transform:translateX(40px) rotate(10deg)"><div style="position:absolute;inset:0;background:rgba(200,255,61,.28);z-index:2"></div><div class="stamp" style="left:12px;color:var(--lane);border-color:var(--lane);background:var(--lime);transform:rotate(-14deg);font-size:28px">APPLY</div><div class="img" style="background-image:url(img/office-c.jpg);height:150px"><div class="logo" style="background:var(--ink)">S</div></div><div class="body"><div class="ttl" style="font-size:18px">Associate Product Manager</div><div style="font-size:12px;opacity:.6">SpotDraft</div></div></div>
+   <div style="position:absolute;left:12px;right:12px;bottom:18px;background:#fff;color:var(--ink);border-radius:16px;padding:10px;font-size:12.5px;font-weight:800">✓ Applied. Form filled. <span style="float:right;color:var(--blue)">UNDO</span><div style="height:4px;border-radius:4px;background:#eee;margin-top:6px"><i style="display:block;width:60%;height:100%;background:var(--sun);border-radius:4px"></i></div></div></div></div>
  </div>
+ <div><div class="k">02 · Swipe</div><div class="big sh" style="font-size:86px">Left to skip.<br>Right to apply.</div><div style="font-size:20px;margin-top:16px;max-width:460px">We fill the employer's own form. Four seconds to change your mind.</div></div>
 </div></section>
-<!-- PRICING -->
-<section style="background:var(--cream);color:var(--ink)"><div class="wrap">
- <div class="big sec-h" style="font-size:84px">Free to start.<br>Cheap to keep.</div>
+<section style="background:var(--sun);color:var(--ink)"><div class="wrap split">
+ <div><div class="k">03 · Honest</div><div class="big sh" style="font-size:86px">It asks.<br>It never<br>guesses.</div><div style="font-size:20px;margin-top:16px;max-width:460px">Not on your resume? You answer it. Pay not stated? We say so.</div></div>
+ <div style="position:relative;height:440px"><div class="photo" style="position:absolute;inset:0 0 60px 60px;background-image:url(img/office-d.jpg)"></div>
+  <div style="position:absolute;left:0;bottom:0;width:300px;background:#fff;border:3px solid var(--ink);border-radius:24px;padding:16px;box-shadow:8px 8px 0 var(--ink)"><b style="font-size:18px">When can you join?</b><div style="font-size:13px;opacity:.7">Veeva Systems asks this.</div><div style="margin-top:8px"><span class="ch">Now</span><span class="ch" style="background:var(--ink);color:var(--lime)">After graduation</span><span class="ch">30 days</span></div></div>
+  <div style="position:absolute;right:20px;top:20px;background:var(--ink);color:#fff;border-radius:18px;padding:12px 14px;font-weight:800;transform:rotate(4deg)">Pay: not stated<br><span style="color:var(--lime);font-size:13px">we never guess</span></div></div>
+</div></section>
+<section style="background:var(--ink)"><div class="wrap split">
+ <div style="position:relative;height:460px"><div class="photo" style="position:absolute;inset:0 60px 80px 0;background-image:url(img/office-c.jpg)"></div>
+  <div style="position:absolute;right:0;bottom:0;width:300px;background:var(--cream);color:var(--ink);border-radius:24px;padding:14px"><b>2 BITSians at SpotDraft</b><div style="font-size:11.5px;opacity:.6">Sample network</div>
+   <div style="display:flex;gap:10px;align-items:center;margin-top:8px;background:#fff;border-radius:14px;padding:8px"><div style="width:36px;height:36px;border-radius:50%;background:var(--pink);color:#fff;display:grid;place-items:center;font-weight:800">MS</div><div style="flex:1"><b>Meera S.</b><div style="font-size:11px;opacity:.65">BITS '22 · Product</div></div><b style="color:var(--lane)">Intro</b></div>
+   <div style="margin-top:8px;background:var(--lime);border-radius:99px;padding:10px;text-align:center;font-weight:800">Draft an intro</div></div></div>
+ <div><div class="k" style="color:var(--lime)">04 · Your people</div><div class="big sh" style="font-size:86px">Your seniors<br>are already<br>there.</div><div style="font-size:20px;margin-top:16px;max-width:460px">See alumni at the companies you match and ask for an intro. From your own contacts only. Coming soon.</div></div>
+</div></section>
+<section style="background:var(--lime);color:var(--ink)"><div class="wrap" style="text-align:center">
+ <div class="k">05 · Wrapped</div><div class="big sh" style="font-size:98px">Your month,<br>in one card.</div>
+ <div style="display:flex;justify-content:center;gap:18px;margin-top:40px;flex-wrap:wrap">
+  <div class="price" style="background:var(--blue);color:#fff;width:230px;transform:rotate(-4deg);text-align:left"><div style="font-size:13px">Your October</div><div class="big" style="font-size:90px;color:var(--lime)">38</div><b>applications</b></div>
+  <div class="price" style="background:var(--pink);color:#fff;width:230px;transform:rotate(3deg);text-align:left"><div class="big" style="font-size:64px">0</div><b>forms typed by you</b></div>
+  <div class="price" style="background:var(--ink);color:#fff;width:230px;transform:rotate(-2deg);text-align:left;display:flex;flex-direction:column;justify-content:space-between"><img src="../../apps/web/public/landing/asha/asha-portrait.jpg" style="width:56px;height:56px;border-radius:16px;object-fit:cover" alt="Asha (sample, AI)"><div><div class="big" style="font-size:44px;color:var(--sun)">You got hired.</div></div></div>
+ </div></div></section>
+<section style="background:var(--cream);color:var(--ink)"><div class="wrap"><div class="big sh" style="font-size:86px">Free to start.<br>Cheap to keep.</div>
  <div class="prices" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:34px">
   <div class="price" style="background:#fff"><b style="font-size:20px">Free</b><div class="big" style="font-size:70px;margin-top:8px">₹0</div><div>10 applications, no card</div></div>
   <div class="price" style="background:var(--lane);color:#fff;transform:rotate(-1.5deg)"><b style="font-size:20px;color:var(--lime)">Basic</b><div class="big" style="font-size:70px;margin-top:8px">₹99<span style="font-size:22px">/wk</span></div><div>30 applications a week</div></div>
-  <div class="price" style="background:var(--pink);color:#fff"><b style="font-size:20px">Pro</b><div class="big" style="font-size:70px;margin-top:8px">₹199<span style="font-size:22px">/wk</span></div><div>75 a week + autopilot</div></div>
- </div><div class="small" style="margin-top:12px">Planned prices. Checkout opens soon.</div>
-</div></section>
-<!-- FAQ + CTA -->
-<section style="background:var(--ink)"><div class="wrap" style="max-width:860px">
- <div class="big" style="font-size:56px;margin-bottom:16px">Quick answers</div>
- <div class="faq">Does it ever apply without me? <span style="color:var(--lime)">No. Never.</span></div>
- <div class="faq">Where do the jobs come from? <span style="color:var(--lime)">127 career sites</span></div>
- <div class="faq">Is my resume safe? <span style="color:var(--lime)">Encrypted, never sold</span></div>
- <div class="faq">I'm a fresher. Is this for me? <span style="color:var(--lime)">Built for you</span></div>
-</div></section>
-<section style="background:var(--lane)"><div class="wrap" style="text-align:center"><div class="big sec-h" style="font-size:110px;color:var(--lime)">Your first job,<br>one swipe away.</div><a class="cta" style="display:inline-block;margin-top:30px;font-size:20px;padding:18px 32px;text-decoration:none" href="#">Get started free</a></div></section>
-<footer><span>|| hirelane · jobs from public career sites · nothing sent without your OK</span><span>Asha is a sample person (AI-generated). BITS Pilani photo: Vinwe, CC BY-SA 3.0.</span></footer>
+  <div class="price" style="background:var(--pink);color:#fff"><b style="font-size:20px">Pro</b><div class="big" style="font-size:70px;margin-top:8px">₹199<span style="font-size:22px">/wk</span></div><div>75 a week + autopilot</div></div></div>
+ <div style="font-size:12px;opacity:.6;margin-top:12px">Planned prices. Checkout opens soon.</div></div></section>
+<section style="background:var(--ink)"><div class="wrap" style="max-width:860px"><div class="big" style="font-size:56px;margin-bottom:16px">Quick answers</div>
+ <div class="faq">Does it ever apply without me? <span style="color:var(--lime)">No. Never.</span></div><div class="faq">Where do the jobs come from? <span style="color:var(--lime)">127 career sites</span></div><div class="faq">Is my resume safe? <span style="color:var(--lime)">Encrypted, never sold</span></div><div class="faq">I'm a fresher. Is this for me? <span style="color:var(--lime)">Built for you</span></div></div></section>
+<section style="background:var(--lane);padding-bottom:0"><div class="wrap split"><div><div class="big sh" style="font-size:96px;color:var(--lime)">Your first job,<br>one swipe away.</div><a class="cta" style="display:inline-block;margin-top:28px;font-size:20px;padding:18px 32px" href="#">Get started free</a></div>
+ <div class="photo" style="height:380px;border-radius:28px 28px 0 0;background-image:url(img/office-a.jpg)"></div></div></section>
+<footer><span>|| hirelane · jobs from public career sites · nothing sent without your OK</span><span>Photos are AI-generated illustrations; campus photo by Vinwe, CC BY-SA 3.0. Asha is a sample person.</span></footer>
 </body></html>
