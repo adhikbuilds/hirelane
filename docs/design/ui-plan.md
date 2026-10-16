@@ -12,6 +12,28 @@ design system, no agreed screens and no point where the owner approved the look 
 This plan fixes the order: **foundations, then components, then key screens, then pages.** Each step ends with an owner
 review of real screenshots, and nothing moves to the next step until it is approved.
 
+## 0. Direction update (owner, 2026-10-16): Gen Z, entry level, app later
+
+> "We are making it for many entry-level people, so it should be Gen Z and interactive. We will launch the app later
+> for the same."
+
+- **Audience:** freshers, final-year students and people 0–2 years in. Gen Z first, and mobile first. A native app
+  comes later, so components are designed to translate to React Native: no hover-only behaviour, thumb-sized targets
+  and gestures first.
+- **Asha becomes entry level:** Asha Iyer, final-year B.E. Computer Science at **BITS Pilani**, graduating 2026.
+  - Hunting her first job or internship: SDE, data and product roles.
+  - Bengaluru or remote. Labelled "Sample profile".
+  - Skills: Python, SQL, React, DSA, one internship.
+- **Look:** Gen Z, playful and interactive, not "premium SaaS". The previous light warm theme was rejected before it
+  was shown. The style tile is now built in **two directions side by side**; the owner picks from screenshots:
+  - **A, "Neubrutal pop"** (ui-ux-pro-max: Neubrutalism, best for Gen Z): thick black outlines, hard offset shadows,
+    bright flat pop colours, chunky type, stickers and stamps, snappy motion.
+  - **B, "Playful blocks"** (ui-ux-pro-max: Vibrant and block-based, plus a soft 3D touch): bold colour fields,
+    rounded chunky cards with a bouncy press, playful micro-interactions and sticker badges.
+- **Copy voice:** short, casual and fun ("Swipe. Apply. Done."), but always honest. No cringe slang overload. Use
+  emojis only as decoration in copy if the chosen direction calls for them; icons stay SVG.
+- Everything else in this plan holds: real data, the playable workflow, the milestones and preview-only routes.
+
 ## 1. Who it is for and what they must feel
 
 - **Primary user: Asha.** A data engineer, 4 years in, in Bengaluru, BITS Pilani '21. She is applying on the side of
