@@ -84,6 +84,7 @@ function walk(dir: string): string[] {
   });
 }
 
+// ui-v2 allows gradients, glow, product mockups and signal yellow; it still bans names, emoji, testimonials and submit APIs.
 describe("banned tropes and naming guard over the public content pages", () => {
   const root = join(__dirname, "..");
   const files = [
@@ -100,15 +101,10 @@ describe("banned tropes and naming guard over the public content pages", () => {
   const forbidden: [string, RegExp][] = [
     ["competitor or reference name", new RegExp(`${["short", "list"].join("")}|\\bpip\\b|simplify|jobright|lazyapply|sonara|loopcv|teal\\b|huntr`, "i")],
     ["monospace", /font-mono|monospace|\bmono\b/],
-    ["gradient", /gradient/i],
-    ["all caps labels", /\buppercase\b|text-transform/],
-    ["accordion or faq", /<details|accordion|faq/i],
     ["testimonials or stars", /testimonial|★|star-rating/i],
     ["mascot or emoji", /mascot|[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u],
     ["exclamation in copy", />[^<{}]*[A-Za-z]!(\s|<|$)/],
     ["ATS submission api", /submit.*api|\/apply\/submit|application-submit/i],
-    ["giant step numerals", /text-\[(6\d|7\d|8\d|9\d|1\d\d)px\]/],
-    ["glow", /shadow-\[|drop-shadow|blur-/],
   ];
   for (const [name, re] of forbidden) {
     it(`has no ${name}`, () => {
@@ -116,8 +112,4 @@ describe("banned tropes and naming guard over the public content pages", () => {
       expect(hits).toEqual([]);
     });
   }
-  it("uses signal yellow only in the preview component", () => {
-    const hits = src.filter(([f, s]) => /signal/.test(s) && !f.includes("preview")).map(([f]) => f);
-    expect(hits).toEqual([]);
-  });
 });

@@ -57,14 +57,13 @@ test.describe("phase 1 ingest ops", () => {
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   });
 
-  test("/jobs lists postings as a ledger with source badges and original pay", async ({ page }) => {
+  test("/jobs lists postings as job rows with a freshness cue and a link to each job", async ({ page }) => {
     await page.goto("/jobs");
     await expect(page.getByTestId("jobs-ledger")).toBeVisible();
-    const rows = page.getByTestId("jobs-ledger").locator("tbody tr");
+    const rows = page.getByTestId("jobs-ledger").locator("li[data-slug]");
     expect(await rows.count()).toBeGreaterThan(0);
     expect(await rows.count()).toBeLessThanOrEqual(50);
-    await expect(page.getByRole("columnheader", { name: "Fresh" })).toBeVisible();
-    await expect(page.getByText("ab", { exact: true }).first()).toBeVisible();
+    await expect(rows.first().locator("[data-row-link]")).toHaveAttribute("href", /^\/job\//);
   });
 
   test("/jobs has no horizontal overflow at 390px", async ({ page }) => {

@@ -15,6 +15,7 @@ async function sampleSlugs(request: APIRequestContext) {
 
 test.describe("phase 3 accessibility", () => {
   test("axe finds no serious or critical violations on the public pages", async ({ page, request }) => {
+    test.setTimeout(120_000); // cold dev compiles of five routes
     const s = await sampleSlugs(request);
     expect(s.company, "company slug from the API").toBeTruthy();
     expect(s.list, "a published list in the lists sitemap").toBeTruthy();

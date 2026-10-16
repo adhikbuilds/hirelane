@@ -368,3 +368,119 @@ export const getCompany = unstable_cache(
   ["companies:one:v1"],
   { revalidate: 300, tags: ["companies"] },
 );
+
+// board v2 ------------------------------------------------------------------------------------
+// Read helpers for the /jobs preview panel and type-ahead. Still the one data path: same pool, same tables.
+
+export type PreviewTraceStep = { label: string; ruleId: string };
+export type PreviewRequirement = { kind: "must" | "nice"; text: string; category: string; yearsMin: number | null };
+export type JobPreviewData = {
+  slug: string;
+  trace: PreviewTraceStep[];
+  requirements: PreviewRequirement[];
+  requirementsTotal: number;
+  /** The employer's own posting page, http(s) only; null when unknown. */
+  applyUrl: string | null;
+};
+
+export const PREVIEW_REQUIREMENTS = 4;
+export const PREVIEW_MAX_SLUGS = 60;
+
+export const PREVIEWS_SQL = `
+SELECT j.slug, j.salary_trace, coalesce(p.apply_url, p.url) AS apply_url,
+       (SELECT count(*) FROM job_requirements q WHERE q.job_id = j.id)::int AS req_total,
+       (SELECT coalesce(json_agg(json_build_object('kind', r.kind, 'text', r.text, 'category', r.category, 'yearsMin', r.years_min)
+                               ORDER BY r.rk, r.ord), '[]'::json)
+          FROM (SELECT q.kind, q.text, q.category, q.years_min, q.ord, (q.kind <> 'must') AS rk
+                  FROM job_requirements q WHERE q.job_id = j.id
+                 ORDER BY (q.kind <> 'must'), q.ord LIMIT ${PREVIEW_REQUIREMENTS}) r) AS reqs
+  FROM jobs j
+  LEFT JOIN postings p ON p.id = j.primary_posting_id
+ WHERE j.slug = ANY ($1::text[])`;
+
+/** The stored trace is either `{ steps: [...] }` or a bare array; anything malformed is dropped. */
+export function previewTrace(trace: unknown): PreviewTraceStep[] {
+  const steps = Array.isArray(trace) ? trace : trace && typeof trace === "object" && Array.isArray((trace as { steps?: unknown }).steps) ? (trace as { steps: unknown[] }).steps : [];
+  const out: PreviewTraceStep[] = [];
+  for (const s of steps) {
+    if (!s || typeof s !== "object") continue;
+    const { label, ruleId } = s as { label?: unknown; ruleId?: unknown };
+    if (typeof label === "string" && typeof ruleId === "string") out.push({ label, ruleId });
+  }
+  return out;
+}
+
+const httpOnly = (u: unknown): string | null => {
+  if (typeof u !== "string") return null;
+  try {
+    const url = new URL(u);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+};
+
+export async function queryPreviews(client: Queryable, slugs: string[]): Promise<Record<string, JobPreviewData>> {
+  const wanted = [...new Set(slugs)].filter((s) => /^[a-z0-9][a-z0-9-]{0,199}$/.test(s)).slice(0, PREVIEW_MAX_SLUGS);
+  if (wanted.length === 0) return {};
+  const { rows } = await client.query(PREVIEWS_SQL, [wanted]);
+  const out: Record<string, JobPreviewData> = {};
+  for (const r of rows) {
+    out[r.slug as string] = {
+      slug: r.slug,
+      trace: previewTrace(r.salary_trace),
+      requirements: r.reqs ?? [],
+      requirementsTotal: Number(r.req_total ?? 0),
+      applyUrl: httpOnly(r.apply_url),
+    };
+  }
+  return out;
+}
+
+const cachedPreviews = unstable_cache(
+  async (key: string) => withAdmin((client) => queryPreviews(client, JSON.parse(key) as string[])),
+  ["jobs:preview:v1"],
+  { revalidate: 300, tags: ["jobs"] },
+);
+
+/** Preview data for up to PREVIEW_MAX_SLUGS jobs, cached for 300 s under tag `jobs`. */
+export function previewsFor(slugs: string[]): Promise<Record<string, JobPreviewData>> {
+  return cachedPreviews(JSON.stringify([...new Set(slugs)].sort()));
+}
+
+export type BoardSuggestions = {
+  companies: { slug: string; name: string; logoPath: string | null; open: number }[];
+  titles: { title: string; n: number }[];
+};
+
+export const SUGGEST_MIN = 2;
+export const SUGGEST_MAX = 60;
+
+const SUGGEST_COMPANIES_SQL = `
+SELECT c.slug, c.name, c.logo_path, count(j.id)::int AS open
+  FROM companies c JOIN jobs j ON j.company_id = c.id AND j.closed_at IS NULL
+ WHERE c.name ILIKE $1
+ GROUP BY c.id
+ ORDER BY (c.name ILIKE $2) DESC, open DESC, lower(c.name)
+ LIMIT 4`;
+
+const SUGGEST_TITLES_SQL = `
+SELECT title, count(*)::int AS n FROM jobs
+ WHERE closed_at IS NULL AND title ILIKE $1
+ GROUP BY title
+ ORDER BY (title ILIKE $2) DESC, n DESC, title
+ LIMIT 5`;
+
+/** Title and company type-ahead over open jobs. Needs SUGGEST_MIN characters; user text is always literal. */
+export async function suggestBoard(client: Queryable, raw: string): Promise<BoardSuggestions> {
+  const q = raw.normalize("NFKC").trim().replace(/\s+/g, " ").slice(0, SUGGEST_MAX);
+  if (q.length < SUGGEST_MIN) return { companies: [], titles: [] };
+  const lit = escapeLike(q);
+  const args = [`%${lit}%`, `${lit}%`];
+  const [companies, titles] = await Promise.all([client.query(SUGGEST_COMPANIES_SQL, args), client.query(SUGGEST_TITLES_SQL, args)]);
+  return {
+    companies: companies.rows.map((r) => ({ slug: r.slug, name: r.name, logoPath: safeLogoSrc(r.logo_path ?? null), open: Number(r.open) })),
+    titles: titles.rows.map((r) => ({ title: r.title, n: Number(r.n) })),
+  };
+}
+// end board v2 --------------------------------------------------------------------------------

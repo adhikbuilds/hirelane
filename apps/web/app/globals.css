@@ -1,30 +1,47 @@
 /*
- * POV: the timetable.
- * A job search is logistics, not a lottery. The interface reads like a
- * well-set timetable or dispatch ledger: dense, ruled, aligned, and every
- * figure sourced. Colour reports state; it never decorates.
- *
- * One family (Overpass, road signage), no serif, no monospace anywhere.
- * Figures use tabular-nums. Labels are sentence case.
- * Lane green is the action and the match. Signal yellow is reserved for
- * Needs you and the undo countdown. Stop red is a missing requirement or an error.
- * Motion: 120ms ease-out; nothing scroll-triggered, no springs, no shimmer.
+ * Hirelane UI v2 (docs/design/ui-v2.md): vivid, interactive, honest.
+ * One family (Overpass), tabular figures, deep lane green for action and match,
+ * signal yellow for Needs-you and the undo countdown, miss red for what is missing.
+ * Motion is allowed (reveal once, count up, card stack) and always respects reduced motion.
+ * Old v1 token names (paper, sheet, rule, lane-soft, stop) stay as aliases of the v2 tokens.
  */
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #f3f4f1;
-  --color-sheet: #ffffff;
-  --color-rule: #d5d9d3;
-  --color-rule-strong: #a9b0a8;
-  --color-ink: #17302a;
-  --color-ink-2: #4a524d;
-  --color-ink-3: #646c66;
-  --color-lane: #1b4d3e;
-  --color-lane-soft: #e3ece7;
-  --color-signal: #f2c230;
-  --color-stop: #a3261b;
-  --color-stop-soft: #f6e3e0;
+  /* v2 tokens */
+  --color-ink: #0f1f1a;
+  --color-ink-2: #43514b;
+  --color-ink-3: #5c6a64; /* spec #74827C fails WCAG AA (3.9:1) for small text; this is 5.4:1 */
+  --color-canvas: #f6f8f6;
+  --color-surface: #ffffff;
+  --color-line: #e3e8e4;
+  --color-lane: #0f5c45;
+  --color-lane-600: #0b4a37;
+  --color-lane-50: #e8f3ee;
+  --color-lane-100: #cfe7db;
+  --color-signal: #facc15;
+  --color-signal-50: #fef9c3;
+  --color-signal-ink: #713f12;
+  --color-match: #10b981;
+  --color-miss: #ef4444;
+  --color-miss-50: #fef2f2;
+  --color-info: #2563eb;
+  --color-sky: #e0f2fe;
+
+  /* v1 aliases: keep existing pages rendering on the new palette */
+  --color-paper: var(--color-canvas);
+  --color-sheet: var(--color-surface);
+  --color-rule: var(--color-line);
+  --color-rule-strong: #b7c1ba;
+  --color-lane-soft: var(--color-lane-50);
+  --color-stop: #b91c1c;
+  --color-stop-soft: var(--color-miss-50);
+
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --shadow-card: 0 1px 2px rgb(15 31 26 / 0.05), 0 12px 32px rgb(15 31 26 / 0.08);
+  --shadow-pop: 0 2px 4px rgb(15 31 26 / 0.06), 0 24px 56px rgb(15 31 26 / 0.16);
+  --shadow-control: 0 1px 2px rgb(15 31 26 / 0.08);
 
   --font-sans: var(--font-overpass), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-overpass), ui-sans-serif, system-ui, sans-serif;
@@ -34,12 +51,15 @@
   --container-page: 1320px;
 
   --ease-state: ease-out;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-marquee: marquee var(--marquee-duration, 60s) linear infinite;
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ease-panel: cubic-bezier(0, 0, 0.2, 1);
 }
 
 html {
-  background: var(--color-paper);
+  background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: 15px;
@@ -48,6 +68,8 @@ html {
 }
 
 body {
+  font-size: 16px;
+  line-height: 26px;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -61,8 +83,91 @@ td.num {
 
 .display {
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   line-height: 1.1;
+}
+
+.display-hero {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-size: 40px;
+  line-height: 44px;
+}
+@media (min-width: 64rem) {
+  .display-hero {
+    font-size: 64px;
+    line-height: 66px;
+  }
+}
+
+/* Hero: soft mesh of lane-100, sky and canvas, plus a faint diagonal lane-stripe. */
+.hero-mesh {
+  background:
+    radial-gradient(60% 70% at 12% 8%, var(--color-lane-100) 0%, transparent 62%),
+    radial-gradient(55% 60% at 92% 18%, var(--color-sky) 0%, transparent 60%),
+    radial-gradient(50% 50% at 60% 100%, var(--color-lane-50) 0%, transparent 70%),
+    var(--color-canvas);
+}
+.stripe-bg {
+  background-image: repeating-linear-gradient(135deg, rgb(15 92 69 / 0.04) 0 1px, transparent 1px 14px);
+}
+
+/* Dark band: ink with lane-green glow accents. */
+.dark-band {
+  color: #fff;
+  background:
+    radial-gradient(40% 60% at 85% 0%, rgb(16 185 129 / 0.28) 0%, transparent 70%),
+    radial-gradient(45% 70% at 0% 100%, rgb(15 92 69 / 0.55) 0%, transparent 70%),
+    var(--color-ink);
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+/* Marquee: pauses on hover and keyboard focus; reduced motion becomes a static, scrollable row. */
+.marquee-track {
+  animation: var(--animate-marquee);
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee[data-paused="true"] .marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .marquee-track {
+    animation: none !important;
+    width: max-content;
+  }
+  .marquee-copy[aria-hidden="true"] {
+    display: none;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(100deg, var(--color-line) 30%, #f1f4f1 50%, var(--color-line) 70%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none !important;
+  }
 }
 
 a,

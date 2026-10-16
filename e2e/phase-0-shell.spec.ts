@@ -22,9 +22,9 @@ test.describe("phase 0 shell", () => {
     expect(loadedFaces.some((f) => /overpass/i.test(f))).toBe(true);
   });
 
-  test("uses the paper background", async ({ page }) => {
+  test("uses the canvas background", async ({ page }) => {
     const bg = await page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
-    expect(bg).toBe("rgb(243, 244, 241)");
+    expect(bg).toBe("rgb(246, 248, 246)");
   });
 
   test("health endpoint reports ok", async ({ request }) => {
