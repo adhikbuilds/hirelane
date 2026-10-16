@@ -1230,5 +1230,85 @@
     "token": "shieldai",
     "hires_in_india": false,
     "status": "assumption"
+  },
+  {
+    "name": "Groww",
+    "domain": "groww.in",
+    "ats": "greenhouse",
+    "token": "groww",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "InMobi",
+    "domain": "inmobi.com",
+    "ats": "greenhouse",
+    "token": "inmobi",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "Glance",
+    "domain": "glance.com",
+    "ats": "greenhouse",
+    "token": "glance",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "Observe.AI",
+    "domain": "observe.ai",
+    "ats": "greenhouse",
+    "token": "observeai",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "Composio",
+    "domain": "composio.dev",
+    "ats": "ashby",
+    "token": "composio",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "SpotDraft",
+    "domain": "spotdraft.com",
+    "ats": "ashby",
+    "token": "spotdraft",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "Pocket FM",
+    "domain": "pocketfm.com",
+    "ats": "lever",
+    "token": "pocketfm",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "Hevo Data",
+    "domain": "hevodata.com",
+    "ats": "lever",
+    "token": "hevodata",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "Tekion",
+    "domain": "tekion.com",
+    "ats": "ashby",
+    "token": "tekion",
+    "hires_in_india": true,
+    "status": "assumption"
+  },
+  {
+    "name": "FamPay",
+    "domain": "famapp.in",
+    "ats": "lever",
+    "token": "fampay",
+    "hires_in_india": true,
+    "status": "assumption"
   }
 ]
