@@ -38,6 +38,25 @@ review of real screenshots, and nothing moves to the next step until it is appro
     week" card.
   - **B, "Duo playful":** chunky pressable 3D buttons, a streak and progress, a celebratory apply, a lesson-like flow,
     and no mascot.
+- **CHOSEN (owner, 2026-10-16): direction A, "Wrapped stories."** See `docs/mocks/genz-a-wrapped.html`.
+  - Font: Bricolage Grotesque (800 display, 500 body).
+  - Palette:
+
+    | Role | Colour |
+    |---|---|
+    | lane green (brand) | `#0F5C45` |
+    | lime | `#C8FF3D` |
+    | pink | `#FF4FA3` |
+    | blue | `#3D5AFE` |
+    | sun | `#FFC83D` |
+    | ink | `#0B0B0F` |
+    | cream | `#FFF6E8` |
+
+  - Full-bleed colour blocks that change per card or section, and giant type with numbers as graphics.
+  - Story cards with progress segments, tilted cards and stamps (APPLIED / SKIP).
+  - A shareable "Your week" recap.
+- **Process to save tokens (owner):** directions and key screens are approved as **static mock HTML first**
+  (`docs/mocks/`), and only then built in code.
 - Everything else in this plan holds: real data, the playable workflow, the milestones and preview-only routes.
 
 ## 1. Who it is for and what they must feel
