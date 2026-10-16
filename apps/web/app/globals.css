@@ -345,3 +345,76 @@ button {
 [data-landing="v3"]:focus-visible {
   outline-color: var(--ring);
 }
+
+/*
+ * Landing v4 ("Your lane to the next job", docs/design/landing-v4.md). Light theme scoped to [data-landing="v4"].
+ * Portalled shadcn content carries data-landing="v4" itself. One dark surface type: [data-surface="ink"],
+ * which remaps the same contract so Slider, Switch and focus rings stay visible on ink.
+ */
+@layer base {
+  [data-landing="v4"] {
+    --radius: 14px;
+    --background: #f7f6f2;
+    --foreground: #13201a;
+    --card: #ffffff;
+    --card-foreground: #13201a;
+    --popover: #ffffff;
+    --popover-foreground: #13201a;
+    --primary: #0f5c45;
+    --primary-foreground: #ffffff;
+    --secondary: #ffffff;
+    --secondary-foreground: #13201a;
+    --muted: #e7e5dc;
+    --muted-foreground: #55625b;
+    --accent: #eceae1;
+    --accent-foreground: #13201a;
+    --destructive: #e5484d;
+    --input: #d6d3c8;
+    --ring: #0f5c45;
+    --control: #0f5c45;
+    --control-foreground: #ffffff;
+    --sign: #0f5c45;
+    --lime: #c6f19d;
+    --signal: #facc15;
+    --ink: #13201a;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
+  }
+  [data-landing="v4"] [data-surface="ink"],
+  [data-landing="v4"][data-surface="ink"] {
+    --background: #13201a;
+    --foreground: #f7f6f2;
+    --card: #1c2d25;
+    --card-foreground: #f7f6f2;
+    --muted: #2c4036;
+    --muted-foreground: #b4c0b9;
+    --accent: #263a30;
+    --accent-foreground: #f7f6f2;
+    --input: #3a5246;
+    --ring: #c6f19d;
+    --control: #c6f19d;
+    --control-foreground: #13201a;
+    --primary: #c6f19d;
+    --primary-foreground: #13201a;
+    color: var(--foreground);
+  }
+}
+
+[data-landing="v4"] :focus-visible,
+[data-landing="v4"]:focus-visible {
+  outline-color: var(--ring);
+}
+@keyframes lane-dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+@keyframes v4-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}

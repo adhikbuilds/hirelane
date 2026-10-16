@@ -23,7 +23,7 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // "/" gets the v3 floating bar; every other route keeps this one. (Hooks above run for both.)
+  // "/" gets the v4 light floating bar; every other route keeps this one. (Hooks above run for both.)
   if (overHero) return <LandingHeader />;
 
   const solid = !overHero || scrolled;

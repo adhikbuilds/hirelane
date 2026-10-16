@@ -4,7 +4,7 @@ import { FOOTER } from "./nav";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-surface">
+    <footer data-site-footer className="relative z-10 border-t border-line bg-surface">
       <div className="mx-auto w-full max-w-page px-4 py-14 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.3fr_2.7fr]">
           <div className="max-w-xs">

@@ -232,3 +232,76 @@ async function loadStackExtras(slugs: string[]): Promise<Record<string, StackExt
 
 export const getStackExtras = unstable_cache(loadStackExtras, ["landing-v3:stack-extras"], { revalidate: 300, tags: ["jobs"] });
 // end landing v3
+
+// landing v4
+/**
+ * The v4 queue: real open data-engineer postings (the sample profile "Asha, data engineer, Bengaluru" is matched
+ * against them), with pay, skills and freshness. JSON-safe, cached 300 s under tag `jobs`. Nothing here is invented:
+ * the profile is fictional and labelled, the jobs are not.
+ */
+import { scoreForAsha, type V4Job } from "../../components/landing-v4/card/model";
+
+export const V4_QUEUE_SIZE = 12;
+const V4_INDIA_SLOTS = 3;
+
+async function loadLandingV4Jobs(): Promise<V4Job[]> {
+  const rows = await withAdmin(async (db) =>
+    (
+      await db.query(
+        `SELECT j.slug, j.title, j.workplace, j.countries, j.locations,
+                j.salary_min_minor, j.salary_max_minor, j.salary_currency, j.salary_period,
+                j.salary_annual_usd_min, j.salary_annual_usd_max,
+                coalesce(j.posted_at, j.first_seen_at) AS fresh_at,
+                c.id AS company_id, c.name AS company, c.logo_path, p.url AS posting_url,
+                (SELECT coalesce(array_agg(s.label ORDER BY u.ord), '{}')
+                   FROM unnest(j.skills) WITH ORDINALITY AS u(id, ord) JOIN skills s ON s.id = u.id) AS skills
+           FROM jobs j JOIN companies c ON c.id = j.company_id
+           LEFT JOIN postings p ON p.id = j.primary_posting_id
+          WHERE j.closed_at IS NULL AND ${NOT_SEEDED}
+            AND j.role_family = 'data-engineer' AND j.employment = 'fulltime'
+            AND j.salary_annual_usd_min IS NOT NULL AND cardinality(j.skills) >= 5
+            AND coalesce(j.posted_at, j.first_seen_at) <= now()
+          ORDER BY coalesce(j.posted_at, j.first_seen_at) DESC, j.id
+          LIMIT 200`,
+      )
+    ).rows,
+  );
+  const jobs = rows.map((r): V4Job & { _co: unknown } => {
+    const locs = Array.isArray(r.locations) ? r.locations : r.locations && Array.isArray((r.locations as { all?: unknown }).all) ? (r.locations as { all: unknown[] }).all : [];
+    const stated = r.salary_currency ? { min: num(r.salary_min_minor), max: num(r.salary_max_minor), currency: r.salary_currency as string, period: (r.salary_period as string | null) ?? null } : null;
+    return {
+      _co: r.company_id,
+      slug: r.slug,
+      title: r.title,
+      company: r.company,
+      logoPath: r.logo_path ?? null,
+      place: (locs.find((x: unknown): x is string => typeof x === "string") as string | undefined) ?? null,
+      countries: (r.countries as string[] | null) ?? [],
+      workplace: r.workplace ?? null,
+      skills: (r.skills as string[]).filter(Boolean),
+      stated,
+      statedText: stated ? formatSalary({ minMinor: stated.min, maxMinor: stated.max, currency: stated.currency, period: stated.period }) : null,
+      usd: { min: num(r.salary_annual_usd_min), max: num(r.salary_annual_usd_max) },
+      freshAt: r.fresh_at ? iso(r.fresh_at) : null,
+      postingUrl: typeof r.posting_url === "string" ? r.posting_url : null,
+    };
+  });
+  const rank = (j: V4Job) => scoreForAsha(j.skills, j.usd?.max ?? j.usd?.min ?? null).score + (j.logoPath ? 3 : 0);
+  const sorted = [...jobs].sort((a, b) => rank(b) - rank(a));
+  const seen = new Set<unknown>();
+  const picked: (V4Job & { _co: unknown })[] = [];
+  const take = (j: V4Job & { _co: unknown }) => {
+    if (seen.has(j._co) || picked.length >= V4_QUEUE_SIZE) return;
+    seen.add(j._co);
+    picked.push(j);
+  };
+  // Best first, but a few Indian postings are always in the mix for Asha's city.
+  const india = sorted.filter((j) => j.countries.includes("IN"));
+  sorted.slice(0, 4).forEach(take);
+  india.slice(0, V4_INDIA_SLOTS).forEach(take);
+  sorted.forEach(take);
+  return picked.map(({ _co, ...j }) => j);
+}
+
+export const getLandingV4Jobs = unstable_cache(loadLandingV4Jobs, ["landing-v4:jobs"], { revalidate: 300, tags: ["jobs"] });
+// end landing v4

@@ -1,0 +1,24 @@
+{
+  "note": "Real photographs of the BITS Pilani campus from Wikimedia Commons, used unmodified apart from resizing. Credit them wherever they appear.",
+  "photos": [
+    {
+      "file": "/landing/campus/bits-clock-tower.jpg",
+      "alt": "The clock tower at BITS Pilani",
+      "title": "Bits pilani.jpg",
+      "author": "unknown (public domain)",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Bits_pilani.jpg",
+      "credit": "BITS Pilani clock tower, public domain, via Wikimedia Commons"
+    },
+    {
+      "file": "/landing/campus/bits-campus.jpg",
+      "alt": "The BITS Pilani main building and clock tower across the lawns",
+      "title": "BITS Clocktower.jpg",
+      "author": "Vinwe",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "source": "https://commons.wikimedia.org/wiki/File:BITS_Clocktower.jpg",
+      "credit": "BITS Pilani campus by Vinwe, CC BY-SA 3.0, via Wikimedia Commons"
+    }
+  ]
+}

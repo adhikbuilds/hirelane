@@ -1,10 +1,9 @@
-"use client";
-
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-/** The v3 landing ends with its own one-line footer, so the site footer renders on every route except "/". */
+/**
+ * The site footer renders on every route, "/" included: landing v4 is a light page and the footer's white ground
+ * closes it. Kept as a seam so a route can opt out later without touching the layout.
+ */
 export function FooterGate({ children }: { children: ReactNode }) {
-  const pathname = usePathname() ?? "/";
-  return pathname === "/" ? null : <>{children}</>;
+  return <>{children}</>;
 }
