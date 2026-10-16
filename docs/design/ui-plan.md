@@ -32,6 +32,12 @@ review of real screenshots, and nothing moves to the next step until it is appro
     rounded chunky cards with a bouncy press, playful micro-interactions and sticker badges.
 - **Copy voice:** short, casual and fun ("Swipe. Apply. Done."), but always honest. No cringe slang overload. Use
   emojis only as decoration in copy if the chosen direction calls for them; icons stay SVG.
+- **Owner's vibe references:** Spotify Wrapped and Duolingo. Capture the feel only, never their assets, names or
+  mascot. The two style tiles now map to them:
+  - **A, "Wrapped stories":** loud colour blocks, giant type, story cards with progress segments, and a shareable "your
+    week" card.
+  - **B, "Duo playful":** chunky pressable 3D buttons, a streak and progress, a celebratory apply, a lesson-like flow,
+    and no mascot.
 - Everything else in this plan holds: real data, the playable workflow, the milestones and preview-only routes.
 
 ## 1. Who it is for and what they must feel
