@@ -22,7 +22,7 @@ const rows: { topic: string; cells: [string, string, string] }[] = [
     cells: [
       "The bot, on your behalf, often without you reading it.",
       "You do, after the extension fills in the form.",
-      "You do. Hirelane hands you the employer's own form with everything ready.",
+      "You do. Hirelane will hand you the employer's own form with everything ready (early access).",
     ],
   },
   {
@@ -30,7 +30,7 @@ const rows: { topic: string; cells: [string, string, string] }[] = [
     cells: [
       "Generic text, or text that claims things your resume does not support.",
       "Saved answers you wrote once, reused as they are.",
-      "Drafted from your resume, each with its source. Gaps are marked Needs you.",
+      "Will be drafted from your resume, each with its source, with gaps marked Needs you (early access).",
     ],
   },
   {
@@ -42,7 +42,7 @@ const rows: { topic: string; cells: [string, string, string] }[] = [
     cells: [
       "Their strength: hundreds of applications a day.",
       "As fast as you can click through forms.",
-      "Deliberately lower. You approve each application, and the free plan has a limit of 10.",
+      "Deliberately lower. You will approve each application, and the planned free plan has a limit of 10.",
     ],
   },
   {
@@ -58,7 +58,7 @@ const rows: { topic: string; cells: [string, string, string] }[] = [
     cells: [
       "High. A wrong answer goes out under your name and you may not see it.",
       "Low. You see the form before you send it.",
-      "Low. Nothing leaves until you approve, and there is a four second undo.",
+      "Low. Nothing will leave until you approve, with a four second undo (early access).",
     ],
   },
 ];
@@ -67,7 +67,7 @@ export default function Compare() {
   return (
     <PageShell
       title="Where Hirelane fits, and where it does not."
-      lede="Two kinds of tool already exist. This compares them by category, not by brand, and says where each one is the better choice."
+      lede="Two kinds of tool already exist. This compares them by category, not by brand, and says where each one is the better choice. Today the Hirelane job board is live; rows marked early access describe what opens next."
     >
       <Section id="table" title="Side by side">
         <div className="overflow-x-auto">

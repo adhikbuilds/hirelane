@@ -72,14 +72,21 @@ export function Hero({ cards, shots, start, counts }: { cards: StackCardModel[];
             We fill it in.
           </h1>
           <p className="t-statement text-white/90 max-lg:text-[16px]" data-testid="hero-subline">
-            You approve every application. 4 seconds to undo.
+            Try the swipe on real roles below. Early access opens soon.
           </p>
           <div className="flex flex-col gap-3 lg:gap-4">
-            <Button asChild size="lg" className="self-start">
-              <a href="#start" data-testid="hero-start">
-                Start free
-              </a>
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <a href="#start" data-testid="hero-start">
+                  Get early access
+                </a>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="text-white">
+                <a href="/jobs" data-testid="hero-jobs">
+                  Browse live jobs
+                </a>
+              </Button>
+            </div>
             <p className="t-small flex flex-wrap gap-x-2 text-[#c4cdc4]" data-testid="live-counts">
               <span>{counts.roles} live roles</span>
               <span aria-hidden>·</span>

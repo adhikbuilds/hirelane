@@ -55,9 +55,9 @@ test.describe("landing v3", () => {
     await page.getByTestId("demo").scrollIntoViewIfNeeded();
   });
 
-  test("hero: the two-line headline, the one line, Start free and live counts", async ({ page }) => {
+  test("hero: the two-line headline, the one line, the early-access and jobs CTAs and live counts", async ({ page }) => {
     await expect(page.getByTestId("hero-h1")).toHaveText(/Swipe right\.\s*We fill it in\./);
-    await expect(page.getByTestId("hero-subline")).toHaveText("You approve every application. 4 seconds to undo.");
+    await expect(page.getByTestId("hero-subline")).toHaveText("Try the swipe on real roles below. Early access opens soon.");
     await expect(page.getByTestId("hero-start")).toHaveAttribute("href", "#start");
     await expect(page.getByTestId("live-counts")).toContainText(/[\d,]+ live roles/);
     await expect(page.getByTestId("live-counts")).toContainText(/updated .+ ago/);
@@ -315,7 +315,7 @@ test.describe("landing v3", () => {
     await panel.getByRole("radio", { name: other }).click();
     await expect.poll(async () => (await price.innerText()).trim()).not.toBe(inr);
     await expect(panel.getByText("Planned prices. Checkout opens soon.")).toBeVisible();
-    await expect(panel.getByRole("link", { name: "Start free" })).toHaveAttribute("href", "#start");
+    await expect(panel.getByRole("link", { name: "Get early access" })).toHaveAttribute("href", "#start");
   });
 
   test("start rejects a non-PDF and uploads nothing, then a PDF fills the card in the browser", async ({ page }) => {
@@ -332,12 +332,12 @@ test.describe("landing v3", () => {
     await input.setInputFiles({ name: "cv.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4\n%fake\n") });
     await expect(dialog).toHaveAttribute("data-stage", "done", { timeout: 8000 });
     await expect(dialog.getByTestId("parse-skills").locator("li")).toHaveCount(6);
-    await expect(dialog.getByText("Create your account to save this. Coming in the next release.")).toBeVisible();
-    await expect(dialog.getByRole("button", { name: "Create your account" })).toBeDisabled();
+    await expect(dialog.getByTestId("waitlist-form")).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Get early access" })).toBeEnabled();
     expect(calls).toEqual([]);
   });
 
-  test("Start free in the hero scrolls to #start", async ({ page }) => {
+  test("Get early access in the hero scrolls to #start", async ({ page }) => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.getByTestId("hero-start").click();
     await expect(page).toHaveURL(/#start$/);

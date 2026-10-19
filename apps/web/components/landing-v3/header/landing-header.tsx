@@ -10,7 +10,7 @@ export const LANDING_NAV = [
   { href: "/jobs", label: "Jobs" },
   { href: "/#pricing", label: "Pricing" },
 ] as const;
-export const LANDING_START = { href: "/#start", label: "Start free" } as const;
+export const LANDING_START = { href: "/#start", label: "Get early access" } as const;
 export const SCROLL_SOLID_AT = 24;
 
 /** `||` wordmark in white and lime. */
