@@ -16,6 +16,16 @@ export function Icon({ d }: { d: string }) {
   );
 }
 
+/** One icon per funnel stage: joined, resume ready, eligible, applied, interview, offer. */
+const STAGE_ICON = [
+  "M16 19v-1a4 4 0 00-4-4H6a4 4 0 00-4 4v1M9 10a3 3 0 100-6 3 3 0 000 6M22 19v-1a4 4 0 00-3-3.9M16 4.1a3 3 0 010 5.8",
+  "M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9zM14 3v6h6M9 15l2 2 4-4",
+  "M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.4 7.2 16.9l.9-5.4-3.9-3.8 5.4-.8z",
+  "M22 2L11 13M22 2l-7 20-4-9-9-4z",
+  "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z",
+  "M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0zM17 6h3a2 2 0 01-2 4h-1M7 6H4a2 2 0 002 4h1",
+];
+
 export const STATUS = {
   open: { tone: "good", label: "Open", d: "M5 12l5 5 9-10" },
   closing: { tone: "warn", label: "Closing soon", d: "M12 7v5l3 3" },

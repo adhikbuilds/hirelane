@@ -87,23 +87,84 @@ export function PasteJob({
 export type WarmCompany = { company: string; hiring: string; people: { initials: string; title: string }[] };
 
 /** Who you know: matches the student's own uploaded LinkedIn connections to companies hiring now. Private to them. */
-export function Network({ uploaded, companies, draftFor }: { uploaded: boolean; companies: WarmCompany[]; draftFor: WarmCompany | null }) {
+export function Network({
+  uploaded,
+  companies,
+  draftFor,
+  stage = "start",
+}: {
+  uploaded: boolean;
+  companies: WarmCompany[];
+  draftFor: WarmCompany | null;
+  stage?: "start" | "requested" | "ready";
+}) {
   if (!uploaded) {
+    const steps = [
+      {
+        title: "Ask LinkedIn for your file",
+        text: "Opens LinkedIn's download page. Tick Connections, then Request archive.",
+        action: (
+          <Button asChild variant="lime" size="pill-sm">
+            <a href="https://www.linkedin.com/mypreferences/d/download-my-data" target="_blank" rel="noopener noreferrer">
+              Open LinkedIn&apos;s download page
+            </a>
+          </Button>
+        ),
+      },
+      { title: "Wait for LinkedIn's email", text: "Usually about 10 minutes. We'll remind you here.", action: null },
+      {
+        title: "Upload the file",
+        text: "The ZIP or Connections.csv. It stays private to you.",
+        action: (
+          <form className="acct-stack-y" action="#">
+            <input type="file" accept=".zip,.csv" className="wr-file" aria-label="LinkedIn connections file" />
+            <Button type="submit" variant="lime" size="pill-sm">
+              Upload my connections
+            </Button>
+          </form>
+        ),
+      },
+    ];
+    const current = stage === "requested" ? 1 : stage === "ready" ? 2 : 0;
     return (
       <Card aria-labelledby="net-h">
         <CardTitle id="net-h">See who you know at each company</CardTitle>
-        <CardDescription>Upload your LinkedIn connections. They stay private to you; your college and other students never see them.</CardDescription>
-        <ol className="wr-steps">
-          <li>On LinkedIn, open Settings, then Data privacy, then Get a copy of your data.</li>
-          <li>Choose Connections and request the file. LinkedIn emails it in about 10 minutes.</li>
-          <li>Upload the ZIP or the Connections.csv file here.</li>
+        <CardDescription>Three steps, about 15 minutes. Your college and other students never see your connections.</CardDescription>
+        <ol className="wr-lock-steps">
+          {steps.map((st, i) => {
+            const state = i < current ? "done" : i === current ? "now" : "locked";
+            return (
+              <li key={st.title} data-state={state}>
+                <span className="wr-lock-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    {state === "done" ? (
+                      <path d="M5 12l5 5 9-10" />
+                    ) : state === "locked" ? (
+                      <path d="M7 11V8a5 5 0 0110 0v3M6 11h12v10H6z" />
+                    ) : (
+                      <path d="M9 6l6 6-6 6" />
+                    )}
+                  </svg>
+                </span>
+                <div>
+                  <p className="wr-check-title">
+                    {st.title}
+                    <span className="sr-only">: {state === "done" ? "done" : state === "now" ? "do this now" : "locked until the step before is done"}</span>
+                  </p>
+                  <p className="wr-check-reason">{state === "locked" ? `Unlocks after step ${i}.` : st.text}</p>
+                  {state === "now" && st.action ? <div className="wr-lock-action">{st.action}</div> : null}
+                  {state === "now" && i === 1 ? (
+                    <form action="#" className="wr-lock-action">
+                      <Button type="submit" variant="outline" size="pill-sm">
+                        I&apos;ve got the email
+                      </Button>
+                    </form>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
         </ol>
-        <form className="acct-stack-y" action="#">
-          <input type="file" accept=".zip,.csv" className="wr-file" aria-label="LinkedIn connections file" />
-          <Button type="submit" variant="lime" size="pill">
-            Upload my connections
-          </Button>
-        </form>
       </Card>
     );
   }

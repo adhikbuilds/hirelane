@@ -40,7 +40,7 @@ export async function declineSignup(): Promise<{ ok: true } | { ok: false; reaso
 }
 
 /** What /welcome shows: the address being signed up, or null when there is nothing pending (or it expired). */
-export async function getPendingSignup(): Promise<{ email: string; provider: "google" | "email_otp" } | null> {
+export async function getPendingSignup(): Promise<{ email: string; provider: "google" | "linkedin" | "email_otp" } | null> {
   const req = await openRead(); // a render-time read: a navigation GET carries no Origin header
   const deps = defaultAuthDeps();
   const p = await readPendingSignup(deps.keys, req.pendingValue, deps.now());

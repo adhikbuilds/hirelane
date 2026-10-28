@@ -1514,3 +1514,187 @@ body {
   border: 2px dashed var(--wr-ink-wash-strong);
   line-height: 1.5;
 }
+
+/* ---------- Student landing ---------- */
+.ld {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: grid;
+  gap: 48px;
+}
+
+.ld-hero {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+}
+
+.acct-display.ld-h1 {
+  max-width: 10ch;
+}
+
+.ld-cta {
+  margin-top: 24px;
+  max-width: 360px;
+}
+
+.ld-note {
+  margin: 12px 0 0;
+  color: var(--wr-muted-on-night);
+  font-size: 0.875rem;
+}
+
+.ld-phone {
+  margin: 0;
+  justify-self: center;
+  width: min(320px, 100%);
+  border-radius: 32px;
+  border: 8px solid var(--wr-ink-edge);
+  overflow: hidden;
+  transform: rotate(2deg);
+  background: var(--wr-night);
+}
+
+.ld-phone img {
+  width: 100%;
+  display: block;
+}
+
+.ld-h2 {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(1.75rem, 6vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.ld-on-colour {
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.ld-steps {
+  display: grid;
+  gap: 20px;
+}
+
+.ld-steps ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.ld-steps h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.ld-steps p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.ld-step-n {
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 0.9;
+  color: var(--wr-pink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ld-split {
+  display: grid;
+  gap: 12px;
+}
+
+.ld-split p,
+.ld-college p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.ld-college a {
+  justify-self: start;
+}
+
+.ld-never ul {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.ld-never li::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 12px;
+  border-radius: 3px;
+  background: var(--wr-coral);
+}
+
+@media (min-width: 900px) {
+  .ld-hero {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    min-height: 70dvh;
+  }
+
+  .ld-steps ol,
+  .ld-split {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ld-split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Locked steps: the next step unlocks when the one before is done. */
+.wr-lock-steps {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 16px;
+}
+
+.wr-lock-steps li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.wr-lock-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--wr-ink);
+  background: var(--wr-cream);
+  color: var(--wr-ink);
+}
+
+.wr-lock-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wr-lock-steps li[data-state="done"] .wr-lock-icon { background: var(--wr-lime); }
+.wr-lock-steps li[data-state="now"] .wr-lock-icon { background: var(--wr-ink); color: var(--wr-lime); }
+.wr-lock-steps li[data-state="locked"] { opacity: 0.55; }
+.wr-lock-steps li[data-state="locked"] .wr-lock-icon { border-style: dashed; }
+
+.wr-lock-action {
+  margin-top: 8px;
+}

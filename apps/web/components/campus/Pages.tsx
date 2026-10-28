@@ -74,73 +74,219 @@ export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
   );
 }
 
-/** Drives: paste a notice, see the rules we read, who qualifies and any scam signs, then publish. */
+const STEPS = ["Notice", "Job details", "Eligibility", "Selection rounds", "Review and publish"];
+
+function Field({ label, value, hint, wide }: { label: string; value: string; hint?: string; wide?: boolean }) {
+  const id = `f-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return (
+    <div className="cp-field" data-wide={wide || undefined}>
+      <label htmlFor={id}>{label}</label>
+      <input id={id} defaultValue={value} />
+      {hint ? <span className="cp-hint">{hint}</span> : null}
+    </div>
+  );
+}
+
+function Chips({ label, items, on }: { label: string; items: string[]; on: string[] }) {
+  return (
+    <fieldset className="cp-field" data-wide>
+      <legend>{label}</legend>
+      <div className="cp-chips">
+        {items.map((it) => (
+          <label key={it} className="cp-chip">
+            <input type="checkbox" defaultChecked={on.includes(it)} />
+            <span>{it}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+/** Add a drive: a structured job profile, pre-filled from the pasted notice, with a live eligibility summary. */
 export function DrivesInboxPage({ notice }: { notice: string }) {
-  const rules = [
-    { text: "B.Com, BBA or BBM", ok: true },
-    { text: "2025 or 2026 passout", ok: true },
-    { text: "60% or 6.0 CGPA in graduation", ok: true },
-    { text: "55% in 10th and 12th", ok: true },
-    { text: "No active backlogs", ok: true },
-  ];
   return (
     <>
       <header className="cp-top">
         <div>
           <h1 className="cp-title">Add a drive</h1>
-          <p className="cp-sub">Paste the notice you received. We read the rules and show it only to students who qualify.</p>
+          <p className="cp-sub">Paste the notice and we fill the form. Check each section, then publish to the students who qualify.</p>
+        </div>
+        <div className="cp-actions">
+          <button className="cp-btn" data-variant="outline" type="button">
+            Save as draft
+          </button>
         </div>
       </header>
-      <div className="cp-grid">
-        <section className="cp-card" aria-labelledby="paste-h">
-          <h2 id="paste-h">The notice</h2>
-          <form className="cp-form" action="#">
-            <label htmlFor="notice">Notice text</label>
-            <textarea id="notice" name="notice" rows={9} defaultValue={notice} />
-            <label htmlFor="link">Apply link</label>
-            <input id="link" name="link" type="url" placeholder="https://careers.example.com/..." />
-            <fieldset>
-              <legend>Show to</legend>
-              {["B.Com, batch of 2026", "BBA, batch of 2026", "B.Com, batch of 2025"].map((c, i) => (
-                <label key={c} className="cp-check">
-                  <input type="checkbox" defaultChecked={i < 2} /> {c}
-                </label>
-              ))}
-            </fieldset>
-            <p className="cp-card-sub">We never open the link ourselves. Students apply on the company&apos;s own page.</p>
-          </form>
-        </section>
-        <section className="cp-card" aria-labelledby="read-h">
-          <h2 id="read-h">What we read</h2>
-          <ul className="cp-rules">
-            {rules.map((r) => (
-              <li key={r.text}>
-                <Icon d="M5 12l5 5 9-10" />
-                {r.text}
+
+      <div className="cp-drive-layout">
+        <nav className="cp-steps" aria-label="Sections">
+          <ol>
+            {STEPS.map((s, i) => (
+              <li key={s} data-state={i < 4 ? "done" : "now"}>
+                <a href={`#step-${i + 1}`}>
+                  <span>{i + 1}</span>
+                  {s}
+                </a>
               </li>
             ))}
-          </ul>
-          <div className="cp-naac-split">
-            <p>
-              <b>143</b>students qualify
+          </ol>
+        </nav>
+
+        <form className="cp-drive-form" action="#">
+          <section id="step-1" className="cp-card" aria-labelledby="s1">
+            <h2 id="s1">1. Notice</h2>
+            <p className="cp-card-sub">Paste the email or PDF text you received. We filled 23 fields from it; the ones marked &quot;check&quot; need your eye.</p>
+            <textarea className="cp-textarea" rows={5} defaultValue={notice} aria-label="Notice text" />
+            <p className="cp-safe">
+              <Icon d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
+              No warning signs: no fee, a company email domain, no Telegram-only contact.
             </p>
-            <p>
-              <b>27</b>can&apos;t be checked yet (no CGPA scale on their resume)
-            </p>
-          </div>
-          <p className="cp-safe">
-            <Icon d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
-            No warning signs: no fee, a company email domain, no Telegram-only contact.
-          </p>
-          <div className="cp-actions">
-            <button className="cp-btn" type="button">
-              Publish to 143 students
-            </button>
+          </section>
+
+          <section id="step-2" className="cp-card" aria-labelledby="s2">
+            <h2 id="s2">2. Job details</h2>
+            <div className="cp-fields">
+              <Field label="Company" value="SaaS company (sample)" />
+              <Field label="Role" value="Customer Success Associate" />
+              <Field label="Job type" value="Full time" />
+              <Field label="Location" value="Bengaluru" />
+              <Field label="Work mode" value="On-site" />
+              <Field label="Openings" value="" hint="Not in the notice. Optional." />
+              <Field label="CTC (fixed)" value="3.2 LPA" hint="Check: the notice says 3.6 LPA total" />
+              <Field label="CTC (variable)" value="0.4 LPA" />
+              <Field label="Bond or service agreement" value="None mentioned" />
+              <Field label="Joining" value="June 2026" />
+              <Field label="Apply link" value="https://careers.example.com/cs-associate" wide hint="Students apply here. We never open it ourselves." />
+            </div>
+          </section>
+
+          <section id="step-3" className="cp-card" aria-labelledby="s3">
+            <h2 id="s3">3. Eligibility</h2>
+            <p className="cp-card-sub">These rules decide who sees the drive. Each is checked against the student&apos;s confirmed marks.</p>
+            <div className="cp-fields">
+              <Chips label="Degrees" items={["B.Com", "BBA", "BBM", "BCA", "B.Sc", "BA"]} on={["B.Com", "BBA", "BBM"]} />
+              <Chips label="Batch" items={["2024", "2025", "2026", "2027"]} on={["2025", "2026"]} />
+              <table className="cp-table cp-crit" data-wide>
+                <thead>
+                  <tr>
+                    <th scope="col">Level</th>
+                    <th scope="col">Minimum %</th>
+                    <th scope="col">Or CGPA</th>
+                    <th scope="col" className="cp-num">
+                      Students who pass
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["10th", "55", "", "251"],
+                    ["12th or diploma", "55", "", "228"],
+                    ["Graduation", "60", "6.0", "196"],
+                  ].map(([lvl, p, c, n]) => (
+                    <tr key={lvl}>
+                      <td>{lvl}</td>
+                      <td>
+                        <input className="cp-mini" defaultValue={p} aria-label={`${lvl} minimum percent`} />
+                      </td>
+                      <td>
+                        <input className="cp-mini" defaultValue={c} aria-label={`${lvl} CGPA`} placeholder="none" />
+                      </td>
+                      <td className="cp-num">{n}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Field label="Active backlogs allowed" value="0" />
+              <Field label="Backlogs ever (max)" value="Any" hint="Not in the notice." />
+              <Field label="Gap in education (max years)" value="Not mentioned" hint="Check: many drives allow 1 or 2." />
+              <Field label="Other conditions" value="Willing to work rotational shifts" wide />
+            </div>
+          </section>
+
+          <section id="step-4" className="cp-card" aria-labelledby="s4">
+            <h2 id="s4">4. Selection rounds</h2>
+            <ol className="cp-rounds">
+              {[
+                ["Online assessment", "Aptitude and English", "8 Nov, 10:00", "Online"],
+                ["Group discussion", "", "12 Nov", "Bengaluru office"],
+                ["HR interview", "", "12 Nov", "Bengaluru office"],
+              ].map(([r, d, when, where]) => (
+                <li key={r}>
+                  <b>{r}</b>
+                  <span>{d}</span>
+                  <span>{when}</span>
+                  <span>{where}</span>
+                </li>
+              ))}
+            </ol>
             <button className="cp-btn" data-variant="outline" type="button">
-              Save as draft
+              <Icon d="M12 5v14M5 12h14" />
+              Add a round
             </button>
-          </div>
-        </section>
+            <div className="cp-fields">
+              <Field label="Last date to apply" value="6 Nov 2026" />
+              <Field label="Documents to carry" value="Resume, college ID, 10th and 12th marksheets" wide />
+            </div>
+          </section>
+
+          <section id="step-5" className="cp-card" aria-labelledby="s5">
+            <h2 id="s5">5. Review and publish</h2>
+            <p className="cp-card-sub">Students see the drive in their app with a countdown and the rules they meet. Students who don&apos;t qualify never see it.</p>
+            <div className="cp-actions">
+              <button className="cp-btn" type="submit">
+                Publish to 143 students
+              </button>
+              <button className="cp-btn" data-variant="outline" type="button">
+                Schedule for 9:00 tomorrow
+              </button>
+            </div>
+          </section>
+        </form>
+
+        <aside className="cp-summary" aria-label="Who this reaches">
+          <section className="cp-card">
+            <h2>Who this reaches</h2>
+            <p className="cp-big">143</p>
+            <p className="cp-card-sub">students qualify on every rule</p>
+            <table className="cp-table">
+              <tbody>
+                <tr>
+                  <td>B.Com, batch of 2026</td>
+                  <td className="cp-num">88</td>
+                </tr>
+                <tr>
+                  <td>BBA, batch of 2026</td>
+                  <td className="cp-num">41</td>
+                </tr>
+                <tr>
+                  <td>B.Com, batch of 2025</td>
+                  <td className="cp-num">14</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section className="cp-card">
+            <h2>Can&apos;t be checked yet</h2>
+            <p className="cp-big cp-warn-text">27</p>
+            <p className="cp-card-sub">CGPA without a scale on their resume. Set your university&apos;s rule in Settings and most of these resolve.</p>
+            <Link className="cp-btn" data-variant="outline" href="/dev/campus/settings">
+              Set the CGPA rule
+            </Link>
+          </section>
+          <section className="cp-summary-plain">
+            <h2>What students see</h2>
+            <div className="cp-student-preview">
+              <b>Customer Success Associate</b>
+              <span>SaaS company (sample), Bengaluru</span>
+              <span className="cp-status" data-tone="good">
+                <Icon d="M5 12l5 5 9-10" />
+                You qualify on 5 of 5 rules
+              </span>
+              <span>Closes in 8 days</span>
+            </div>
+          </section>
+        </aside>
       </div>
     </>
   );

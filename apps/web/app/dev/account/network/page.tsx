@@ -20,7 +20,7 @@ export default function NetworkPreview() {
       <div className="wr-app">
         <p className="wr-sample">Sample connections (initials only). Real ones come from the student&apos;s own LinkedIn file and stay private to them.</p>
         <h1 className="acct-display wr-hello">Who you know.</h1>
-        <Network uploaded={false} companies={[]} draftFor={null} />
+        <Network uploaded={false} companies={[]} draftFor={null} stage="requested" />
         <Network uploaded companies={COMPANIES} draftFor={COMPANIES[0] ?? null} />
         <TabBar active="you" />
       </div>
