@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CampusConsole } from "@/components/campus/Console";
+import { CampusDash, type DashBy } from "@/components/campus/Dash";
 import { SAMPLE_CAMPUS } from "@/lib/sample/campus";
 
-export const metadata: Metadata = { title: "Placement console preview", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Placement console", robots: { index: false, follow: false } };
 
-/** Dev-only: the placement console on a labelled sample cohort, for G4 placement-cell conversations. */
-export default function CampusPreview() {
+/** Console overview in the dark analytics register, on a labelled sample cohort. 404 in production until wired. */
+export default async function CampusPreview({ searchParams }: { searchParams: Promise<{ by?: string }> }) {
   if (process.env.NODE_ENV === "production") notFound();
-  return <CampusConsole data={SAMPLE_CAMPUS} />;
+  const { by } = await searchParams;
+  const view: DashBy = by === "blocker" || by === "drive" ? by : "programme";
+  return <CampusDash data={SAMPLE_CAMPUS} by={view} />;
 }

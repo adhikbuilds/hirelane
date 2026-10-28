@@ -258,9 +258,9 @@ body {
 
 .site-phone {
   position: absolute;
-  right: -24px;
-  bottom: -40px;
-  width: 210px;
+  right: -56px;
+  bottom: -64px;
+  width: 196px;
   margin: 0;
   border-radius: 30px;
   border: 8px solid var(--st-ink);

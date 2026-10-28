@@ -1,6 +1,7 @@
 import { isServiceError, type Issue, type ServiceCtx } from "@hirelane/services";
 import { currentSession, openAction, openRead } from "../auth/request";
 import { serviceCtxFor } from "../http/ctx";
+import { writeRateGate } from "../http/v1";
 
 /** What a server action returns: plain data the client can serialise. Failures carry a stable code, never a message. */
 export type ActionResult<T> = { ok: true; data: T } | { ok: false; status: number; code: string; issues?: Issue[] };
@@ -16,6 +17,9 @@ export async function runAction<T>(fn: (ctx: ServiceCtx) => Promise<T>): Promise
   if (!req.ok) return fail(403, "bad_origin");
   const me = await currentSession(req);
   if (!me) return fail(401, "unauthenticated");
+  // Same per-user WRITE budget as the /api/v1 twin. (Idempotency-Key is an HTTP-client concept; a form post has none.)
+  const limited = await writeRateGate(me.userId);
+  if (limited) return fail(limited.status, limited.code);
   try {
     return { ok: true, data: await fn(serviceCtxFor(me.userId)) };
   } catch (e) {

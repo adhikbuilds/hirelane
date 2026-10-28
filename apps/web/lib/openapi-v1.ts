@@ -21,6 +21,7 @@ import {
   UploadResultSchema,
 } from "@hirelane/services";
 import { z } from "zod";
+import { ConsentInput, ConsentResult, DeleteMeInput, DeleteMeResult } from "./http/me-inputs";
 
 type Json = Record<string, any>;
 
@@ -30,6 +31,8 @@ export interface V1Operation {
   path: string;
   summary: string;
   mutation: boolean;
+  /** False for a mutation that takes no Idempotency-Key (account delete). Default true. */
+  idempotent?: boolean;
   /** JSON request body schema (the path id is supplied by the URL, not the body). */
   request?: z.ZodType;
   /** Keys removed from the request schema because the URL provides them. */
@@ -72,6 +75,8 @@ export const V1_OPERATIONS: V1Operation[] = [
   { operationId: "saveBuilderStep", method: "post", path: "/api/v1/builder/steps", summary: "Save one guided-builder answer", mutation: true, request: StepInput, success: { status: 200, schema: BuilderStateSchema, description: "Builder progress" } },
   { operationId: "finishBuilder", method: "post", path: "/api/v1/builder/finish", summary: "Render the builder draft to a PDF", mutation: true, request: FinishInput, success: { status: 202, schema: BuilderFinishSchema, description: "Render queued" } },
   { operationId: "getMe", method: "get", path: "/api/v1/me", summary: "Who am I", mutation: false, success: { status: 200, schema: MeSchema, description: "The signed-in user" } },
+  { operationId: "deleteMe", method: "delete", path: "/api/v1/me", summary: "Delete my account and everything under it, files included", mutation: true, idempotent: false, request: DeleteMeInput, success: { status: 200, schema: DeleteMeResult, description: "Deleted" } },
+  { operationId: "setConsent", method: "post", path: "/api/v1/me/consents", summary: "Record a consent choice (append-only)", mutation: true, request: ConsentInput, success: { status: 200, schema: ConsentResult, description: "Recorded" } },
   { operationId: "exportMe", method: "get", path: "/api/v1/me/export", summary: "Export everything held about me", mutation: false, success: { status: 200, schema: z.record(z.string(), z.unknown()), description: "JSON export" } },
 ];
 
@@ -94,7 +99,7 @@ export function buildOpenApiV1(origin: string): Json {
   for (const op of V1_OPERATIONS) {
     const parameters: Json[] = [];
     if (op.path.includes("{id}")) parameters.push(ID_PARAM);
-    if (op.mutation) parameters.push(IDEMPOTENCY);
+    if (op.mutation && op.idempotent !== false) parameters.push(IDEMPOTENCY);
     if (op.operationId === "uploadResume") {
       parameters.push({ name: "X-File-Name", in: "header", required: false, description: "URL-encoded original file name, at most 255 characters. Stored only inside the sealed parse.", schema: { type: "string", maxLength: 765 } });
       parameters.push({ name: "label", in: "query", required: false, schema: { type: "string", maxLength: 80 } });

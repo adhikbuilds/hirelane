@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -94,6 +94,7 @@ const routes = async () => ({
   steps: await import("../app/api/v1/builder/steps/route"),
   finish: await import("../app/api/v1/builder/finish/route"),
   me: await import("../app/api/v1/me/route"),
+  consents: await import("../app/api/v1/me/consents/route"),
   export: await import("../app/api/v1/me/export/route"),
   openapi: await import("../app/api/v1/openapi.json/route"),
 });
@@ -371,7 +372,10 @@ describe("read, confirm, eligibility", () => {
     expect(prof.pct_10).toBe(82.5); // numeric arrives as a string from pg; the service converts
     expect(prof.grad_scale).toBe(10);
     expect(prof.source_resume_id).toBe(v.id);
-    expect(prof.field_meta["pct_10"]).toEqual({ source: "resume", confidence: "high" });
+    // Provenance is decided against the parse, not by the client: the parse has no 10th percentage, so 82.5 is the student's.
+    expect(prof.field_meta["pct_10"]).toEqual({ source: "user", confidence: "high" });
+    expect(prof.field_meta["grad_score"]).toEqual({ source: "resume", confidence: "high" });
+    expect(prof.field_meta["passout_year"]).toEqual({ source: "resume", confidence: "high" });
 
     // a version is the same file: it reports the root's health counts and sensitive kinds (the app role cannot write them)
     const gotV = await call(R.resume.GET, "GET", `/api/v1/resumes/${v.id}`, {}, { id: v.id });
@@ -686,7 +690,7 @@ describe("openapi and contract", () => {
       const o = doc.paths[op.path]?.[op.method];
       expect(o?.operationId, op.operationId).toBe(op.operationId);
       expect(o.responses[String(op.success.status)], op.operationId).toBeDefined();
-      if (op.mutation) expect(o.parameters.some((p: { name: string }) => p.name === "Idempotency-Key")).toBe(true);
+      if (op.mutation && op.idempotent !== false) expect(o.parameters.some((p: { name: string }) => p.name === "Idempotency-Key")).toBe(true);
     }
     expect(doc.paths["/api/v1/resumes/{id}/confirm"].post.requestBody.content["application/json"].schema.properties).not.toHaveProperty("id");
     expect(doc.paths["/api/v1/eligibility"].put.requestBody.content["application/json"].schema.properties.values.properties.grad_scale).toBeDefined();
@@ -704,5 +708,71 @@ describe("openapi and contract", () => {
     expect(p.requestId).toBe(r.res.headers.get("x-request-id"));
     expect(r.res.headers.get("content-type")).toMatch(/problem\+json/);
     expect(r.res.headers.get("cache-control")).toBe("no-store");
+  });
+});
+
+describe("openapi is not published while the accounts flag is off", () => {
+  it("404 with no cache headers when off, 200 when on", async () => {
+    process.env["HIRELANE_ACCOUNTS"] = "0";
+    const off = await R.openapi.GET(new Request(`${ORIGIN}/api/v1/openapi.json`));
+    expect(off.status).toBe(404);
+    expect(off.headers.get("cache-control")).not.toMatch(/public/);
+    process.env["HIRELANE_ACCOUNTS"] = "1";
+    expect((await R.openapi.GET(new Request(`${ORIGIN}/api/v1/openapi.json`))).status).toBe(200);
+  });
+});
+
+describe("idempotency is bound to the query string too", () => {
+  it("the same key with a different ?label= is a client bug (422), not a replay", async () => {
+    const key = `idem-label-${randomUUID()}`;
+    const raw = pdfBytes("q");
+    const a = await call(R.resumes.POST, "POST", "/api/v1/resumes?label=One", { raw, idem: key });
+    expect(a.status).toBe(202);
+    const b = await call(R.resumes.POST, "POST", "/api/v1/resumes?label=Two", { raw, idem: key });
+    expect(b.status).toBe(422);
+  });
+});
+
+describe("account and consent over v1 (twins of the /you server actions)", () => {
+  it("POST /me/consents records an append-only choice and refuses unknown kinds", async () => {
+    const ok = await call(R.consents.POST, "POST", "/api/v1/me/consents", { body: { kind: "analytics", granted: true } });
+    expect([ok.status, ok.json]).toEqual([200, { ok: true }]);
+    await call(R.consents.POST, "POST", "/api/v1/me/consents", { body: { kind: "analytics", granted: false } });
+    const rows = await client.query("SELECT granted FROM consents WHERE user_id = $1 AND kind = 'analytics' ORDER BY created_at, id", [alice.id]).catch(() => client.query("SELECT granted FROM consents WHERE user_id = $1 AND kind = 'analytics'", [alice.id]));
+    expect(rows.rows.map((r) => r.granted).sort()).toEqual([false, true]);
+    const bad = await call(R.consents.POST, "POST", "/api/v1/me/consents", { body: { kind: "age_18_plus", granted: true } });
+    expect(bad.status).toBe(400);
+  });
+
+  it("DELETE /me needs confirm:true; then removes the account, its rows and its files", async () => {
+    const who = await mkWho();
+    const up = await call(R.resumes.POST, "POST", "/api/v1/resumes", { who, raw: pdfBytes("del"), headers: { "x-file-name": "x.pdf" } });
+    expect(up.status).toBe(202);
+    const key = (await client.query("SELECT blob_key FROM resumes WHERE user_id = $1", [who.id])).rows[0].blob_key as string;
+    expect(existsSync(join(storage, key))).toBe(true);
+
+    const refused = await call(R.me.DELETE, "DELETE", "/api/v1/me", { who, body: { confirm: false } });
+    expect(refused.status).toBe(400);
+    expect(existsSync(join(storage, key))).toBe(true);
+
+    const done = await call(R.me.DELETE, "DELETE", "/api/v1/me", { who, idem: null, body: { confirm: true } });
+    expect([done.status, done.json]).toEqual([200, { deleted: true }]);
+    expect(existsSync(join(storage, key))).toBe(false);
+    expect((await client.query("SELECT 1 FROM users WHERE id = $1", [who.id])).rowCount).toBe(0);
+    expect((await client.query("SELECT 1 FROM resumes WHERE user_id = $1", [who.id])).rowCount).toBe(0);
+    expect((await call(R.me.GET, "GET", "/api/v1/me", { who })).status).toBe(401);
+  });
+});
+
+describe("confirm never adds a version under a deleted root", () => {
+  it("a live version whose root was soft-deleted is 404 on confirm and gains no row", async () => {
+    const id = (await upload()).json.id as string;
+    await markParsed(alice, id);
+    const v = (await call(R.confirm.POST, "POST", `/api/v1/resumes/${id}/confirm`, { body: { parsedVersion: 1, eligibility: ELIG } }, { id })).json.id as string;
+    await client.query("UPDATE resumes SET deleted_at = now(), purge_after = now() WHERE id = $1", [id]);
+    const before = (await client.query("SELECT count(*)::int AS n FROM resumes")).rows[0].n;
+    const r = await call(R.confirm.POST, "POST", `/api/v1/resumes/${v}/confirm`, { body: { parsedVersion: 2, eligibility: ELIG } }, { id: v });
+    expect(r.status).toBe(404);
+    expect((await client.query("SELECT count(*)::int AS n FROM resumes")).rows[0].n).toBe(before);
   });
 });

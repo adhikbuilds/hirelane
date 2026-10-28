@@ -74,11 +74,11 @@ export function MainLanding({ counts }: { counts: SiteCounts }) {
         <div className="site-shot">
           <figure className="site-browser">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/previews/student-app.png" alt="Hirelane Home: three new roles you qualify for, a role card for Customer Support Associate at Zenoti, drives from your college and your resume score" />
+            <img src="/previews/console-overview.png" alt="The Hirelane placement console: 31 off-campus offers, applications per day, and where students stop" />
           </figure>
           <figure className="site-phone">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/previews/student-pick.png" alt="" />
+            <img src="/previews/student-pick.png" alt="The student app on a phone: three new roles you qualify for, and a role card you can swipe" />
           </figure>
         </div>
       </section>
@@ -201,7 +201,7 @@ export function MainLanding({ counts }: { counts: SiteCounts }) {
         </div>
         <figure className="site-browser">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/previews/console-overview.png" alt="The placement console: cohort ledger and a funnel of where unplaced students stop" loading="lazy" />
+          <img src="/previews/console-drives.png" alt="Adding a drive: the notice is read into rules and the console shows how many students qualify" loading="lazy" />
         </figure>
       </section>
 

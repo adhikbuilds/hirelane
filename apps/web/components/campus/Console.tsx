@@ -45,7 +45,7 @@ const NAV: { id: CampusPage; label: string; href: string }[] = [
 /** Console frame: navy sidebar with the college name. Server component. */
 export function CampusShell({ college, active, children }: { college: string; active: CampusPage; children: React.ReactNode }) {
   return (
-    <div className={`cp ${publicSans.variable} ${publicSans.className}`}>
+    <div className={`cp ${publicSans.variable} ${publicSans.className}`} data-theme="console-dark">
       <aside className="cp-side">
         <div className="cp-college">
           <strong>{college}</strong>

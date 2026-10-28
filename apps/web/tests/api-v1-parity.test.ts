@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { ACTION_TWINS, ROUTE_ONLY } from "../lib/api/parity";
+import { ACTION_EXEMPT, ACTION_TWINS, ROUTE_ONLY } from "../lib/api/parity";
 import { buildOpenApiV1, V1_OPERATIONS } from "../lib/openapi-v1";
 
 const WEB = resolve(import.meta.dirname, "..");
@@ -16,16 +16,16 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-/** Every actions.ts that holds a resume or eligibility server action (new ones are picked up automatically). */
+/** Every actions.ts anywhere under app/ (new ones are picked up automatically). */
 const actionFiles = (): string[] =>
-  [...walk(join(WEB, "app/(app)/resume")), ...walk(join(WEB, "app/(app)/you/eligibility"))]
+  walk(join(WEB, "app"))
     .filter((f) => /(^|\/)actions\.ts$/.test(f))
     .map((f) => relative(WEB, f))
     .sort();
 
 export function exportedActions(src: string): { names: string[]; other: string[] } {
   const names = [...src.matchAll(/^export\s+async\s+function\s+([A-Za-z0-9_]+)/gm)].map((m) => m[1]!);
-  const other = [...src.matchAll(/^export\s+(?!async\s+function)(.*)$/gm)].map((m) => m[1]!.slice(0, 40));
+  const other = [...src.matchAll(/^export\s+(?!async\s+function|type\s|interface\s)(.*)$/gm)].map((m) => m[1]!.slice(0, 40));
   return { names, other };
 }
 
@@ -35,9 +35,9 @@ export function missingTwins(file: string, names: string[], twins = ACTION_TWINS
   return names.filter((n) => !map[n] || !ops.includes(map[n]!));
 }
 
-describe("every resume and eligibility server action has a v1 twin", () => {
+describe("every server action has a v1 twin or a written exemption", () => {
   it("finds the action files", () => {
-    expect(actionFiles()).toEqual(Object.keys(ACTION_TWINS).sort());
+    expect(actionFiles()).toEqual([...new Set([...Object.keys(ACTION_TWINS), ...Object.keys(ACTION_EXEMPT)])].sort());
   });
 
   for (const file of actionFiles()) {
@@ -45,8 +45,10 @@ describe("every resume and eligibility server action has a v1 twin", () => {
       const { names, other } = exportedActions(readFileSync(join(WEB, file), "utf8"));
       expect(other, "a use-server file may only export async functions").toEqual([]);
       expect(names.length).toBeGreaterThan(0);
-      expect(missingTwins(file, names)).toEqual([]);
-      expect(Object.keys(ACTION_TWINS[file] ?? {}).sort()).toEqual([...names].sort());
+      const exempt = Object.keys(ACTION_EXEMPT[file] ?? {});
+      expect(missingTwins(file, names.filter((n) => !exempt.includes(n)))).toEqual([]);
+      expect([...Object.keys(ACTION_TWINS[file] ?? {}), ...exempt].sort()).toEqual([...names].sort());
+      for (const reason of Object.values(ACTION_EXEMPT[file] ?? {})) expect(reason.length).toBeGreaterThan(10);
       expect(readFileSync(join(WEB, file), "utf8").trimStart().startsWith('"use server"')).toBe(true);
     });
   }

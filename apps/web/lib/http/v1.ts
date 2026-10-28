@@ -20,6 +20,8 @@ const JSON_BODY_MAX = 64 * 1024;
 export interface V1Options {
   /** State-changing: Origin check for cookies, Idempotency-Key required. */
   mutation?: boolean;
+  /** Default true for a mutation. False only where a stored response cannot exist (account delete removes the key's owner). */
+  idempotent?: boolean;
   /** 'json' parses a JSON body (<= 64 KB); 'raw' buffers up to `rawMax` bytes (hard cap); 'none' (default) reads nothing. */
   body?: "json" | "raw" | "none";
   rawMax?: number;
@@ -104,11 +106,12 @@ export function v1(opts: V1Options, handler: V1Handler): (req: Request, route: R
       };
 
       let result: V1Result;
-      if (opts.mutation) {
+      if (opts.mutation && opts.idempotent !== false) {
         const key = req.headers.get("idempotency-key");
         if (!key) throw new ServiceError("idempotency_key_required", 400);
-        const path = new URL(req.url).pathname;
-        const fp = fingerprint(req.method, path, createHash("sha256").update(raw).digest("hex"));
+        const url = new URL(req.url);
+        // The query string is part of what the key is bound to (an upload's ?label= is not a replay of another label).
+        const fp = fingerprint(req.method, url.pathname + url.search, createHash("sha256").update(raw).digest("hex"));
         const once = await runIdempotent(ctx, { key, fp }, async () => {
           const r = await handler(c);
           if (r instanceof Response) throw new ServiceError("handler_returned_response", 500);
@@ -127,3 +130,15 @@ export function v1(opts: V1Options, handler: V1Handler): (req: Request, route: R
   };
 }
 
+
+/**
+ * The WRITE rate class for the server-action twins: same per-user budget and bucket as a v1 mutation, so a form cannot
+ * be used to get round the API's limit. Returns null when allowed, else the failing status and code.
+ */
+export async function writeRateGate(userId: string): Promise<{ status: number; code: string } | null> {
+  const gate = await guardedLimit(() =>
+    defaultAuthDeps().db((c) => checkRateLimit(c, `v1:${WRITE.name}:${userId}`, { limit: WRITE.max, windowSeconds: WRITE.windowSeconds, prune: Math.random() < 0.02 })),
+  );
+  if (gate.allowed) return null;
+  return gate.busy ? { status: 503, code: "busy" } : { status: 429, code: "rate_limited" };
+}

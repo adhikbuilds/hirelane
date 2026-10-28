@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
-import { ChromeGate } from "@/components/shell/ChromeGate";
-import { FooterGate } from "@/components/shell/FooterGate";
-import { SiteFooter } from "@/components/shell/SiteFooter";
-import { SiteHeader } from "@/components/shell/SiteHeader";
+import { SiteChrome } from "@/components/shell/SiteChrome";
 import "./globals.css";
 
 const overpass = localFont({
@@ -31,17 +28,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <ChromeGate>
-          <SiteHeader />
-        </ChromeGate>
+        <SiteChrome part="header" />
         <main id="main" className="flex-1">
           {children}
         </main>
-        <ChromeGate>
-          <FooterGate>
-            <SiteFooter />
-          </FooterGate>
-        </ChromeGate>
+        <SiteChrome part="footer" />
       </body>
     </html>
   );
