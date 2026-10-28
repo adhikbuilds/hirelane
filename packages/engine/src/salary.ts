@@ -792,6 +792,19 @@ function analyse(text: string, ctx: SalaryContext | undefined): Analysis {
 
 const CUE_WORD_RE = /\b(?:salary|salaries|compensation|base pay|pay range|pay rate|hourly rate|OTE|on[- ]target earnings|CTC|LPA|remuneration|wage|wages)\b/gi;
 
+/**
+ * `salary_stated` is true only when an amount exists: a parse with a min or max, or an ATS structured
+ * block with a positive min or max. Cue words alone ("competitive compensation") never count.
+ */
+export function isSalaryStated(
+  parse: { minMinor: number | null; maxMinor: number | null } | null | undefined,
+  structured: { min: number | null; max: number | null } | null | undefined,
+): boolean {
+  const pos = (n: number | null | undefined): boolean => typeof n === 'number' && Number.isFinite(n) && n > 0;
+  if (parse && (pos(parse.minMinor) || pos(parse.maxMinor))) return true;
+  return !!structured && (pos(structured.min) || pos(structured.max));
+}
+
 /** Spans of salary cue words and currency amounts. Diagnostic only (coverage ceiling and LLM gating). */
 export function salaryCues(text: string): Evidence[] {
   const spans: { start: number; end: number }[] = [];

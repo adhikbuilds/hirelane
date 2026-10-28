@@ -407,12 +407,46 @@ function resolve(
   return { occs, rejects };
 }
 
+// ---------------------------------------------------------------------------------------------
+// Incidental topic mentions on non-technical roles
+
+/** Titles of roles where a security word in the description is a topic, not the candidate's skill. */
+const NON_TECH_TITLE_RE =
+  /\b(?:legal|counsel|attorneys?|lawyers?|paralegals?|solicitors?|recruiters?|recruiting|talent acquisition|human resources|hr|payroll|accountants?|accounting|bookkeeper|marketing|copywriter|account executives?|sales development|customer success)\b/i;
+
+function securityCluster(idx: CompiledSkillIndex): ReadonlySet<string> {
+  return new Set<string>(['cybersecurity', ...(idx.adj.get('cybersecurity') ?? [])]);
+}
+
+/**
+ * On a non-technical title, a security-cluster skill found only in the description prose (not in a skills
+ * list, not in the title) is dropped: "Associate Legal ... information security reviews" is not a
+ * cybersecurity role.
+ */
+function dropIncidental(
+  occs: SkillOccurrence[],
+  idx: CompiledSkillIndex,
+  title: string | undefined,
+): { kept: SkillOccurrence[]; dropped: SkillOccurrence[] } {
+  if (!title || !NON_TECH_TITLE_RE.test(title)) return { kept: occs, dropped: [] };
+  const cluster = securityCluster(idx);
+  const titleHasSecurity = occs.some((o) => o.source === 'title' && cluster.has(o.id));
+  if (titleHasSecurity) return { kept: occs, dropped: [] };
+  const kept: SkillOccurrence[] = [];
+  const dropped: SkillOccurrence[] = [];
+  for (const o of occs) {
+    if (o.source === 'description' && !o.inSkillsList && cluster.has(o.id)) dropped.push(o);
+    else kept.push(o);
+  }
+  return { kept, dropped };
+}
+
 /** Every counted occurrence in document order (description first, then the title). */
 export function skillOccurrences(doc: Doc, index: SkillIndex = defaultSkillIndex(), title?: string): SkillOccurrence[] {
   const idx = asCompiled(index);
   const d = resolve(doc.text, doc, idx, 'description').occs;
   const t = title ? resolve(title, null, idx, 'title').occs : [];
-  return [...d, ...t];
+  return dropIncidental([...d, ...t], idx, title).kept;
 }
 
 /** Sorted unique ids of occurrences inside [start, end) of the description. */
@@ -427,13 +461,18 @@ export function extractSkills(doc: Doc, index: SkillIndex = defaultSkillIndex(),
   const tb = new TraceBuilder('skills');
   const d = resolve(doc.text, doc, idx, 'description');
   const t = title ? resolve(title, null, idx, 'title') : { occs: [] as SkillOccurrence[], rejects: [] };
+  const filtered = dropIncidental([...d.occs, ...t.occs], idx, title);
   const rejected: { src: 'description' | 'title'; r: Scanned['rejects'][number] }[] = [
+    ...filtered.dropped.map((o) => ({
+      src: 'description' as const,
+      r: { start: o.start, end: o.end, id: o.id, reason: 'incidental topic on a non-technical (legal/HR/finance/sales) title' },
+    })),
     ...d.rejects.map((r) => ({ src: 'description' as const, r })),
     ...t.rejects.map((r) => ({ src: 'title' as const, r })),
   ];
 
   const byId = new Map<string, SkillHit>();
-  for (const o of [...d.occs, ...t.occs]) {
+  for (const o of filtered.kept) {
     const text = o.source === 'title' ? (title as string) : doc.text;
     let hit = byId.get(o.id);
     if (!hit) {

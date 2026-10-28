@@ -278,3 +278,32 @@ describe('real fixture phrasing', () => {
     expect(got).not.toContain('go');
   });
 });
+
+describe('non-technical titles do not pick up incidental security topics (A3)', () => {
+  const legalDesc =
+    'You will support our legal team on commercial contracts, privacy, and information security reviews. Work with the Security team on vendor questionnaires.';
+  it('does not tag cybersecurity on an Associate Legal posting', () => {
+    expect(ids(legalDesc, 'Associate Legal')).not.toContain('cybersecurity');
+  });
+  it('does not tag cybersecurity for a counsel/paralegal title with a cybersecurity-law mention', () => {
+    expect(ids('Cybersecurity law experience is a plus.', 'Legal Counsel')).not.toContain('cybersecurity');
+    expect(ids('Support infosec incident response notices.', 'Paralegal')).not.toContain('cybersecurity');
+  });
+  it('still tags cybersecurity when the same text sits under a technical title', () => {
+    expect(ids(legalDesc, 'Security Engineer')).toContain('cybersecurity');
+    expect(ids(legalDesc)).toContain('cybersecurity');
+  });
+  it('still tags cybersecurity when the title itself names it', () => {
+    expect(ids(legalDesc, 'Legal Counsel, Cybersecurity')).toContain('cybersecurity');
+  });
+  it('still tags cybersecurity from an explicit skills list on a legal posting', () => {
+    expect(ids('Skills: Cybersecurity, GDPR, HIPAA.', 'Associate Legal')).toContain('cybersecurity');
+  });
+  it('rejection is traced', () => {
+    const r = extractSkills(docFromText(legalDesc), undefined, 'Associate Legal');
+    expect(r.trace.steps.some((s) => s.op === 'reject' && /legal|non-technical/i.test(s.label))).toBe(true);
+  });
+  it('does not touch skills outside the security cluster', () => {
+    expect(ids('Contract management in Salesforce and SQL reporting.', 'Associate Legal')).toEqual(expect.arrayContaining(['salesforce', 'sql']));
+  });
+});
