@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { defaultPurgeBlobs } from "./erasure";
 import {
   ABSOLUTE_TTL_MS,
   createSession,
@@ -28,6 +29,8 @@ export interface AuthDeps {
   keys: KeyProvider;
   now: () => Date;
   env?: Record<string, string | undefined>;
+  /** Removes the user's stored files before the account rows go. Required in production; the default wires the real store. */
+  purgeBlobs?: (userId: string) => Promise<void>;
 }
 
 let sharedKeys: KeyProvider | undefined;
@@ -36,7 +39,7 @@ export function defaultKeys(): KeyProvider {
 }
 
 export function defaultAuthDeps(): AuthDeps {
-  return { db: (fn) => withAuth((c) => fn(c)), keys: defaultKeys(), now: () => new Date() };
+  return { db: (fn) => withAuth((c) => fn(c)), keys: defaultKeys(), now: () => new Date(), purgeBlobs: defaultPurgeBlobs };
 }
 
 // ---------- signed payloads (pending signup, OIDC state) ----------
@@ -144,7 +147,7 @@ export async function resolveIdentity(
 // ---------- delete ----------
 
 export const deleteAccountFor = (deps: AuthDeps, userId: string): Promise<DeleteAccountResult> =>
-  deps.db((c) => deleteAccount(c, userId, deps.now()));
+  deps.db((c) => deleteAccount(c, userId, deps.now(), { purgeBlobs: deps.purgeBlobs }));
 
 // ---------- consent after sign-up ----------
 

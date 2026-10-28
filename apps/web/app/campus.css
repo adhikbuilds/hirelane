@@ -37,12 +37,11 @@ body {
 
 .cp {
   min-height: 100dvh;
-  background: linear-gradient(to right, var(--cp-navy) 248px, var(--cp-paper) 248px);
+  background: var(--cp-paper);
   color: var(--cp-ink);
   font-family: var(--font-public), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  padding-left: 248px;
 }
 
 .cp :focus-visible {
@@ -63,10 +62,10 @@ body {
   display: grid;
   align-content: start;
   gap: 24px;
-  min-height: 100dvh;
-  position: sticky;
-  top: 0;
-  align-self: start;
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 248px;
+  overflow-y: auto;
 }
 
 .cp-college {
@@ -414,12 +413,12 @@ body {
 
 @media (max-width: 960px) {
   .cp {
-    grid-template-columns: minmax(0, 1fr);
+    padding-left: 0;
   }
 
   .cp-side {
     position: static;
-    min-height: 0;
+    width: auto;
   }
 
   .cp-grid,
