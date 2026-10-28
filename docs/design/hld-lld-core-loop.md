@@ -33,7 +33,7 @@ Written 2026-10-28 by the ECC `architect` agent. Read-only design; it is not bui
  ═══╪══════════════════════════ TB3 ─ data plane (private) ═══════════════════════════════
  ┌──▼─────────── Postgres 16 + pgvector (:5433) ──────────┐   ┌ storage/ blobs ─────────┐
  │ public: jobs, companies, form_specs (SELECT, no RLS)    │   │ AES-256-GCM per-file DEK │
- │ user: profiles, resumes, picks, applications… (RLS)     │   │ (BlobStore: disk → S3)   │
+ │ user: profiles, resumes, picks, applications… (RLS)     │   │ (local disk → Azure Blob)│
  │ auth: sessions, otp_challenges (revoked from app role)  │   └──────────▲──────────────┘
  │ graphile_worker schema (owner only)                     │              │ HIRELANE_MASTER_KEY
  └──▲──────────────────────────────────────────────────────┘              │ (env secret only)
@@ -231,7 +231,7 @@ The second tap is required. After a 4-second timer, `window.open` no longer coun
 ## 6. Build order: the smallest real-user slice
 | M | Deliverable | Unblocks |
 |---|---|---|
-| D (parallel) | Deploy target, Google OAuth client, real mail sender (verify), CI with `pnpm verify`, `TZ=UTC`, pino redaction | real users |
+| D (deferred: Azure, after the slice; owner 2026-10-28) | CI with `pnpm verify`, `TZ=UTC` and pino redaction now. Deploy target, Google OAuth production client and real mail sender come later on Azure (§7) | real users |
 | M0 | Migration grant; `packages/vault` + `LocalBlobStore`; dep-cruiser edits; a real `verify-rls` harness | every PII table |
 | M1 | 0007 auth tables, Google + email code, sessions, `consents`; privacy, terms and grievance pages; the "What Hirelane never does" card | anything per-user |
 | M2 | 0008 profiles and resumes; sealed PDF upload; `resume:parse` with rules only; inline fixes to the parse; preferences and work authorisation | matching |
@@ -243,3 +243,20 @@ The second tap is required. After a 4-second timer, `window.open` no longer coun
 | Later | inbound replies (0011), email picks digest, consented LLM free-text, push and WhatsApp (verify), passes, network, extension | R1/R2 |
 
 **Supply risk:** gate G0 fails today (75 India entry roles). M3 must show honest pick counts. Board discovery (A5) has to run in parallel.
+
+## 7. Azure later: interfaces to keep vendor-neutral now
+Owner, 2026-10-28: "Azure later; scope features first". The slice runs end to end locally in fixture mode. Every Azure binding below still needs verifying.
+
+| Concern | Local interface now | Likely Azure binding |
+|---|---|---|
+| Resume and inbound blobs | `vault.BlobStore` → `LocalBlobStore` | Azure Blob Storage (private container, managed identity) |
+| Master key / DEK wrap | `vault.KeyProvider` → `EnvKeyProvider` (`HIRELANE_MASTER_KEY`) | Azure Key Vault |
+| Postgres + pgvector | Docker :5433 | Azure Database for PostgreSQL Flexible Server. Check that pgvector is allow-listed and how the owner role behaves under RLS / BYPASSRLS (gap #1) |
+| Worker | `pnpm worker` | Container Apps or App Service, on a direct (non-pooler) connection for LISTEN/NOTIFY |
+| Web | `next dev` :3001 | Container Apps or App Service. Needs a TLS domain for the Google redirect URIs and `__Host-` cookies |
+| Outbound mail | `Mailer` → file outbox (`.mail/`) | Azure Communication Services Email, or another provider |
+| Inbound replies | `InboundMailAdapter` → fixture / signed JSON | depends on the provider |
+| Secrets | `.env.local` | Key Vault references |
+| Observability | pino + `llm_calls` | Azure Monitor / App Insights, or OTel → Grafana |
+
+Not tied to Azure: Google OAuth, WhatsApp Cloud API, Web Push, PostHog/Umami, Razorpay/Stripe.
