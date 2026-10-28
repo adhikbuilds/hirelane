@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.12.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   },
   "scripts": {
     "dev": "pnpm --filter @hirelane/web dev",
@@ -17,7 +17,7 @@
     "brand-guard": "vite-node scripts/brand-guard.ts",
     "no-submit-guard": "vite-node scripts/no-submit-guard.ts",
     "withadmin-guard": "vite-node scripts/withadmin-guard.ts",
-    "verify": "pnpm test && pnpm typecheck && pnpm lint:deps && pnpm brand-guard && pnpm no-submit-guard && pnpm withadmin-guard && pnpm db:verify-schema && pnpm db:verify-rls",
+    "verify": "pnpm test && pnpm typecheck && pnpm lint:deps && pnpm brand-guard && pnpm no-submit-guard && pnpm withadmin-guard && pnpm db:verify-schema && pnpm db:verify-rls && pnpm db:verify-auth",
     "setup:keys": "pnpm --filter @hirelane/vault --silent setup:keys",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
@@ -26,7 +26,7 @@
     "db:reset": "pnpm --filter @hirelane/db reset",
     "db:fresh": "pnpm db:reset && pnpm db:migrate && pnpm db:seed",
     "db:verify-rls": "pnpm --filter @hirelane/db verify-rls",
-    "db:verify-auth": "echo \"db:verify-auth: not implemented until Phase 4\"",
+    "db:verify-auth": "pnpm --filter @hirelane/db verify-auth",
     "db:verify-schema": "pnpm --filter @hirelane/db verify-schema",
     "ingest:run": "pnpm --filter @hirelane/ingest ingest:run",
     "ingest:record": "pnpm --filter @hirelane/ingest record",
