@@ -675,3 +675,72 @@ body {
     animation: none !important;
   }
 }
+
+/* ---------- Resume health and eligibility verdicts ---------- */
+.wr-health-h {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+.wr-checks {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.wr-checks li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.wr-check-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--wr-ink);
+  background: var(--wr-cream);
+  color: var(--wr-ink);
+}
+
+.wr-check-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wr-checks li[data-status="pass"] .wr-check-icon { background: var(--wr-lime); }
+.wr-checks li[data-status="fail"] .wr-check-icon { background: var(--wr-pink); }
+.wr-checks li[data-status="unknown"] .wr-check-icon { background: var(--wr-sun); }
+
+.wr-check-title {
+  margin: 4px 0 0;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.wr-check-reason,
+.wr-check-fix {
+  margin: 4px 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.wr-passed {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px solid var(--wr-ink-wash-strong);
+}
+
+.wr-passed summary {
+  cursor: pointer;
+  font-weight: 800;
+}
