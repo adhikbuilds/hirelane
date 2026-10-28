@@ -1,7 +1,7 @@
 # Hirelane architecture
 
-> Status: Phase 0 (task 0.2, architect), reconciled against the working tree on 2026-10-16. The public board and API (Phase 3) were added to the codemap on the same date; their contract is in `docs/public-api.md`.
-> Each section says whether it describes what is **built** or what is **planned**. Every path in the codemap (§6) is tagged with the phase that creates it. Nothing tagged P1 or later exists yet.
+> Status: Phase 0 (task 0.2, architect), first reconciled against the working tree on 2026-10-16. Drift pass against the code on 2026-10-28: engine, ingest, agent, runner tasks, web landing v3, waitlist, autopilot stats, migrations 0001 to 0006 and the FORCE RLS decision are updated. The public board and API (Phase 3) are in the codemap; their contract is in `docs/public-api.md`.
+> Each section says whether it describes what is **built** or what is **planned**. Every path in the codemap (§6) is tagged with the phase that creates it. Items still tagged P4 or later are not built.
 > PLAN.md §5, §6 and §10 are the source of truth. Where this document goes beyond them, or where the build differs from them, it says so under **Gap** or **Note**.
 > `doc-updater` keeps this codemap current (task 0.11).
 
@@ -12,15 +12,15 @@
 | Area | Rule | Status |
 |---|---|---|
 | Workspace | pnpm `9.12.0` (`packageManager`), `engines.node >= 20`, globs `packages/*`, `apps/*`, `workers/*` | Built (`package.json`, `pnpm-workspace.yaml`) |
-| Package shape | Scope `@hirelane/*`, `"private": true`, `"type": "module"`, `"main"` and `"types"` both `./src/index.ts`. Consumed from source, no build step. Internal deps use `workspace:*` | Built for `db`. **Note:** `workers/runner` (named `@hirelane/runner`, not `@hirelane/worker`) has `main` but no `types`, and uses `workspace:^`. `packages/engine` has no `package.json` yet |
+| Package shape | Scope `@hirelane/*`, `"private": true`, `"type": "module"`, `"main"` and `"types"` both `./src/index.ts`. Consumed from source, no build step. Internal deps use `workspace:*` | Built for `db`, `engine`, `ingest` and `agent`. **Note:** `workers/runner` (named `@hirelane/runner`, not `@hirelane/worker`) has `main` but no `types`, and uses `workspace:^`. `packages/ingest` has `main` and `types` but no `src/index.ts` (see §2.1) |
 | Scripts | Package scripts run TypeScript through `vite-node` (`"migrate": "vite-node src/migrate.ts"`). Root scripts delegate with `pnpm --filter @hirelane/<pkg> <script>` | Built |
-| TypeScript | `tsconfig.base.json`: `strict`, `noUncheckedIndexedAccess`. Every package has `typecheck: tsc --noEmit` | Built for `db`, `runner`, `web`. **Gap:** `engine` has no package and so no typecheck script |
+| TypeScript | `tsconfig.base.json`: `strict`, `noUncheckedIndexedAccess`. Every package has `typecheck: tsc --noEmit` | Built for `db`, `runner`, `web`, `engine`, `ingest` and `agent`. `engine` has `typecheck: tsc --noEmit` |
 | Tests | Vitest for unit tests, Playwright for e2e on `http://localhost:3001` in fixture mode | Vitest is configured as a root `vitest.config.ts` using `projects` (not a `vitest.workspace.ts`). Playwright lives at `apps/web/playwright.config.ts`. **Gap:** its `globalSetup` that runs `db:fresh` is not yet present |
 | `.env` discovery | Walks up from `process.cwd()` to find the repo-root env file. Host-provided `DATABASE_URL` skips the walk | Built in `packages/db/src/env.ts` (`loadEnv`), not `client.ts`. It looks for `.env.local` first, then `.env`, up to six levels up. `import.meta.dirname` is not used for this |
 | TLS | TLS with `rejectUnauthorized: true` is forced for any `DATABASE_URL` host that is not localhost, whatever `sslmode` says | Built for the `pg` pool (`getPool` in `client.ts`). **Gap:** not applied to the graphile-worker connection (`workers/runner/src/index.ts`) or to `addJob`, which pass the raw URL |
 | Pooled endpoints | `migrate` refuses a transaction-mode pooler (a `-pooler.` host). graphile-worker needs a direct connection for LISTEN/NOTIFY | **Gap:** not implemented. `migrate.ts` and `migrator.ts` contain no pooler check, and nothing checks the worker's endpoint |
 | Tenant context | `withUser(userId, fn)` runs `BEGIN` → `SET LOCAL ROLE hirelane_app` → `set_config('hirelane.user_id', $1, true)` → `fn` → `COMMIT`. The scope is transaction-local, so a pooled connection cannot leak one user's context into the next request | Built (`client.ts`). **Gap:** see §3.2. The migrations do not yet grant the owner membership in `hirelane_app` |
-| Admin context | `withAdmin(fn)` runs as the owner. Only migrations, seed, ingest, ops and system sweeps may use it (PLAN §10) | Built (`client.ts`). Used by `migrate`, `verify-schema`, `reset` and `seed` |
+| Admin context | `withAdmin(fn)` runs as the owner. Only migrations, seed, ingest, ops and system sweeps may use it (PLAN §10) | Built (`client.ts`). Used by `migrate`, `verify-schema`, `reset`, `seed`, the enrich tasks, and `/api/public/stats/autopilot`. **Gap:** no allowlist guard yet (decision in §3.1) |
 | Database | Image `pgvector/pgvector:pg16`, not solum's `postgres:16-alpine`, because that image has no pgvector. Container `hirelane-postgres`, port `127.0.0.1:5433:5432`, volume `hirelane-pgdata`, `pg_isready` healthcheck | Built (`docker-compose.yml`). `docker/initdb/01-create-test-db.sql` also creates `hirelane_test` on first start, for `TEST_DATABASE_URL` |
 
 ---
@@ -31,12 +31,12 @@
 
 | Package | Name | Owns | May import | Must not | Status |
 |---|---|---|---|---|---|
-| `packages/engine` | `@hirelane/engine` | Salary, skills, requirements, classifiers, dedup keys, match score, autopilot rules, reply and question classifiers. Exports `ENGINE_VERSION`. Every result carries a `Trace` | nothing (zero runtime deps) | Use network, DB, the clock (`now` is injected), or randomness | Planned (P2). `src/index.ts` is a placeholder (`export const x=1`). No `package.json`, no `ENGINE_VERSION` |
-| `packages/db` | `@hirelane/db` | `client.ts` (`withAdmin`, `withUser`, `getPool`, `close`), `migrate.ts`, `migrator.ts`, `reset.ts`, `seed.ts`, `verify-schema.ts`, `queue.ts` (`addJob`), Drizzle schema in `src/schema/*.ts` | `pg`, `drizzle-orm`, `graphile-worker` (see §2.3) | Contain business logic | Built (P0). `verify-rls.ts`, `verify-auth.ts` and `auth.ts` are planned (P4) |
-| `packages/ingest` | `@hirelane/ingest` | Connectors (`greenhouse.ts`, `lever.ts`, `ashby.ts`) → `RawPosting`, recorder, `boards.json`, fixtures, persistence and diff | `db` | Enrichment or LLM calls | Planned (P1) |
-| `packages/agent` | `@hirelane/agent` | `llm/`, `embeddings/`, resume parsing, drafting, approval state machine, handoff payload and per-ATS capabilities, tailoring, `mail/`, `submit/` (P9, flagged) | `engine`, `db` | Any HTTP call to an ATS application endpoint outside `src/submit/` | Planned (P2 onward) |
-| `workers/runner` | `@hirelane/runner` | graphile-worker bootstrap, tasks, crontab | all packages | Contain UI | Built, partially (P0): `heartbeat` task and crontab only |
-| `apps/web` | `@hirelane/web` | Pages, server actions, route handlers, `lib/{queries,session,format}.ts` | `db`, `engine`, `agent` | Import `ingest` or `workers` | Built, P0 to P3 (uncommitted): the public board, job, list and company pages, the public API route handlers, markdown negotiation, `llms.txt`, sitemaps and `robots.txt`. It depends on `@hirelane/db` (`withAdmin`) and `@hirelane/engine` (role families, places). **Still stubs:** `lib/queries.ts` (`getFreshestJobs`) and `lib/session.ts`. Sessions arrive in P4 |
+| `packages/engine` | `@hirelane/engine` | Salary, skills, requirements, classifiers, dedup keys, match score, autopilot rules, reply and question classifiers. Exports `ENGINE_VERSION`. Every result carries a `Trace` | nothing (zero runtime deps) | Use network, DB, the clock (`now` is injected), or randomness | Built (P2). `package.json` exists (`test`, `typecheck`, `eval`). Used by `apps/web` (role families, places, lists, the autopilot stats route) and `workers/runner` (`enrich-cli.ts` and the enrich tasks). `ENGINE_VERSION` is `'1.0.0'` in `src/version.ts`. **Note:** `src/index.ts` still starts with a leftover placeholder line (`export const x=1`) above the real exports |
+| `packages/db` | `@hirelane/db` | `client.ts` (`withAdmin`, `withUser`, `getPool`, `close`), `migrate.ts`, `migrator.ts`, `reset.ts`, `seed.ts`, `verify-schema.ts`, `queue.ts` (`addJob`), Drizzle schema in `src/schema/*.ts`, and the persistence helpers in `src/enrich/` and `src/ingest/` | `pg`, `drizzle-orm`, `graphile-worker` (see §2.3) | Contain business logic | Built (P0 to P2). `verify-rls.ts`, `verify-auth.ts` and `auth.ts` are planned (P4) |
+| `packages/ingest` | `@hirelane/ingest` | Connectors (`greenhouse.ts`, `lever.ts`, `ashby.ts`) → `RawPosting`, recorder, `boards.json`, fixtures, persistence and diff, and company logo resolution in `src/company/` | `db` (and `sharp`, `zod`) | Enrichment or LLM calls | Built (P1, P3). Consumed by `workers/runner` only. **Gap:** no `src/index.ts` barrel. The runner deep-imports `src/run/index`, `src/connectors/index`, `src/contract`, `src/company/logo` and `src/company/transport` (see §6 and §7, item 13) |
+| `packages/agent` | `@hirelane/agent` | `llm/`, `embeddings/`, resume parsing, drafting, approval state machine, handoff payload and per-ATS capabilities, tailoring, `mail/`, `submit/` (P9, flagged) | `engine`, `db` | Any HTTP call to an ATS application endpoint outside `src/submit/` | Partly built (P2): only `src/llm/*` exists, exported as `.` and `./llm`. Everything else is planned (P2 onward). **Nothing imports `@hirelane/agent` yet**, and `workers/runner` does not depend on it |
+| `workers/runner` | `@hirelane/runner` | graphile-worker bootstrap, tasks, crontab, and the in-process `enrich:run` CLI | all packages | Contain UI | Built, partially (P0 to P2). Registered tasks are listed in §4.3. `company:logo` is coded and tested but not registered |
+| `apps/web` | `@hirelane/web` | Pages, server actions, route handlers, `lib/{queries/,session,format}.ts` | `db`, `engine`, `agent` | Import `ingest` or `workers` | Built, P0 to P3, plus the landing v3 home page (`/`), the waitlist and the autopilot stats route. The public board, job, list and company pages, the public API route handlers, markdown negotiation, `llms.txt`, sitemaps and `robots.txt` are part of P3. It depends on `@hirelane/db` (`withAdmin`) and `@hirelane/engine` (role families, places). **Still stubs:** `lib/session.ts` (sessions arrive in P4), and `lib/queries.ts` (`getFreshestJobs`, unused). `lib/queries.ts` sits next to the real `lib/queries/` directory (`jobs.ts`, `landing.ts`), so both exist (§7, item 12) |
 
 ### 2.2 Forbidden edges
 
@@ -81,19 +81,26 @@ PLAN §5.2 lists `pg` and `drizzle-orm` as db's only imports. In practice `packa
 
 | Concern | Choice | Status |
 |---|---|---|
-| Schema types | `packages/db/src/schema/*.ts` (Drizzle `pg-core`). It mirrors the SQL and never generates it | Built for the three ops tables (`schema/ops.ts`) |
+| Schema types | `packages/db/src/schema/*.ts` (Drizzle `pg-core`). It mirrors the SQL and never generates it | Built for `schema/ops.ts`, `ingest.ts`, `jobs.ts`, `llm.ts` and `waitlist.ts` |
 | Queries | Drizzle query builder over the `PoolClient` that `withUser` or `withAdmin` hands in, so RLS context and role apply to every Drizzle query. Raw `client.query` stays allowed for SQL Drizzle cannot express (HNSW KNN ordering, `REFRESH MATERIALIZED VIEW CONCURRENTLY`, `set_config`) | `getDb()` exists in `client.ts` but has no callers yet. The heartbeat task uses raw `client.query` |
-| Migrations | `packages/db/migrations/NNNN_<name>.sql`, applied in lexical order by `migrate.ts` | Built. Only `0001_foundation.sql` exists |
+| Migrations | `packages/db/migrations/NNNN_<name>.sql`, applied in lexical order by `migrate.ts` | Built. `0001` to `0006` exist (list below), including `0004a` and `0004b` |
 | Runner | Ported from solum. Creates `schema_migrations(name text pk, checksum text, applied_at timestamptz)`, computes `sha256(file)` (first 16 hex characters) per file, skips files whose checksum matches, **refuses** an applied file whose checksum has changed, applies each new file in its own `BEGIN … COMMIT` and records it, and rolls back with the file name on failure. It refuses a pooled endpoint | Built in `migrator.ts`, except the pooler refusal (**Gap**, see §1) |
 | Drizzle Kit | `drizzle-kit push` and `drizzle-kit generate` are **never** used. There is no `drizzle.config.ts` and no `drizzle-kit` dependency | Confirmed absent |
 | Drift | `verify-schema.ts` (via `verify-schema-lib.ts`) compares the Drizzle schema with `information_schema` and exits non-zero on a missing or extra table or column, or on a nullability mismatch. It runs in `pnpm verify` | Built for tables, columns and nullability. **Gap:** the ADR also requires type and `pg_indexes` checks. Neither is implemented, so the unique index on `feature_flags` and the HNSW and trigram indexes to come are not covered |
-| pgvector | Drizzle `vector({ dimensions: 384 })` from `drizzle-orm/pg-core` `[assumption: confirm in Phase 0; fall back to customType]`. Each embedding row also stores `embedding_model`, and a provider change means a new migration plus the `embed:reindex` task | **Still unconfirmed.** No vector column exists yet, so the Drizzle `vector` type has not been exercised. Confirm in the first phase that adds one |
+| pgvector | Drizzle `vector({ dimensions: 384 })` from `drizzle-orm/pg-core` `[assumption: confirm in Phase 0; fall back to customType]`. Each embedding row also stores `embedding_model`, and a provider change means a new migration plus the `embed:reindex` task | **Partly confirmed.** A vector column now exists: `jobs.embedding vector(384)` (migration `0004_jobs_enrichment.sql`), mirrored by `vector({ dimensions: 384 })` in `schema/jobs.ts`. The drift check does not compare types, so the match is not verified by tooling (§7, item 3) |
 | Roles | Owner (the connection user) owns every object. `hirelane_app NOLOGIN` owns nothing. Migrations `GRANT hirelane_app TO current_user` (tolerating `duplicate_object` and `invalid_grant_operation`, as solum does) so that `SET LOCAL ROLE` works from the owner connection | **Gap:** no migration grants this yet (a search for `GRANT hirelane_app` finds nothing). A local superuser owner does not need it, so Docker hides the gap. A non-superuser owner would fail at `SET LOCAL ROLE`. Add the grant in the next migration |
 
 **Migrations named by the plan:**
 - `0001_foundation.sql` (**built**): extensions `vector`, `pg_trgm`, `citext`, `pgcrypto`; role `hirelane_app NOLOGIN` (created idempotently, since roles are cluster-wide); tables `worker_heartbeats` (index `worker_heartbeats_at_idx`), `feature_flags` (unique index on `key, coalesce(user_id, nil uuid)`), `rate_limits` (primary key `(bucket, window_start)`). It also grants `USAGE` on `public` to the app role, `SELECT` on `feature_flags`, and `SELECT, INSERT, UPDATE, DELETE` on `rate_limits`.
-- `0005_auth.sql` (planned, P4): `users`, `sessions` (revoked from the app role), `email_tokens`.
-- `0006_profiles_resumes.sql` (planned, P4): `profiles`, `work_authorizations`, `answer_bank`, `resumes`, all with RLS.
+- `0002_companies_boards_postings.sql` (**built**, P1): `companies`, `company_boards`, `postings`.
+- `0003_ingest_runs.sql` (**built**, P1): `ingest_runs`, `ingest_source_runs`.
+- `0004_jobs_enrichment.sql` (**built**, P2): `skills`, `fx_rates`, `jobs` (including `embedding vector(384)`), `job_requirements`.
+- `0004a_llm_calls.sql` (**built**, P2): `llm_calls`. Metadata only, with no prompt or completion text.
+- `0004b_posting_geo.sql` (**built**, P2): an `ALTER` that adds `postings.geo_countries char(2)[]`. It creates no table.
+- `0005_public_board.sql` (**built**, P3): a trigram index on `jobs`, and the materialized view `job_facets`, which has a unique index and `SELECT` granted to `hirelane_app`. It is a view, not a table.
+- `0006_waitlist.sql` (**built**, landing): `waitlist`, with a unique index on `lower(email)`, and an `INSERT`-only grant to `hirelane_app`. It holds contact details only.
+
+The P4 auth and profile migrations (planned `users`, `sessions` (revoked from the app role), `email_tokens`, then `profiles`, `work_authorizations`, `answer_bank`, `resumes`, all with RLS) take the next free numbers after `0006`. They are assigned in P4. The names `0005_auth.sql` and `0006_profiles_resumes.sql` used earlier in this document are already taken.
 
 Other numbers are assigned by the phase that needs them. They are not pre-allocated here.
 
@@ -114,13 +121,17 @@ PLAN §6 requires `ENABLE` **and** `FORCE ROW LEVEL SECURITY` on every user-owne
 
 Local Docker hides this because the owner there is a superuser.
 
-Several Hirelane `withAdmin` paths read across users and would silently return nothing on such a host: `application:commit-expired`, `retention:purge`, `ops:freshness`, `/ops/*`, export and delete. **This is unresolved.** No user-owned table exists yet, so nothing is at risk today. The options are:
+Several Hirelane `withAdmin` paths read across users and would silently return nothing on such a host: `application:commit-expired`, `retention:purge`, `ops:freshness`, `/ops/*`, export and delete. **Decided 2026-10-28** (`docs/design/hld-lld-core-loop.md`, conflict 1). Drop FORCE and keep ENABLE. `hirelane_app` owns nothing, so ordinary RLS applies to it. Cross-user `withAdmin` paths are limited by a `withadmin-allowlist` guard, either a guard script or a dependency-cruiser rule on the `withAdmin` import, so user routes stay on `withUser`. `verify-rls` runs as a **non-superuser** owner, so the failure cannot hide behind Docker's superuser.
+
+**Not implemented yet** (checked 2026-10-28). No migration enables RLS. `withAdmin` in `client.ts` has no allowlist. `verify-rls.ts` does not exist, and `db:verify-rls` is still a stub that echoes "not implemented until Phase 4". The guard and `verify-rls` are due with the first user-owned table in P4 (§7, item 1).
+
+The options considered before the decision were:
 
 1. Grant the owner `BYPASSRLS` explicitly. FORCE stays, and admin intent is explicit.
 2. Keep FORCE and run every cross-user sweep as per-user `withUser` iterations. This exercises RLS more, but is slower and awkward for aggregates.
-3. Follow solum and drop FORCE. The app role owns nothing, so ordinary RLS already applies to it.
+3. Follow solum and drop FORCE. The app role owns nothing, so ordinary RLS already applies to it. **This is the option chosen.**
 
-Until this is decided, `verify-rls` must include a check that runs as a **non-superuser** owner, so the failure cannot hide behind Docker's superuser. `db:verify-rls` is currently a stub that echoes "not implemented until Phase 4".
+The "No user-owned table exists yet" point above still holds. Nothing is at risk today.
 
 ---
 
@@ -144,13 +155,13 @@ It manages its own `graphile_worker` schema, and `hirelane_app` has no grants on
 
 | Requirement | Mechanism | Status |
 |---|---|---|
-| "8 global" for `ingest:source` | Worker `concurrency` covers all tasks in a process. Ingest's global cap of 8 is enforced by running ingest at worker `concurrency: 8`. If other task classes need a different cap, they get a separate runner process `[assumption: one process in Phase 0–1]` | **Gap:** `workers/runner/src/index.ts` runs at `concurrency: 4`. Set it to 8 when ingest lands |
-| "1 per host" | `queueName: 'host:<hostname>'` on `ingest:source` and `company:logo`. graphile-worker runs jobs in a named queue strictly one at a time. The **1 request per second** limit inside a task is a separate in-process limiter in `@hirelane/ingest`, because queue serialisation alone does not throttle. Named queues carry a throughput cost, so they are used only where serialisation is required | Planned (P1, P3) |
-| Singletons | A fixed `jobKey` (for example `ops:freshness`). Cron items also rely on the crontab's own once-per-tick guarantee | Planned |
+| "8 global" for `ingest:source` | Worker `concurrency` covers all tasks in a process. Ingest's global cap of 8 is enforced by running ingest at worker `concurrency: 8`. If other task classes need a different cap, they get a separate runner process `[assumption: one process in Phase 0–1]` | **Open:** `workers/runner/src/index.ts` still runs at `concurrency: 4` (line 13), so ingest's cap of 8 is not applied yet (§7, item 8) |
+| "1 per host" | A named `queueName` on `ingest:source` (planned as `host:<hostname>` here, but the code uses `ingest-{ats}`, one queue per ATS) and on `company:logo` (planned, not registered). graphile-worker runs jobs in a named queue strictly one at a time. The **1 request per second** limit inside a task is a separate in-process limiter in `@hirelane/ingest`, because queue serialisation alone does not throttle. Named queues carry a throughput cost, so they are used only where serialisation is required. `enrich:` facets refresh uses a `facets` queue | Built for `ingest:source` and `facets:refresh` (P1, P2). `company:logo` planned (P3) |
+| Singletons | A fixed `jobKey` (for example `ops:freshness`). Cron items also rely on the crontab's own once-per-tick guarantee. `facets:refresh` uses `jobKey` with `jobKeyMode: 'preserve_run_at'` | Built for `facets:refresh`. Other singletons planned |
 | Replace semantics | `jobKeyMode: 'replace'` for `match:user-full`, so the latest resume or profile change wins | Planned (P4) |
-| Retries | graphile-worker exponential backoff (`maxAttempts` per task). Ingest's HTTP retries (3, honouring `Retry-After` on a 429) happen inside the task | Planned (P1). No `maxAttempts` set yet |
+| Retries | graphile-worker exponential backoff (`maxAttempts` per task). Ingest's HTTP retries (3, honouring `Retry-After` on a 429) happen inside the task | `maxAttempts` is set on `ingest:source` (5), `ingest:finalize` (5), `enrich:company` (3) and `facets:refresh` (3). The HTTP retry layer is `packages/ingest/src/run/retry.ts` |
 | Time zone | The worker runs with `TZ=UTC`, so `03:30` means 03:30 UTC unambiguously | **Gap:** neither the `worker` script, the runner code nor `.env.example` sets `TZ`. Add `TZ=UTC` to the worker's environment |
-| DB access in tasks | `withAdmin` for ingest and ops. `withUser(userId)` for anything per-user, so RLS stays exercised (PLAN §10) | `heartbeat` uses graphile-worker's own `helpers.withPgClient`, not `withAdmin`. That is acceptable for a system task that writes one table, but it is not the documented pattern |
+| DB access in tasks | `withAdmin` for ingest and ops. `withUser(userId)` for anything per-user, so RLS stays exercised (PLAN §10) | `heartbeat` uses graphile-worker's own `helpers.withPgClient`, not `withAdmin`. That is acceptable for a system task that writes one table, but it is not the documented pattern. The enrich tasks use `withAdmin` (`workers/runner/src/tasks/enrich.ts`) |
 
 ### 4.2 Crontab (`workers/runner/crontab`)
 
@@ -158,6 +169,7 @@ The intended schedule (PLAN §5.5) is:
 
 ```
 7 */6 * * *   ingest:schedule
+37 */6 * * *  enrich:schedule
 */15 * * * *  ops:freshness
 30 3 * * *    retention:purge
 * * * * *     application:commit-expired
@@ -165,7 +177,7 @@ The intended schedule (PLAN §5.5) is:
 0 4 1 * *     company:logo          # monthly refresh; exact slot [assumption]
 ```
 
-**Built today:** `heartbeat` (`* * * * *`) and `ingest:schedule` (`7 */6 * * *`, Phase 1, uncommitted). The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
+**Built today** (`workers/runner/crontab`): `heartbeat` (`* * * * *`), `ingest:schedule` (`7 */6 * * *`, Phase 1) and `enrich:schedule` (`37 */6 * * *`, Phase 2, 30 minutes after ingest). The `company:logo` line above is not in the crontab yet, because the task is not registered (§4.3). The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
 
 ### 4.3 Task catalogue (PLAN §5.5, condensed)
 
@@ -175,8 +187,11 @@ The intended schedule (PLAN §5.5) is:
 | `ingest:schedule` | cron `7 */6 * * *` | singleton | admin | 1 | Built (uncommitted). Skips when a run is `running` and started within 2 hours. Inserts `ingest_runs`, enqueues one `ingest:source` per verified board and one `ingest:finalize`. See `docs/ingest.md` §3 |
 | `ingest:source` | schedule | `ingest:source:{runId}:{boardId}` key; queue `ingest-{ats}` (one per ATS host); `maxAttempts 5` | admin | 1 | Built (uncommitted). Fetches one board through `@hirelane/ingest` and commits it in one transaction. Failed fetches are recorded, not thrown. Worker concurrency is 4 (**Gap**: ingest expects 8) |
 | `ingest:finalize` | last source done, or a 45-minute timeout | per run; re-queues every 15 s | admin | 1 | Built (uncommitted). Records boards that never committed as failed, soft-closes postings with `missed_runs >= 2`, and writes run totals. See `docs/ingest.md` §4 |
-| `enrich:posting` | new or changed posting; `enrich_version` bump | per posting | admin | 2 | Planned |
-| `company:logo` | new company, or monthly | per company; SSRF-guarded | admin | 3 | Planned |
+| `enrich:schedule` | cron `37 */6 * * *` | singleton | admin | 2 | Built. Runs the lifecycle sync (closures and reopens reach `jobs` here), enqueues `facets:refresh` when anything changed, and fans out one `enrich:company` per company with pending postings. A posting is selected only when its content hash or `ENRICH_VERSION` changed |
+| `enrich:company` | enqueued by `enrich:schedule` (`enrich:run` calls the same code in-process, without the queue) | key `enrich:company:{companyId}`; `maxAttempts 3` | admin | 2 | Built. Enriches one company's postings, then enqueues `facets:refresh` when anything was created or enriched |
+| `enrich:posting` | was planned as new or changed posting; `enrich_version` bump | per posting | admin | 2 | Registered in `tasks/enrich.ts`, but no code enqueues it yet. `enrich:company` is the batch path |
+| `facets:refresh` | enqueued by the enrich tasks, delayed 60 s | `jobKey facets:refresh`; queue `facets`; `maxAttempts 3` | admin | 2 | Built. `REFRESH MATERIALIZED VIEW CONCURRENTLY job_facets` |
+| `company:logo` | new company, or monthly | per company; SSRF-guarded | admin | 3 | Coded and tested in `tasks/company.ts`, with fixture and live modes through `@hirelane/ingest/src/company`. **Not registered:** `tasks/index.ts` does not spread `createCompanyTasks()`, and the crontab has no entry |
 | `embed:job` / `embed:resume` / `embed:reindex` | enrich, parse, provider change | per entity | admin / user | 2–4 | Planned |
 | `match:user-full` | resume or profile change | per user (replace) | user | 4 | Planned |
 | `match:user-delta` | ingest finalize | per user | user | 4 | Planned |
@@ -201,15 +216,17 @@ The intended schedule (PLAN §5.5) is:
 |---|---|---|---|---|---|
 | `DATABASE_URL` | `postgres://hirelane:hirelane@localhost:5433/hirelane` (in `.env.example`) | db, worker, web | yes outside dev | 0 | **Note:** `requireDatabaseUrl` has no code default. It throws if the variable is unset. Must be a direct (non-pooler) endpoint for `migrate` and the worker (pooler check not yet built) |
 | `TEST_DATABASE_URL` | `postgres://hirelane:hirelane@localhost:5433/hirelane_test` (in `.env.example`) | db tests | no | 0 | Not in the original ADR table. Added for the `hirelane_test` database created by `docker/initdb` |
-| `APP_ORIGIN` | `http://localhost:3001` `[assumption]` | web, ingest recorder (UA `HirelaneBot/0.1 (+APP_ORIGIN/contact)`), mail templates | no | 1 | Not yet in `.env.example` |
-| `HIRELANE_INGEST_MODE` | `fixture` | ingest, worker | no | 1 | In `.env.example`. `fixture` reads the gzipped fixtures; `live` calls the ATS APIs. No code reads it yet |
+| `APP_ORIGIN` | `http://localhost:3001` `[assumption]` | web, ingest recorder (UA `HirelaneBot/0.1 (+APP_ORIGIN/contact)`), mail templates | no | 1 | Not yet in `.env.example` (checked 2026-10-28). `openapi.json` reads it at build time |
+| `HIRELANE_INGEST_MODE` | `fixture` | ingest, worker | no | 1 | In `.env.example`. `fixture` reads the gzipped fixtures; `live` calls the ATS APIs. Read by code. `packages/ingest/src/run/args.ts` falls back to `fixture`, and the runner treats any value other than `live` as `fixture` |
+| `HIRELANE_LOGO_DIR` | none | runner (`company:logo`) | no | 3 | Read by code. Not in `.env.example` |
+| `TRUST_PROXY_HOPS` | none | web (`lib/rate-limit.ts`, `clientIp`) | no | 3 | In `.env.example`. Sets how many proxy hops are trusted when reading the client IP |
 | `HIRELANE_OPS_TOKEN` | none | web `/ops/*` | **yes** | 1 | In `.env.example`, blank. Gates ops until admin roles land in Phase 4 |
-| `HIRELANE_LLM_MODE` | `auto` | agent | no | 2 | In `.env.example`. `auto`, `live`, `fixture` or `off` |
+| `HIRELANE_LLM_MODE` | unset | agent (`src/llm/factory.ts`, `resolveLlmMode`) | no | 2 | In `.env.example`. Code reads `anthropic` or `fixture`. Unset resolves to `anthropic` when `ANTHROPIC_API_KEY` is set, otherwise `off`. An explicit `anthropic` without a key degrades to `off`. Any other value resolves to `off`. There is no `auto` or `live` value in the code |
 | `ANTHROPIC_API_KEY` | none | agent `AnthropicProvider` | **yes** | 2 | In `.env.example`, blank. When absent, `auto` resolves to `fixture` |
 | `HIRELANE_MODEL_DRAFT` | `claude-sonnet-5-5` | agent | no | 4 | In `.env.example` |
 | `HIRELANE_MODEL_BULK` | `claude-haiku-5-5` | agent | no | 2 | In `.env.example`. Extraction and classification fallback |
 | `HIRELANE_EMBEDDINGS` | `hash` | agent, worker | no | 2 | In `.env.example`. `hash` (CI) or `local` (cached in `.cache/models`) |
-| `HIRELANE_MASTER_KEY` | none (dev key from `pnpm setup:keys`) | agent and db encryption (AES-256-GCM envelope) | **yes** | 4 | **Gap:** `.env.example` tells the reader to run `pnpm setup:keys`, but no such script exists in `package.json`. Never committed. Rotation re-wraps the data keys (Phase 8) |
+| `HIRELANE_MASTER_KEY` | none (dev key from `pnpm setup:keys`) | agent and db encryption (AES-256-GCM envelope) | **yes** | 4 | **Gap (open, checked 2026-10-28):** `.env.example` tells the reader to run `pnpm setup:keys`, but no such script exists in the root `package.json`. Never committed. Rotation re-wraps the data keys (Phase 8) |
 | `HIRELANE_REPLY_DOMAIN` | `replies.localhost` in `.env.example` | agent `mail/`, web copy panel | no | 5 | The ADR had "dev value TBD". The file sets `replies.localhost`. Alias `{reply_handle}+{reply_token}@{domain}` |
 | Inbound-mail webhook HMAC secret | `[assumption: name TBD]` | web `/api/webhooks/inbound-email` | **yes** | 6 | HMAC-SHA256 over timestamp + body, ±5 minutes. Not yet named (§7, item 4) |
 | Mailer / transport config | `[assumption: name TBD]` (dev writes to `.mail/` outbox) | agent `mail/` | **yes** | 6 | Not yet named |
@@ -217,9 +234,9 @@ The intended schedule (PLAN §5.5) is:
 | Stripe key and webhook secret | `[assumption: name TBD]` | web billing, `billing:process-event` | **yes** | 7 | Provider `fake` in dev. Not yet named |
 | `HIRELANE_FAULTS` | empty | ingest (test only) | no | 8 | In `.env.example`, blank. For example `board:500:<token>` |
 | `HIRELANE_ENABLE_SUBMIT` | `0` in `.env.example` | agent `submit/` | no | 9 | **Note:** the ADR said "unset", but `.env.example` sets `0`, which the file says must stay `0` by default. Keep `0`. This is one of four independent switches. It must be `1`, **and** a `feature_flags` row, user opt-in and the ATS allowlist must all be present |
-| `TZ` | `UTC` | worker | no | 0 | **Gap:** not set anywhere yet (see §4.1) |
+| `TZ` | `UTC` | worker | no | 0 | **Gap (open, checked 2026-10-28):** not set in `workers/runner`, `package.json` or `.env.example` (see §4.1) |
 
-`ENGINE_VERSION` is a code constant exported by `@hirelane/engine`, not an environment variable. It does not exist yet.
+`ENGINE_VERSION` is a code constant exported by `@hirelane/engine`, not an environment variable. It is `'1.0.0'` in `packages/engine/src/version.ts`.
 
 ---
 
@@ -231,8 +248,9 @@ Status key: **[built]** exists and is wired; **[partial]** exists but is a stub 
 hirelane/
 ├─ package.json                  [built P0] pnpm@9.12.0, node>=20. Scripts: dev, worker, test, test:scripts, e2e, typecheck,
 │                                           lint:deps, brand-guard, no-submit-guard, verify, db:{up,down,migrate,seed,reset,fresh,
-│                                           verify-schema}. db:verify-rls and db:verify-auth are stubs (P4). ingest:run, ingest:record,
-│                                           engine:eval, agent:eval, report:coverage and bench:board are stubs that echo "not implemented until Pn"
+│                                           verify-schema}, enrich:run. db:verify-rls and db:verify-auth are stubs (P4). agent:eval is a stub
+│                                           that echoes "not implemented until P4". ingest:run, ingest:record, engine:eval, enrich:run, report:coverage
+│                                           and bench:board are wired to scripts
 ├─ pnpm-workspace.yaml            [built P0] packages/*, apps/*, workers/*
 ├─ tsconfig.base.json             [built P0] strict, noUncheckedIndexedAccess
 ├─ vitest.config.ts               [built P0] root config, `projects` for packages/*, workers/*, scripts (ADR said vitest.workspace.ts)
@@ -266,7 +284,7 @@ hirelane/
 │  └─ mini/                       [built P1, uncommitted] 5 boards: ashby openai, benchling, temporal; greenhouse airtable; lever cred
 ├─ packages/
 │  ├─ engine/                     [built P2, uncommitted] @hirelane/engine. Pure and deterministic, zero runtime deps. package.json (test, typecheck, eval scripts), tsconfig, vitest config. ENGINE_VERSION '1.0.0' in src/version.ts, ENRICH_VERSION 1, DOC_FORMAT_VERSION 1. 675 tests in 10 files, passing 2026-10-16. See docs/enrichment.md
-│  │  ├─ src/index.ts              [built P2] public exports
+│  │  ├─ src/index.ts              [built P2] public exports, preceded by a leftover `export const x=1` line (delete it)
 │  │  ├─ src/{salary,fx,currency,requirements,skills,places,text,trace,dedup,errors,types,version}.ts   [built P2, uncommitted]
 │  │  ├─ src/classify/            [built P2] level, workplace, employment, roleFamily, visa; index.ts re-exports
 │  │  ├─ src/internal/tracer.ts   [built P2] evidence helper shared by classifiers and dedup
@@ -276,7 +294,8 @@ hirelane/
 │  │  └─ test/                    [built P2] one file per module plus corpus.test.ts and the three JSONL corpora
 │  ├─ db/
 │  │  ├─ package.json             [built P0] exports ".", "./env"; scripts migrate, seed, reset, verify-schema, test, typecheck
-│  │  ├─ migrations/NNNN_*.sql    [built P0] 0001_foundation.sql. 0002_companies_boards_postings.sql and 0003_ingest_runs.sql [built P1, uncommitted]. 0005_auth, 0006_profiles_resumes [planned P4]; others per phase
+│  │  ├─ migrations/NNNN_*.sql    [built P0 to P3] 0001_foundation, 0002_companies_boards_postings, 0003_ingest_runs, 0004_jobs_enrichment,
+│  │  │                         0004a_llm_calls, 0004b_posting_geo, 0005_public_board, 0006_waitlist. P4 auth and profile migrations take the next free numbers (§3)
 │  │  ├─ test/                    [built P0] migrator.test.ts, verify-schema.test.ts, queue.test.ts, helpers.ts
 │  │  └─ src/
 │  │     ├─ client.ts            [built P0] getPool, getDb, withAdmin, withUser, close
@@ -286,8 +305,9 @@ hirelane/
 │  │     ├─ reset.ts             [built P0] drops graphile_worker and public; refuses non-local URLs
 │  │     ├─ seed.ts             [partial P0] stub: logs "nothing to seed yet"
 │  │     ├─ verify-schema.ts, verify-schema-lib.ts   [built P0] tables, columns, nullability
-│  │     ├─ ingest/persist.ts     [built P1, uncommitted] recordSourceSuccess (one-transaction board commit), recordSourceFailure, startRun, finalizeRun (soft-close), closeBoard, upsertCompanyBoard
-│  │     ├─ schema/ingest.ts      [built P1, uncommitted] companies, company_boards, postings, ingest_runs, ingest_source_runs
+│  │     ├─ ingest/{index,persist}.ts  [built P1] recordSourceSuccess (one-transaction board commit), recordSourceFailure, startRun, finalizeRun (soft-close), closeBoard, upsertCompanyBoard
+│  │     ├─ enrich/{index,persist,coverage}.ts  [built P2] reference seeds (skills, FX), job and requirement writes, clustering candidates, pending-company listing, `refreshJobFacets`
+│  │     ├─ schema/{ingest,jobs,llm,waitlist}.ts  [built P1 to P3] companies, company_boards, postings, ingest_runs, ingest_source_runs; jobs, job_requirements, skills, fx_rates; llm_calls; waitlist
 │  │     ├─ queue.ts             [built P0] addJob over quickAddJob (owner connection, §2.3)
 │  │     ├─ schema/ops.ts        [built P0] worker_heartbeats, feature_flags, rate_limits
 │  │     ├─ schema/index.ts      [built P0]
@@ -295,16 +315,17 @@ hirelane/
 │  │     ├─ verify-auth.ts       [planned P4]
 │  │     ├─ auth.ts              [planned P4] scrypt plus opaque sessions
 │  │     └─ index.ts            [built P0] public exports
-│  ├─ ingest/                     [built P1, uncommitted] @hirelane/ingest. No src/index.ts yet (**Gap**: package.json names it as main and types). Workers import src/run/index and src/connectors/index directly
+│  ├─ ingest/                     [built P1 to P3] @hirelane/ingest. No src/index.ts yet (**Gap**: package.json names it as main and types). Workers deep-import src/run/index, src/connectors/index, src/contract, src/company/logo and src/company/transport. A barrel is open (§7, item 13)
 │  │  ├─ boards.json, boards.candidates.json   [built P1] 119 verified boards (80 greenhouse, 28 ashby, 11 lever) and 154 candidates
 │  │  ├─ src/contract.ts          [built P1] RawPosting, Connector, FetchBoardResult, FetchPolicyError, NormalizedPosting
 │  │  ├─ src/normalize.ts         [built P1] normalize(), contentHash() (version v1)
 │  │  ├─ src/connectors/          [built P1] shared.ts (makeConnector, fixed URLs, token guard), greenhouse.ts, lever.ts, ashby.ts
+│  │  ├─ src/company/             [built P3] logo.ts (fetchCompanyLogo), logo-fetch.ts, transport.ts (createGuardedFetch, systemLookup), ip.ts, ico.ts, monogram.ts, name.ts, record-logos.ts, index.ts
 │  │  ├─ src/run/                 [built P1] run.ts (runIngest, ingestBoard, seedBoards), policy.ts (createPolicyFetch: 30 s timeout, 20 MB cap, host spacing), retry.ts, fixtures.ts (fixture transport), boards.ts, args.ts
 │  │  ├─ src/record/              [built P1] recordBoards (1 req/s per host; writes fixtures, boards.json, manifest), limiter.ts, fetch.ts, mini.ts (deriveMini), trim.ts, cli.ts (pnpm ingest:record)
 │  │  ├─ src/cli.ts               [built P1] pnpm ingest:run (fixture or live)
 │  │  └─ test/                    [built P1] 12 files, 166 tests (passing 2026-10-16)
-│  └─ agent/                      [built P2, uncommitted] @hirelane/agent. package.json exports "." and "./llm". Depends on @anthropic-ai/sdk, zod, @hirelane/db. 31 tests in 4 files, passing 2026-10-16
+│  └─ agent/                      [partly built P2] @hirelane/agent. package.json exports "." and "./llm". Depends on @anthropic-ai/sdk, zod, @hirelane/db. 31 tests in 4 files, passing 2026-10-16. Only `src/llm/` exists, and nothing imports this package yet
 │     ├─ src/index.ts             [built P2] re-exports llm/index.ts
 │     ├─ src/llm/                 [built P2, uncommitted] AnthropicProvider (anthropic.ts), FixtureProvider (fixture.ts), NullProvider (null.ts), factory.ts (HIRELANE_LLM_MODE: anthropic | fixture | off), prompt.ts, db-sink.ts (llm_calls metadata only), types.ts (DEFAULT_MODEL claude-opus-5-5). See docs/enrichment.md §5
 │     ├─ test/                    [built P2] llm-anthropic, llm-mode, llm-null-fixture, llm-prompt
@@ -315,17 +336,24 @@ hirelane/
 │     └─ submit/                  [planned P9] flagged, isolated entry point
 ├─ workers/runner/                [built, partial P0] package name @hirelane/runner
 │  ├─ src/index.ts                [built P0] graphile-worker bootstrap, concurrency 4, pollInterval 2000
-│  ├─ src/tasks/index.ts          [built P0, extended P1] taskList = { heartbeat, ...createIngestTasks() }
-│  ├─ src/tasks/ingest.ts         [built P1, uncommitted] ingest:schedule, ingest:source, ingest:finalize; deps injectable (IngestDeps)
-│  ├─ test/ingest.tasks.test.ts   [built P1, uncommitted]
+│  ├─ src/enrich-cli.ts           [built P2] `pnpm enrich:run`, in-process enrichment (no queue), uses the enrich-core functions
+│  ├─ src/tasks/index.ts          [built P0, extended P1 to P2] taskList = { heartbeat, ...createIngestTasks(), ...createEnrichTasks() }. `createCompanyTasks()` is not spread in yet
+│  ├─ src/tasks/ingest.ts         [built P1] ingest:schedule, ingest:source, ingest:finalize; deps injectable (IngestDeps)
+│  ├─ src/tasks/enrich.ts         [built P2] enrich:schedule, enrich:company, enrich:posting (registered, no caller), facets:refresh; deps injectable (EnrichDeps)
+│  ├─ src/tasks/enrich-core.ts    [built P2] enrichCompany, enrichPostingById, ensureReferenceData, syncJobLifecycle, loadEngineFx
+│  ├─ src/tasks/enrich-raw.ts     [built P2] replays `postings.raw` through the real ingest connector, so the engine gets a RawPosting
+│  ├─ src/tasks/company.ts        [built P3, unregistered] company:logo; fixture or live mode (SSRF-guarded)
 │  ├─ src/tasks/heartbeat.ts      [built P0]
 │  ├─ test/runner.test.ts         [built P0] heartbeat behaviour, task list, crontab
-│  └─ crontab                     [partial P0, extended P1] heartbeat and `7 */6 * * * ingest:schedule`; full schedule in §4.2
-├─ apps/web/                      [built P0 to P3, uncommitted] Next 15, React 19, Tailwind v4, :3001. Depends on @hirelane/db and @hirelane/engine
+│  ├─ test/ingest.tasks.test.ts   [built P1]
+│  ├─ test/enrich.tasks.test.ts, test/enrich.test.ts   [built P2]
+│  ├─ test/company.tasks.test.ts  [built P3]
+│  └─ crontab                     [partial P0, extended P1 to P2] heartbeat, `7 */6 * * * ingest:schedule`, `37 */6 * * * enrich:schedule`; full schedule in §4.2
+├─ apps/web/                      [built P0 to P3, landing v3 and waitlist] Next 15, React 19, Tailwind v4, :3001. Depends on @hirelane/db and @hirelane/engine
 │  ├─ middleware.ts               [built P3] markdown negotiation for /job/{slug} (lib/negotiate.ts). Rewrites to /md/job/{slug}, 404s direct /md/*, adds Vary and a Link alternate to HTML
 │  ├─ app/layout.tsx, wordmark.tsx, source-badge.tsx, globals.css, icon.svg, fonts/   [built P0] shell, wordmark, ATS source marks, Overpass
 │  ├─ app/                        [built P3] pages:
-│  │  ├─ page.tsx                 `/` home
+│  │  ├─ page.tsx                 `/` landing v3 [built, landing]: components/landing-v3/* (hero, sections, stack, tour); data from lib/queries/landing.ts; road photos from lib/landing-v3/photos.ts
 │  │  ├─ jobs/page.tsx            `/jobs` ledger with URL-state filters; only the bare ledger is indexable
 │  │  ├─ job/[slug]/page.tsx      `/job/{slug}` HTML job page (open or closed)
 │  │  ├─ companies/page.tsx, company/[slug]/page.tsx   `/companies`, `/company/{slug}`
@@ -334,7 +362,10 @@ hirelane/
 │  │  ├─ api-docs/page.tsx        `/api-docs`, rendered from buildOpenApi()
 │  │  └─ ops/ingest/page.tsx, ops/session/route.ts    `/ops/ingest`, guarded by the ops token cookie (lib/ops-auth.ts)
 │  ├─ app/api/health/route.ts     [built P0] `/api/health`
-│  ├─ app/api/public/             [built P3] the public JSON API
+│  ├─ app/api/waitlist/route.ts   [built, landing] POST `/api/waitlist` (dynamic); `createWaitlistHandler` in lib/waitlist.ts. The INSERT runs through `withAdmin`, not as `hirelane_app`, so the INSERT-only grant from migration 0006 is unused by this path
+│  ├─ app/api/public/stats/autopilot/{route,handler}.ts   [built, landing] `/api/public/stats/autopilot`: 60 requests per 60 s, `withAdmin`, engine `ROLE_FAMILIES`, snapshot from lib/autopilot-proxy.ts
+│  ├─ app/dev/ui/, app/dev/landing-kit/   [built, dev only] `/dev/ui` and `/dev/landing-kit`. Both call `notFound()` when `NODE_ENV` is `production`. Both pages set `robots` to noindex
+│  ├─ app/api/public/             [built P3] the public JSON API (the `stats/autopilot` route sits here too, see above)
 │  │  ├─ _lib/handlers.ts         createJobsHandler, createJobDetailHandler: rate-limit gate, strict parsing, cachedJson, 500 on error. Deps are injectable for tests
 │  │  ├─ _lib/http.ts             CORS_HEADERS, errorResponse, weakEtag, etagMatches, cachedJson, optionsResponse
 │  │  ├─ _lib/detail.ts           getPublicJobDetail: one job by slug with requirements, salary trace and sources
@@ -346,8 +377,13 @@ hirelane/
 │  ├─ app/sitemap.xml/route.ts    [built P3] sitemap index
 │  ├─ app/sitemaps/               [built P3] jobs/[file] (chunks of 50,000), companies.xml, lists.xml
 │  ├─ app/md/job/[slug]/route.ts  [built P3] markdown for one job; internal, reached only through the middleware rewrite
+│  ├─ lib/queries/landing.ts      [built, landing] landing loaders: live counts, freshest-jobs ticker, demo card stack, one real salary trace. One cached read (300 s, tag `jobs`)
+│  ├─ lib/landing-v3/photos.ts    [built, landing] road photographs and sign-panel rectangles for the landing hero
+│  ├─ lib/waitlist.ts             [built, landing] waitlist handler (`createWaitlistHandler`)
+│  ├─ lib/autopilot-proxy.ts      [built, landing] snapshot and per-week figures for the autopilot stats route
 │  ├─ lib/queries/jobs.ts         [built P3] the board query: filter, total, page and facets in one parameterised statement; appOrigin(); toPublicJob()
-│  ├─ lib/queries.ts, lib/session.ts   [stub P0] getFreshestJobs and getSession are placeholders
+│  ├─ lib/queries.ts              [stub P0, dead] getFreshestJobs has no callers. It sits beside lib/queries/ and should be deleted (§7, item 12)
+│  ├─ lib/session.ts              [stub P0] getSession is a placeholder until P4
 │  ├─ lib/public-api-params.ts    [built P3] API_PARAM_ORDER, parseStrict (400 on bad values), serializeApi (canonical links)
 │  ├─ lib/public-api-schema.ts    [built P3] schemas derived from lib/contracts/jobs.schema.json (JobDetail merged, Error codes enumerated)
 │  ├─ lib/contracts/jobs.schema.json   [built P3] committed JSON Schema contract for the list envelope and job detail
@@ -372,14 +408,19 @@ hirelane/
 
 ## 7. Open items
 
-1. **FORCE RLS versus `withAdmin` on a non-superuser owner** (§3.1). Pick option 1, 2 or 3 before migration `0006_profiles_resumes.sql` (Phase 4). Until then `verify-rls` must also run as a non-superuser owner.
-2. **`@hirelane/db` depends on `graphile-worker`.** Enqueueing uses the owner connection after commit (§2.3). PLAN §5.2's "may import" column should be amended to match. Not yet amended.
-3. **Drizzle pgvector type.** Confirm `vector({ dimensions: 384 })` in the first phase that adds a vector column, or fall back to `customType`. Still open.
-4. **Unnamed secrets** for inbound mail, the mailer, Razorpay and Stripe. Name them in the phase that introduces each one, then add them to §5 and `.env.example` as blanks. Still open.
-5. **Engine clock and randomness ban.** Choose the enforcement mechanism (lint rule or guard script) in Phase 2. Still open.
-6. **Owner membership in `hirelane_app`.** Add `GRANT hirelane_app TO current_user` (tolerating `duplicate_object` and `invalid_grant_operation`) in a migration, so `withUser` works with a non-superuser owner. Not yet done. Needed before any user-scoped query runs outside a superuser (Phase 4 at the latest).
-7. **Direct-connection TLS and pooler refusal.** Apply the TLS rule to the graphile-worker connection and to `addJob`, and refuse a `-pooler.` host in `migrate`. Not yet done.
-8. **Worker time zone and concurrency.** Set `TZ=UTC` for the worker, and raise `concurrency` to 8 when ingest lands. Not yet done.
-9. **`verify-schema` coverage.** Add type and `pg_indexes` checks, as §3 requires. Not yet done.
-10. **Missing tooling referenced by the docs.** `pnpm setup:keys` (referenced by `.env.example`) does not exist. Either add it in Phase 4 with the master key, or remove the reference.
-11. **Phase 0 is not yet committed.** As of 2026-10-16 the Phase 0 files are untracked in git (only `CLAUDE.md`, `PLAN.md` and `docs/recon/*` are tracked, and `.gitignore` has uncommitted edits). The acceptance checklist in PLAN.md Phase 0 has not been ticked.
+1. **FORCE RLS versus `withAdmin`** (§3.1). **Decided 2026-10-28:** drop FORCE, keep ENABLE, `hirelane_app` owns nothing, add the `withadmin-allowlist` guard, and run `verify-rls` as a non-superuser owner. **Still open (implementation):** no migration enables RLS, the guard does not exist, and `verify-rls.ts` does not exist. Due with the first user-owned table (P4). Design source: `docs/design/hld-lld-core-loop.md` (the core-loop HLD/LLD).
+2. **`@hirelane/db` depends on `graphile-worker`.** Enqueueing uses the owner connection after commit (§2.3). PLAN §5.2's "may import" column should be amended to match. **Still open** (checked 2026-10-28: `packages/db/package.json` lists `graphile-worker`).
+3. **Drizzle pgvector type.** `jobs.embedding vector(384)` now exists (migration 0004), so the type is exercised. **Still open:** no tooling checks column types, so confirm the match with the type check in item 9.
+4. **Unnamed secrets** for inbound mail, the mailer, Razorpay and Stripe. Name them in the phase that introduces each one, then add them to §5 and `.env.example` as blanks. **Still open.**
+5. **Engine clock and randomness ban.** Choose the enforcement mechanism (lint rule or guard script) in Phase 2. **Still open:** checked 2026-10-28. `.dependency-cruiser.cjs` has no clock or randomness rule, and `scripts/` has no guard for it.
+6. **Owner membership in `hirelane_app`.** Add `GRANT hirelane_app TO current_user` (tolerating `duplicate_object` and `invalid_grant_operation`) in a migration, so `withUser` works with a non-superuser owner. **Still open:** checked 2026-10-28, no migration or code contains `GRANT hirelane_app`. Needed before any user-scoped query runs outside a superuser (Phase 4 at the latest).
+7. **Direct-connection TLS and pooler refusal.** Apply the TLS rule to the graphile-worker connection and to `addJob`, and refuse a `-pooler.` host in `migrate`. **Still open.**
+8. **Worker time zone and concurrency.** Set `TZ=UTC` for the worker, and raise `concurrency` to 8 when ingest lands. **Both still open** (checked 2026-10-28): `workers/runner/src/index.ts` is at `concurrency: 4`, ingest has landed, and `TZ` is not set anywhere.
+9. **`verify-schema` coverage.** Add type and `pg_indexes` checks, as §3 requires. **Still open.**
+10. **Missing tooling referenced by the docs.** `pnpm setup:keys` (referenced by `.env.example`) does not exist. Either add it in Phase 4 with the master key, or remove the reference. **Still open** (checked 2026-10-28: the root `package.json` has no such script).
+11. **Phase 0 commit state.** **Closed 2026-10-28:** the Phase 0 files are tracked in git (for example `packages/db/src/client.ts` and `packages/engine/src/index.ts`). The PLAN.md Phase 0 acceptance checklist was not re-verified in this pass.
+12. **Dead stub `apps/web/lib/queries.ts`.** Delete it. `@/lib/queries` resolves to this file rather than to the `lib/queries/` directory, and nothing calls `getFreshestJobs`. **Open** (added 2026-10-28).
+13. **No `@hirelane/ingest` barrel.** Add `packages/ingest/src/index.ts`, or change `package.json` `main` and `types`. Until then the runner deep-imports `src/run/index`, `src/connectors/index`, `src/contract`, `src/company/logo` and `src/company/transport`. **Open** (added 2026-10-28).
+14. **`company:logo` is not registered.** Spread `createCompanyTasks()` into `taskList` in `workers/runner/src/tasks/index.ts`, and add the monthly crontab entry. **Open** (added 2026-10-28).
+15. **`enrich:posting` has no caller.** It is registered in `tasks/enrich.ts` but nothing enqueues it. Either wire it into the enrich flow or remove it. **Open** (added 2026-10-28).
+16. **Engine `src/index.ts` placeholder.** Delete the leftover `export const x=1` line. **Open** (added 2026-10-28).
