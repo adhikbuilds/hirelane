@@ -1,6 +1,7 @@
 import { Public_Sans } from "next/font/google";
 import Link from "next/link";
 import "../../app/campus.css";
+import { PublicFooter, PublicHeader } from "./Public";
 
 const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
 
@@ -29,18 +30,7 @@ const FEATURES = [
 export function CollegeLanding() {
   return (
     <div className={`cpl ${publicSans.variable} ${publicSans.className}`}>
-      <header className="cpl-top">
-        <span className="cpl-brand">
-          hire<b>lane</b> <span>for campus</span>
-        </span>
-        <nav aria-label="College site">
-          <a href="#features">What you get</a>
-          <a href="#privacy">Privacy</a>
-          <Link className="cp-btn" href="#demo">
-            Book a demo
-          </Link>
-        </nav>
-      </header>
+      <PublicHeader active="universities" />
 
       <section className="cpl-hero">
         <div>
@@ -112,14 +102,7 @@ export function CollegeLanding() {
         </form>
       </section>
 
-      <footer className="cpl-foot">
-        <span>
-          hire<b>lane</b>
-        </span>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/terms">Terms</Link>
-        <Link href="/contact">Contact</Link>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

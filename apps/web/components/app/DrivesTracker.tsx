@@ -59,7 +59,7 @@ export function DrivesList({ drives }: { drives: DriveItem[] }) {
 }
 
 const STATE_PILL = {
-  handed_off: "Handed off",
+  handed_off: "Opened by you",
   replied: "Reply",
   interview: "Interview",
   offer: "Offer",
@@ -68,7 +68,7 @@ const STATE_PILL = {
 } as const;
 
 const COLUMNS: { id: string; label: string; states: TrackerItem["state"][] }[] = [
-  { id: "handed", label: "Handed off", states: ["handed_off", "quiet"] },
+  { id: "handed", label: "Opened by you", states: ["handed_off", "quiet"] },
   { id: "replied", label: "Replied", states: ["replied"] },
   { id: "interview", label: "Interview", states: ["interview"] },
   { id: "offer", label: "Offer", states: ["offer"] },

@@ -2,6 +2,7 @@ import { Public_Sans } from "next/font/google";
 import Link from "next/link";
 import type { EligibilityResult } from "@hirelane/engine";
 import "../../app/campus.css";
+import { PublicHeader, PublicFooter } from "./Public";
 
 const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
 
@@ -13,48 +14,21 @@ const EXAMPLE =
 const STATUS_WORD = { pass: "You meet this", fail: "You don't meet this", unknown: "We couldn't check this" } as const;
 
 /**
- * The public front door for both audiences, in the calm register: paper, ink, navy, one green accent. The live
- * demo is a GET form, so it works with JavaScript off and runs the real eligibility engine on the server.
+ * The "For students" sub-page of the public site: the live eligibility demo (a GET form, works without JS, real
+ * engine on the server), how it works and the never-does promises.
  */
-export function FrontPage({ demo, result }: { demo: DemoInput | null; result: EligibilityResult | null }) {
+export function StudentsPage({ demo, result }: { demo: DemoInput | null; result: EligibilityResult | null }) {
   const d = demo ?? { notice: EXAMPLE, pct10: "71", pct12: "58", grad: "64", degree: "B.Com", year: "2025", backlogs: "0" };
   return (
     <div className={`cpl ${publicSans.variable} ${publicSans.className}`}>
-      <header className="cpl-top">
-        <span className="cpl-brand">
-          hire<b>lane</b>
-        </span>
-        <nav aria-label="Site">
-          <a href="#try">Try it</a>
-          <Link href="/jobs">Browse jobs</Link>
-          <Link href="/colleges">For colleges</Link>
-          <Link className="cp-btn" href="/signin">
-            Sign in
-          </Link>
-        </nav>
-      </header>
+      <PublicHeader active="students" />
 
-      <section className="cpl-hero fr-hero">
-        <div>
-          <h1 className="cpl-h1">Off-campus jobs students can actually get.</h1>
-          <p className="cpl-lede">
-            Fresh roles from company career pages, checked against each student&apos;s own marks, applied on the company&apos;s own site. Free for students.
-          </p>
-          <div className="fr-doors">
-            <Link className="fr-door" href="/signin">
-              <b>I&apos;m a student</b>
-              <span>Check my resume and see roles I qualify for</span>
-            </Link>
-            <Link className="fr-door" href="/colleges">
-              <b>I run placements</b>
-              <span>Help the students your drives don&apos;t place</span>
-            </Link>
-          </div>
-        </div>
-        <figure className="fr-device">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/previews/student-pick.png" alt="A role card in the student app: Customer Support Associate at Zenoti, you qualify on 3 of 3 rules" />
-        </figure>
+      <section className="fr-sub-hero">
+        <h1 className="cpl-h1">For students: jobs you can actually get.</h1>
+        <p className="cpl-lede">Try the eligibility check below. Sign in to check your resume and swipe roles picked for your marks.</p>
+        <Link className="cp-btn" href="/signin">
+          Sign in, free
+        </Link>
       </section>
 
       <section id="try" className="fr-try" aria-labelledby="try-h">
@@ -62,7 +36,7 @@ export function FrontPage({ demo, result }: { demo: DemoInput | null; result: El
           <h2 id="try-h">Paste a drive notice. See if you qualify.</h2>
           <p>The same check every student gets: we read the rules in the notice and compare them with your marks. Nothing is saved.</p>
         </div>
-        <form className="fr-try-form" action="/#try" method="get">
+        <form className="fr-try-form" action="/students#try" method="get">
           <label htmlFor="notice">Drive notice or job post</label>
           <textarea id="notice" name="notice" rows={4} defaultValue={d.notice} />
           <div className="fr-marks">
@@ -117,23 +91,9 @@ export function FrontPage({ demo, result }: { demo: DemoInput | null; result: El
           </li>
           <li>
             <b>Apply on the company&apos;s site</b>
-            <span>Your answers are ready. You press submit; we track replies.</span>
+            <span>Your answers are ready. You press submit. Reply tracking opens with early access.</span>
           </li>
         </ol>
-      </section>
-
-      <section className="fr-colleges" aria-labelledby="col-h">
-        <div>
-          <h2 id="col-h">For placement cells</h2>
-          <p>See where unplaced students stop, reach only eligible students with each drive, and file off-campus offers for NAAC 5.2.1.</p>
-          <Link className="cp-btn" href="/colleges">
-            See the placement console
-          </Link>
-        </div>
-        <figure className="cpl-shot">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/previews/console-overview.png" alt="The placement console overview with the student funnel" loading="lazy" />
-        </figure>
       </section>
 
       <section className="cpl-privacy" aria-labelledby="never-h">
@@ -151,16 +111,7 @@ export function FrontPage({ demo, result }: { demo: DemoInput | null; result: El
         </ul>
       </section>
 
-      <footer className="cpl-foot">
-        <span>
-          hire<b>lane</b>
-        </span>
-        <Link href="/jobs">Jobs</Link>
-        <Link href="/colleges">For colleges</Link>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/terms">Terms</Link>
-        <Link href="/contact">Contact</Link>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

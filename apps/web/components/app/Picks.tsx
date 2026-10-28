@@ -143,7 +143,7 @@ export function CheckScreen({ card, answers }: { card: PickCard; answers: CheckA
         <Link href="/resume">Swap</Link>
       </p>
       <Button asChild variant="lime" size="pill">
-        <Link href="#handoff">Open {card.company}&apos;s form, answers ready to copy</Link>
+        <Link href="#undo-toast">Open {card.company}&apos;s form, answers ready to copy</Link>
       </Button>
       <p className="wr-tile-fix">You press submit on their site. We never do.</p>
     </section>
@@ -153,7 +153,7 @@ export function CheckScreen({ card, answers }: { card: PickCard; answers: CheckA
 /** Hand-off with a 4-second undo. The ring is pure CSS; the server enforces undo_until. */
 export function HandoffToast({ company, weekCount }: { company: string; weekCount: number }) {
   return (
-    <section id="handoff" className="wr-toast" role="status" aria-labelledby="toast-h">
+    <section id="undo-toast" className="wr-toast" role="status" aria-labelledby="toast-h">
       <span className="wr-undo-ring" aria-hidden="true">
         <svg viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="15" />

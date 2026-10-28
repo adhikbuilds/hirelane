@@ -208,7 +208,7 @@ export function Home({ data }: { data: HomeData }) {
         </h2>
         <dl className="wr-stats">
           <div>
-            <dt>forms handed off</dt>
+            <dt>forms opened</dt>
             <dd>{week.handedOff}</dd>
           </div>
           <div>

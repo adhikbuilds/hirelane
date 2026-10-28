@@ -113,7 +113,7 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
       <header className="cp-top">
         <div>
           <h1 className="cp-title">Add a drive</h1>
-          <p className="cp-sub">Paste the notice and we fill the form. Check each section, then publish to the students who qualify.</p>
+          <p className="cp-sub">Paste the notice and the form is filled in for you to check. Check each section, then publish to the students who qualify.</p>
         </div>
         <div className="cp-actions">
           <button className="cp-btn" data-variant="outline" type="button">

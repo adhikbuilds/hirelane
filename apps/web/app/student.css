@@ -1,0 +1,309 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: custom (Hirelane student app, direction A "calm app, bright cards", owner 2026-10-29)
+ * nav: top bar with the wordmark and the student's initials, tabs at the bottom on phones and a light sidebar on laptops · signature: the bright role card on a calm page · states: default, hover, active, focus-visible, disabled
+ * axes: the same paper, ink and navy as the approved front page; colour only on role cards and status · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: P, a list-and-card app is familiar; chosen by the owner over a full-screen feed because colleges and students both trust it, and the colour is spent on the role card */
+
+/*
+ * The student app chrome. Shares the cp-* tokens of campus.css (paper, ink, navy, good, warn, risk) so the app and
+ * the front door read as one product; role cards keep their Wrapped colour (account.css).
+ */
+.st {
+  min-height: 100dvh;
+  background: var(--cp-paper);
+  color: var(--cp-ink);
+  font-family: var(--font-public), system-ui, sans-serif;
+  padding-bottom: 88px;
+}
+
+@layer base {
+  :where(.st) a {
+    color: inherit;
+  }
+}
+
+.st :focus-visible {
+  outline: 2px solid var(--cp-navy);
+  outline-offset: 2px;
+}
+
+.st-top {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--cp-surface);
+  border-bottom: 1px solid var(--cp-line);
+}
+
+.st-brand {
+  font-weight: 700;
+  font-size: 1.125rem;
+  text-decoration: none;
+}
+
+.st-brand b {
+  color: var(--cp-good);
+}
+
+.st-me {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--cp-navy);
+  color: var(--cp-on-navy);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.st-main {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  display: grid;
+  gap: 20px;
+}
+
+.st-sample {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px dashed var(--cp-muted);
+  border-radius: 8px;
+  color: var(--cp-muted);
+  font-size: 0.8125rem;
+}
+
+.st-hello {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.st-new {
+  margin: 4px 0 0;
+  color: var(--cp-muted);
+}
+
+.st-new b {
+  color: var(--cp-good);
+}
+
+.st-section {
+  display: grid;
+  gap: 8px;
+}
+
+.st-section h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.st-section h2 a {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--cp-navy);
+}
+
+.st-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius);
+  background: var(--cp-surface);
+}
+
+.st-rows li + li {
+  border-top: 1px solid var(--cp-line);
+}
+
+.st-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 16px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: background-color 120ms ease-out;
+}
+
+.st-row:hover {
+  background: var(--cp-navy-soft);
+}
+
+.st-row:active {
+  background: var(--cp-line);
+}
+
+.st-row b {
+  display: block;
+  font-weight: 600;
+}
+
+.st-row small {
+  display: block;
+  color: var(--cp-muted);
+  font-size: 0.8125rem;
+  margin-top: 2px;
+}
+
+.st-row svg {
+  width: 16px;
+  height: 16px;
+  color: var(--cp-muted);
+}
+
+.st-tag {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--cp-paper);
+  color: var(--cp-muted);
+}
+
+.st-tag[data-tone="good"] { background: var(--cp-good-soft); color: var(--cp-good); }
+.st-tag[data-tone="warn"] { background: var(--cp-warn-soft); color: var(--cp-warn); }
+.st-tag[data-tone="risk"] { background: var(--cp-risk-soft); color: var(--cp-risk); }
+
+.st-meter {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--cp-line);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.st-meter i {
+  display: block;
+  height: 100%;
+  background: var(--cp-good);
+}
+
+/* The deck sits on the calm page; its own cards keep their colour. Re-tone the deck chrome for a light page. */
+.st .wr-tile-label { color: var(--cp-muted); }
+.st .wr-bars-night li { background: var(--cp-line); }
+.st .wr-bars-night li[data-state="done"] { background: var(--cp-good); }
+.st .wr-bars-night li[data-state="now"] { background: linear-gradient(90deg, var(--cp-good) 50%, var(--cp-line) 50%); }
+.st .wr-round { border-color: var(--cp-line); color: var(--cp-ink); background: var(--cp-surface); }
+.st .wr-round[data-kind="go"] { background: var(--cp-navy); border-color: var(--cp-navy); color: var(--cp-on-navy); }
+.st .wr-round[data-kind="save"] { color: var(--cp-navy); }
+.st .wr-swipe-hint { color: var(--cp-muted); }
+.st .wr-deck-peek { border-color: var(--cp-line); }
+
+.st-tabs {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 9;
+  background: var(--cp-surface);
+  border-top: 1px solid var(--cp-line);
+  padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
+}
+
+.st-tabs ul {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.st-tabs a {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  min-height: 48px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cp-muted);
+  text-decoration: none;
+}
+
+.st-tabs a[aria-current="page"] {
+  color: var(--cp-navy);
+}
+
+.st-tabs a:active {
+  opacity: 0.7;
+}
+
+.st-tabs svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (min-width: 1024px) {
+  .st {
+    padding-bottom: 0;
+    padding-left: 220px;
+  }
+
+  .st-tabs {
+    inset: 0 auto 0 0;
+    width: 220px;
+    padding: 72px 12px 12px;
+    border-top: 0;
+    border-right: 1px solid var(--cp-line);
+  }
+
+  .st-tabs ul {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .st-tabs a {
+    grid-template-columns: 22px 1fr;
+    justify-items: start;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+  }
+
+  .st-tabs a[aria-current="page"] {
+    background: var(--cp-navy-soft);
+  }
+
+  .st-home {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px 32px;
+  }
+
+  .st-home > .st-wide {
+    grid-column: 1 / -1;
+  }
+
+  .st-rail {
+    display: grid;
+    gap: 20px;
+  }
+}
+
+.st-home {
+  display: grid;
+  gap: 20px;
+}
+
+.st-home .wr-deck {
+  max-width: 520px;
+  width: 100%;
+}
