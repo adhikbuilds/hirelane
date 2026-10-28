@@ -1,0 +1,311 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hirelane mock A: detail pass</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B0B0F;--lane:#0F5C45;--lime:#C8FF3D;--pink:#FF4FA3;--blue:#3D5AFE;--sun:#FFC83D;--cream:#FFF6E8;--coral:#FF5A4E}
+*{box-sizing:border-box;margin:0}body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#141418;color:#fff;padding:34px 36px 60px}
+h1.t{font-size:15px;font-weight:500;opacity:.6;margin-bottom:6px}h2.s{font-size:13px;font-weight:800;color:var(--lime);letter-spacing:.08em;text-transform:uppercase;margin:26px 0 14px}
+.row{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.ph{width:300px;height:640px;border-radius:44px;background:#000;padding:10px;box-shadow:0 24px 60px rgba(0,0,0,.5);flex:none}
+.sc{width:100%;height:100%;border-radius:35px;overflow:hidden;position:relative;padding:0 14px 76px}
+.sb{display:flex;justify-content:space-between;font-size:12px;font-weight:800;padding:12px 8px 8px}
+.lab{font-size:12px;opacity:.6;text-align:center;margin-top:10px;width:300px;line-height:1.45}.lab b{color:var(--lime);opacity:1}
+.big{font-weight:800;line-height:.92;letter-spacing:-.045em}
+.card{background:#fff;color:var(--ink);border-radius:18px;padding:11px}
+.small{font-size:11.5px;opacity:.72}.tiny{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.mono{font-variant-numeric:tabular-nums}
+.ch{display:inline-block;white-space:nowrap;padding:5px 9px;border-radius:99px;font-size:11.5px;font-weight:800;margin:3px 3px 0 0}
+.tb{position:absolute;left:10px;right:10px;bottom:10px;height:58px;background:rgba(11,11,15,.94);border-radius:22px;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;text-align:center;font-size:10px;color:#9a9aa5;z-index:6}
+.tb svg{width:20px;height:20px;display:block;margin:0 auto 2px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tb .on{color:var(--lime);font-weight:800}
+.ic{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;flex:none}
+.logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;flex:none}
+.story{width:50px;flex:none;text-align:center;font-size:9.5px}.story span{display:grid;place-items:center;width:50px;height:50px;border-radius:50%;font-weight:800;border:3px solid var(--lime);outline:2px solid var(--ink);outline-offset:-5px;color:#fff;margin-bottom:3px;position:relative}
+.story.seen span{border-color:#3a3a44}
+.story em{position:absolute;right:-3px;top:-3px;font-style:normal;background:var(--pink);color:#fff;border:2px solid var(--ink);border-radius:99px;font-size:9px;padding:0 4px;line-height:14px}
+.src{display:flex;gap:5px;align-items:center;font-size:10.5px;font-weight:700;opacity:.78}
+.src i{width:6px;height:6px;border-radius:50%;background:#2BD67B;flex:none;box-shadow:0 0 0 3px rgba(43,214,123,.25)}
+.pill{white-space:nowrap;border-radius:99px;padding:12px;text-align:center;font-weight:800;font-size:14px}
+.row2{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.yes,.no,.half{display:flex;gap:7px;align-items:flex-start;font-size:12px;line-height:1.3;padding:4px 0}
+.yes b,.no b,.half b{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;flex:none;font-size:10px;margin-top:1px}
+.yes b{background:var(--lane);color:var(--lime)}.no b{background:var(--ink);color:#fff;opacity:.35}.half b{background:var(--sun);color:var(--ink)}
+.no span{opacity:.6}.ev{font-size:10px;opacity:.55;font-weight:700}
+.act{display:grid;grid-template-columns:38px 1fr auto;gap:8px;align-items:center;font-size:11.5px;padding:7px 0;border-top:1px solid rgba(255,255,255,.08)}
+.act time{font-size:10.5px;opacity:.5;font-weight:700}
+.tag{white-space:nowrap;font-size:9.5px;font-weight:800;border-radius:6px;padding:2px 6px;letter-spacing:.03em}
+.stamp{border:3px solid currentColor;border-radius:12px;padding:1px 10px;font-weight:800;font-size:24px;letter-spacing:-.02em;display:inline-block}
+.ring{width:54px;height:54px;flex:none}
+.fade{position:absolute;left:0;right:0;bottom:66px;height:46px;background:linear-gradient(transparent,var(--f,#fff));pointer-events:none;z-index:4}
+.bar{display:flex;align-items:flex-end;gap:5px;height:56px}.bar i{flex:1;background:var(--ink);border-radius:4px 4px 0 0;position:relative}
+.bar i.hi{background:var(--pink)}
+.qa{border-top:1px solid rgba(0,0,0,.08);padding:7px 0}.qa div:first-child{font-size:10.5px;opacity:.6;font-weight:700}.qa div:last-child{font-size:12.5px;font-weight:800}
+.notes{max-width:1640px;margin:30px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.notes div{background:#1d1d23;border-radius:16px;padding:14px;font-size:12.5px;line-height:1.5;color:#c9c9d2}.notes b{color:#fff}
+</style></head><body>
+<h1 class="t">MOCK A · detail pass on the approved Wrapped style · real roles from the local board (Rubrik, Hevo Data, GitLab, Binance, Paytm) · Asha is a labelled sample · photos none needed here</h1>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="disc" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+<symbol id="comp" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></symbol>
+<symbol id="net" viewBox="0 0 24 24"><circle cx="6" cy="7" r="3"/><circle cx="18" cy="7" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.5 8.5l2 7M15.5 8.5l-2 7M9 7h6"/></symbol>
+<symbol id="you" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+<symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+<symbol id="ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><path d="M12 3v13M7 8l5-5 5 5M5 14v6h14v-6"/></symbol>
+</defs></svg>
+
+<h2 class="s">The loop · find → swipe → check → hand off → undo</h2>
+<div class="row">
+
+<!-- 1 HOME -->
+<div><div class="ph"><div class="sc" style="background:var(--ink);color:#fff">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="row2"><div><div class="small" style="opacity:.6">Fri 17 Oct</div><div class="big" style="font-size:30px">Morning, Asha.</div></div><span style="background:var(--sun);color:var(--ink);border-radius:99px;padding:5px 10px;font-weight:800;font-size:12px;white-space:nowrap">🔥 5 days</span></div>
+ <div style="display:flex;gap:7px;margin-top:12px">
+  <div class="story"><span style="background:#5B3DF5">R<em>3</em></span>Rubrik</div>
+  <div class="story"><span style="background:var(--lane)">H<em>1</em></span>Hevo</div>
+  <div class="story"><span style="background:#00B9F5">P<em>2</em></span>Paytm</div>
+  <div class="story seen"><span style="background:#7E2BD6">M</span>Meesho</div>
+  <div class="story seen"><span style="background:#FC6D26">G</span>GitLab</div>
+ </div>
+ <div style="margin-top:12px;background:var(--pink);border-radius:22px;padding:13px;position:relative;overflow:hidden">
+  <div class="tiny" style="opacity:.85">Today's picks · read 2h ago</div>
+  <div class="row2" style="align-items:flex-end"><div class="big" style="font-size:64px">5</div><div style="text-align:right;font-weight:800;font-size:12px;line-height:1.35">3 fresher-friendly<br>2 remote<br>1 says its pay</div></div>
+  <div style="display:flex;margin-top:8px;align-items:center;gap:8px">
+   <div style="display:flex"><span class="logo" style="width:26px;height:26px;font-size:11px;background:#fff;color:#5B3DF5;border:2px solid var(--pink)">R</span><span class="logo" style="width:26px;height:26px;font-size:11px;background:var(--ink);color:var(--lime);border:2px solid var(--pink);margin-left:-8px">H</span><span class="logo" style="width:26px;height:26px;font-size:11px;background:#fff;color:#F3BA2F;border:2px solid var(--pink);margin-left:-8px">B</span></div>
+   <div style="flex:1;background:var(--lime);color:var(--ink);border-radius:99px;padding:9px;text-align:center;font-weight:800;font-size:13px">Swipe 5 · ~4 min</div>
+  </div>
+ </div>
+ <div class="tiny" style="margin-top:12px;opacity:.5">While you slept</div>
+ <div class="act"><time>02:04</time><span><b>Rubrik</b> posted SWE – Cloud: Azure</span><span class="tag" style="background:var(--lime);color:var(--ink)">82%</span></div>
+ <div class="act"><time>06:40</time><span><b>Hevo Data</b> replied to you</span><span class="tag" style="background:var(--pink);color:#fff">REPLY</span></div>
+ <div class="act"><time>07:15</time><span><b>Paytm</b> closed a role you saved</span><span class="tag" style="background:#2a2a32;color:#bbb">GONE</span></div>
+ <div style="margin-top:8px;display:flex;gap:6px;align-items:center;font-size:10.5px;opacity:.55"><svg class="ic"><use href="#lock"/></svg>Nothing goes out without your tap.</div>
+ <div class="tb"><div class="on"><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Home · fills the dead zone.</b> The pick tile says what's inside (3 fresher, 2 remote, 1 with pay) and how long it takes. "While you slept" rows are timestamped like a feed. Story badges count new roles.</div></div>
+
+<!-- 2 SWIPE REST -->
+<div><div class="ph"><div class="sc" style="background:var(--ink);color:#fff">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="row2"><b style="font-size:15px">Today's picks</b><span class="small" style="color:#fff">1 of 5</span></div>
+ <div style="display:flex;gap:4px;margin-top:8px"><i style="flex:1;height:4px;border-radius:4px;background:var(--lime)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i></div>
+ <div class="card" style="position:absolute;left:26px;right:26px;top:96px;height:380px;background:var(--pink);transform:rotate(-3deg)"></div>
+ <div class="card" style="position:absolute;left:16px;right:16px;top:92px;height:388px;background:var(--lime);padding:14px;border-radius:24px">
+  <div class="row2"><div style="display:flex;gap:8px;align-items:center"><span class="logo" style="background:#5B3DF5;color:#fff">R</span><div><b style="font-size:13px">Rubrik</b><div class="src"><i></i>careers page · 2h ago</div></div></div>
+   <svg class="ring" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" fill="none" stroke="rgba(11,11,15,.15)" stroke-width="6"/><circle cx="27" cy="27" r="22" fill="none" stroke="#0B0B0F" stroke-width="6" stroke-dasharray="113 138" stroke-linecap="round" transform="rotate(-90 27 27)"/><text x="27" y="31" text-anchor="middle" font-weight="800" font-size="14" fill="#0B0B0F" font-family="Bricolage Grotesque">82</text></svg></div>
+  <div class="big" style="font-size:30px;margin-top:10px">Software Engineer, Cloud: Azure</div>
+  <div style="display:flex;gap:10px;margin-top:8px;font-size:11.5px;font-weight:800"><span><svg class="ic"><use href="#pin"/></svg> Bengaluru</span><span>0–2 yrs</span><span>Full time</span></div>
+  <div style="margin-top:10px;background:rgba(11,11,15,.08);border-radius:14px;padding:8px 10px">
+   <div class="yes"><b>✓</b><span>CS degree <span class="ev">· BITS Pilani</span></span></div>
+   <div class="yes"><b>✓</b><span>Python <span class="ev">· asked "Go, Java, C/C++, Python"</span></span></div>
+   <div class="yes"><b>✓</b><span>0–2 years <span class="ev">· you're a 2026 grad</span></span></div>
+   <div class="no"><b>✕</b><span>Azure/AWS · nice-to-have, not on your resume</span></div>
+  </div>
+  <div style="margin-top:8px;background:var(--ink);color:var(--sun);border-radius:12px;padding:7px 10px;font-weight:800;font-size:11.5px">Pay not in the posting · we never guess</div>
+ </div>
+ <div style="position:absolute;bottom:80px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:16px"><span style="width:50px;height:50px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-weight:800">✕</span><span style="width:38px;height:38px;border-radius:50%;background:#26262d;display:grid;place-items:center;color:var(--sun)"><svg class="ic" style="width:16px;height:16px"><use href="#star"/></svg></span><span style="width:58px;height:58px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:22px">✓</span></div>
+ <div class="tb"><div class="on"><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Swipe · the 45-second card.</b> Real Rubrik role. The match ring has its maths right there: 3 hits with the evidence, 1 miss said plainly. Source and freshness under the logo. Honest pay line. No soft-skill chips.</div></div>
+
+<!-- 3 DRAG RIGHT -->
+<div><div class="ph"><div class="sc" style="background:var(--ink);color:#fff">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="row2"><b style="font-size:15px">Today's picks</b><span class="small" style="color:#fff">1 of 5</span></div>
+ <div class="card" style="position:absolute;left:26px;right:26px;top:96px;height:380px;background:var(--pink);transform:rotate(-1deg) scale(.97)"></div>
+ <div class="card" style="position:absolute;left:16px;right:16px;top:92px;height:388px;background:var(--lime);padding:14px;border-radius:24px;transform:translateX(34px) rotate(8deg);box-shadow:0 20px 40px rgba(0,0,0,.45)">
+  <div class="stamp" style="color:var(--ink);background:var(--lime);transform:rotate(-12deg);margin-top:4px">APPLY</div>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:16px"><span class="logo" style="background:#5B3DF5;color:#fff">R</span><b style="font-size:13px">Rubrik</b></div>
+  <div class="big" style="font-size:30px;margin-top:8px">Software Engineer, Cloud: Azure</div>
+ </div>
+ <div style="position:absolute;left:14px;right:14px;bottom:146px;background:#fff;color:var(--ink);border-radius:18px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:3">
+  <div class="row2"><b style="font-size:13px">Let go to get it ready</b><span class="mono" style="font-weight:800;font-size:12px">⅔</span></div>
+  <div style="height:6px;border-radius:6px;background:#eee;margin-top:6px"><div style="width:66%;height:6px;border-radius:6px;background:var(--lane)"></div></div>
+  <div class="small" style="margin-top:6px">We'll pre-fill <b>9 fields</b> · <b>1</b> needs you</div>
+ </div>
+ <div style="position:absolute;bottom:80px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:16px"><span style="width:50px;height:50px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-weight:800;opacity:.3">✕</span><span style="width:38px;height:38px;border-radius:50%;background:#26262d;opacity:.3"></span><span style="width:66px;height:66px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:24px;box-shadow:0 0 0 8px rgba(200,255,61,.25)">✓</span></div>
+ <div class="tb"><div class="on"><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Swipe · drag right.</b> APPLY stamp locks at ⅔ (haptic tick). A peek tells you what happens next before you let go: 9 fields pre-filled, 1 question for you.</div></div>
+
+<!-- 4 REVIEW SHEET -->
+<div><div class="ph"><div class="sc" style="background:var(--ink);color:#fff">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="big" style="font-size:22px;opacity:.35">Rubrik</div>
+ <div style="position:absolute;left:0;right:0;bottom:0;top:62px;background:var(--cream);color:var(--ink);border-radius:28px 28px 0 0;padding:10px 16px 0">
+  <div style="width:40px;height:5px;border-radius:5px;background:rgba(0,0,0,.2);margin:0 auto 10px"></div>
+  <div class="row2"><div><div class="big" style="font-size:24px">Ready to fill</div><div class="small">Software Engineer, Cloud: Azure · Rubrik</div></div><span class="logo" style="background:#5B3DF5;color:#fff">R</span></div>
+  <div style="margin-top:10px;background:#fff;border-radius:16px;padding:4px 12px">
+   <div class="tiny" style="opacity:.5;padding-top:6px">Your answers · 9 · from your resume</div>
+   <div class="qa"><div>Graduation year</div><div>2026 · B.E. Computer Science, BITS Pilani</div></div>
+   <div class="qa"><div>Languages you know</div><div>Python, SQL, JavaScript</div></div>
+   <div class="qa"><div>Internship</div><div>SDE intern · 6 months</div></div>
+  </div>
+  <div style="margin-top:8px;background:var(--pink);color:#fff;border-radius:16px;padding:10px 12px">
+   <div class="row2"><b style="font-size:13px">Needs you</b><span class="tag" style="background:#fff;color:var(--ink)">1</span></div>
+   <div style="font-size:12.5px;margin-top:4px">"Earliest start date?" We won't guess this one.</div>
+   <div style="display:flex;gap:6px;margin-top:7px"><span class="ch" style="background:var(--ink);color:#fff;margin:0">Jul 2026</span><span class="ch" style="background:rgba(255,255,255,.25);margin:0">Jun 2026</span><span class="ch" style="background:rgba(255,255,255,.25);margin:0">Type…</span></div>
+  </div>
+  <div style="margin-top:8px;background:#fff;border-radius:14px;padding:9px 12px;display:flex;gap:8px;align-items:center;font-size:12.5px"><svg class="ic"><use href="#file"/></svg><b style="flex:1">Resume v2 · SDE-first</b><b style="color:var(--blue)">Swap</b></div>
+  <div class="pill" style="margin-top:10px;background:var(--ink);color:var(--lime);display:flex;justify-content:center;gap:8px;align-items:center">Open Rubrik's form, filled <svg class="ic"><use href="#ext"/></svg></div>
+  <div class="small" style="text-align:center;margin-top:7px">You press submit on their site. We never do.</div>
+ </div>
+</div></div><div class="lab"><b>Check · before hand-off.</b> Every answer is shown, with where it came from. The one we can't know is pink and asks. The CTA says exactly what happens: their form opens, filled, and you submit.</div></div>
+
+<!-- 5 HANDED OFF + UNDO -->
+<div><div class="ph"><div class="sc" style="background:var(--ink);color:#fff">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="row2"><b style="font-size:15px">Today's picks</b><span class="small" style="color:#fff">2 of 5</span></div>
+ <div style="display:flex;gap:4px;margin-top:8px"><i style="flex:1;height:4px;border-radius:4px;background:var(--lime)"></i><i style="flex:1;height:4px;border-radius:4px;background:var(--lime)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.25)"></i></div>
+ <div class="card" style="position:absolute;left:16px;right:16px;top:92px;height:388px;background:var(--sun);padding:14px;border-radius:24px">
+  <div class="row2"><div style="display:flex;gap:8px;align-items:center"><span class="logo" style="background:var(--ink);color:var(--lime)">H</span><div><b style="font-size:13px">Hevo Data</b><div class="src"><i></i>careers page · 5h ago</div></div></div><b style="font-size:24px">76</b></div>
+  <div class="big" style="font-size:30px;margin-top:10px">Associate Technical Writer</div>
+  <div style="display:flex;gap:10px;margin-top:8px;font-size:11.5px;font-weight:800"><span><svg class="ic"><use href="#pin"/></svg> Bengaluru · on-site</span><span>Entry</span></div>
+  <div style="margin-top:10px;background:rgba(11,11,15,.08);border-radius:14px;padding:8px 10px">
+   <div class="yes"><b>✓</b><span>Clear writing <span class="ev">· your blog + docs internship</span></span></div>
+   <div class="half"><b>~</b><span>ETL basics · you know SQL, not pipelines</span></div>
+  </div>
+ </div>
+ <div style="position:absolute;left:12px;right:12px;bottom:146px;background:#fff;color:var(--ink);border-radius:18px;padding:11px 12px;box-shadow:0 14px 34px rgba(0,0,0,.5);z-index:5;display:flex;gap:10px;align-items:center">
+  <svg width="34" height="34" viewBox="0 0 34 34" style="flex:none"><circle cx="17" cy="17" r="14" fill="none" stroke="#eee" stroke-width="4"/><circle cx="17" cy="17" r="14" fill="none" stroke="#3D5AFE" stroke-width="4" stroke-dasharray="66 88" stroke-linecap="round" transform="rotate(-90 17 17)"/><text x="17" y="21" text-anchor="middle" font-weight="800" font-size="12" fill="#0B0B0F" font-family="Bricolage Grotesque">3</text></svg>
+  <div style="flex:1"><b style="font-size:13px">Rubrik form opened, filled</b><div class="small">#6 this week · in your Tracker</div></div><b style="color:var(--blue);font-size:13px">Undo</b>
+ </div>
+ <div style="position:absolute;left:30px;top:84px;font-size:18px;z-index:6">✦</div><div style="position:absolute;right:40px;top:120px;font-size:12px;color:var(--pink);z-index:6">●</div><div style="position:absolute;right:70px;top:76px;font-size:14px;color:var(--lime);z-index:6">▲</div>
+ <div style="position:absolute;bottom:80px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:16px"><span style="width:50px;height:50px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-weight:800">✕</span><span style="width:38px;height:38px;border-radius:50%;background:#26262d;display:grid;place-items:center;color:var(--sun)"><svg class="ic" style="width:16px;height:16px"><use href="#star"/></svg></span><span style="width:58px;height:58px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:22px">✓</span></div>
+ <div class="tb"><div class="on"><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Hand-off · undo.</b> Small confetti, a 4-second undo ring, a running count. The next card is already up with a "~" partial match, so the loop never stalls.</div></div>
+</div>
+
+<h2 class="s">The detail screens · job, company, tracker, you, recap</h2>
+<div class="row">
+
+<!-- 6 JOB DETAIL -->
+<div><div class="ph"><div class="sc" style="background:var(--cream);color:var(--ink);--f:var(--cream)">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="row2" style="font-weight:800;font-size:13px"><span><svg class="ic"><use href="#back"/></svg> Picks</span><span style="display:flex;gap:12px"><svg class="ic"><use href="#share"/></svg><svg class="ic"><use href="#star"/></svg></span></div>
+ <div style="margin-top:8px;background:var(--blue);color:#fff;border-radius:22px;padding:13px">
+  <div style="display:flex;gap:8px;align-items:center"><span class="logo" style="background:#fff;color:#5B3DF5">R</span><div><b style="font-size:13px">Rubrik</b><div class="src" style="opacity:.9"><i></i>read from careers page · 2h ago</div></div></div>
+  <div class="big" style="font-size:24px;margin-top:8px">Software Engineer, Cloud: Azure</div>
+  <div style="display:flex;flex-wrap:wrap;margin-top:6px"><span class="ch" style="background:rgba(255,255,255,.18)">Bengaluru</span><span class="ch" style="background:rgba(255,255,255,.18)">0–2 yrs</span><span class="ch" style="background:rgba(255,255,255,.18)">Posted 7 Oct</span></div>
+ </div>
+ <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:7px;margin-top:7px">
+  <div style="background:var(--lime);border-radius:16px;padding:10px"><div class="big" style="font-size:30px">5<span style="font-size:16px"> of 6</span></div><div style="font-size:11px;font-weight:800">must-haves you meet</div></div>
+  <div style="background:var(--sun);border-radius:16px;padding:10px"><div style="font-weight:800;font-size:13px;line-height:1.1">Pay not stated</div><div style="font-size:11px;font-weight:700;margin-top:3px">we never estimate</div></div>
+ </div>
+ <div class="card" style="margin-top:7px;padding:10px 12px">
+  <div class="row2"><b style="font-size:13px">Why it fits</b><span class="tiny" style="opacity:.5">tap a line for the quote</span></div>
+  <div class="yes"><b>✓</b><span>CS degree <span class="ev">· "Bachelor's … computer science"</span></span></div>
+  <div class="yes"><b>✓</b><span>0–2 years experience</span></div>
+  <div class="yes"><b>✓</b><span>Python <span class="ev">· one of "Go, Java, C/C++, Python"</span></span></div>
+  <div class="yes"><b>✓</b><span>SDLC + design patterns <span class="ev">· your internship</span></span></div>
+  <div class="no"><b>✕</b><span>Azure/AWS/GCP · nice-to-have</span></div>
+  <div class="no"><b>✕</b><span>Docker, Kubernetes · nice-to-have</span></div>
+ </div>
+ <div style="margin-top:7px;background:var(--ink);color:#fff;border-radius:16px;padding:10px 12px;font-size:12px;line-height:1.4"><b style="color:var(--lime)">Close the gap · 2 hrs</b><br>Ship one Azure Functions project and the 2 misses flip. We'll suggest one.</div>
+ <div class="fade"></div>
+ <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 12px 12px;background:var(--cream);border-top:1px solid rgba(0,0,0,.08);display:flex;gap:8px;z-index:5"><div class="pill" style="flex:1;background:#fff;border:2px solid var(--ink);padding:11px">Skip</div><div class="pill" style="flex:2;background:var(--ink);color:var(--lime);padding:11px">Get it ready ✓</div></div>
+</div></div><div class="lab"><b>Job · a story, not a spreadsheet.</b> Replaces today's wall of verbatim sentences. Two numbers up top, then ✓/✕ with the posting's own words as evidence. One honest next step. The action bar sits at the bottom (no tab bar here), so it can't cover the content.</div></div>
+
+<!-- 7 COMPANY -->
+<div><div class="ph"><div class="sc" style="background:var(--sun);color:var(--ink)">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div style="display:flex;gap:10px;align-items:center"><span class="logo" style="width:52px;height:52px;border-radius:16px;font-size:24px;background:#5B3DF5;color:#fff">R</span><div><div class="big" style="font-size:28px">Rubrik</div><div class="small" style="opacity:.8">Cloud data security · Bengaluru office</div></div></div>
+ <div style="display:flex;gap:8px;margin-top:10px"><div style="flex:1;background:var(--lane);color:var(--lime);border-radius:99px;padding:9px;text-align:center;font-weight:800;font-size:13px">✓ Following</div><div style="background:#fff;border-radius:99px;padding:9px 14px;font-weight:800;font-size:13px">Share</div></div>
+ <div class="card" style="margin-top:10px">
+  <div class="row2"><b style="font-size:13px">Hiring momentum</b><span class="tag" style="background:var(--lime)">↑ busiest in 7 wks</span></div>
+  <div class="bar" style="margin-top:8px"><i style="height:19%"></i><i style="height:56%"></i><i style="height:25%"></i><i style="height:94%"></i><i style="height:75%"></i><i style="height:75%"></i><i class="hi" style="height:100%"></i></div>
+  <div class="row2 small" style="margin-top:4px;font-size:10px"><span>31 Aug</span><span class="mono"><b>16</b> new this week</span></div>
+ </div>
+ <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px">
+  <div class="card" style="padding:9px"><div class="big" style="font-size:24px">135</div><div style="font-size:10px;font-weight:700">open roles</div></div>
+  <div class="card" style="padding:9px"><div class="big" style="font-size:24px">33</div><div style="font-size:10px;font-weight:700">in India</div></div>
+  <div class="card" style="padding:9px;background:var(--ink);color:var(--lime)"><div class="big" style="font-size:24px">8</div><div style="font-size:10px;font-weight:700">entry-level</div></div>
+ </div>
+ <div style="margin-top:7px;background:var(--pink);color:#fff;border-radius:18px;padding:10px 12px;display:flex;gap:10px;align-items:center"><div style="display:flex"><span class="logo" style="width:28px;height:28px;border-radius:50%;font-size:10px;background:var(--ink);border:2px solid var(--pink)">MS</span><span class="logo" style="width:28px;height:28px;border-radius:50%;font-size:10px;background:var(--blue);border:2px solid var(--pink);margin-left:-8px">RK</span></div><div style="flex:1"><b style="font-size:13px">2 BITSians here</b><div style="font-size:10.5px">sample network · tap for an intro</div></div><b>→</b></div>
+ <div class="tiny" style="margin-top:9px;opacity:.6">Open for you · 8</div>
+ <div class="card" style="margin-top:4px;padding:9px 11px" ><div class="row2"><b style="font-size:12.5px">SWE, Cloud: Azure</b><b style="color:var(--lane)">82</b></div><div style="font-size:10.5px;opacity:.6">Bengaluru · 0–2 yrs · 7 Oct</div></div>
+ <div class="tb"><div><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div class="on"><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Company · momentum, not analytics.</b> Real weekly postings for Rubrik (3·9·4·15·12·12·16) as one chunky chart and one sentence. Counts that matter to a fresher: India, entry-level. People tile stays pink.</div></div>
+
+<!-- 8 TRACKER -->
+<div><div class="ph"><div class="sc" style="background:var(--cream);color:var(--ink)">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div class="row2"><div class="big" style="font-size:28px">Tracker</div><span class="small">6 this week</span></div>
+ <div style="display:flex;gap:4px;margin-top:9px;font-size:0"><span class="ch" style="background:var(--ink);color:#fff;margin:0;font-size:11px;padding:5px 8px">All 9</span><span class="ch" style="background:#fff;margin:0;font-size:11px;padding:5px 8px">Handed off 6</span><span class="ch" style="background:var(--pink);color:#fff;margin:0;font-size:11px;padding:5px 8px">Replied 2</span><span class="ch" style="background:var(--lime);margin:0;font-size:11px;padding:5px 8px">Call 1</span></div>
+ <div style="margin-top:9px;background:var(--pink);color:#fff;border-radius:20px;padding:12px">
+  <div style="display:flex;gap:9px;align-items:center"><span class="logo" style="background:var(--ink);color:var(--lime)">H</span><div style="flex:1"><b style="font-size:13px">Hevo Data</b><div style="font-size:11px">Associate Technical Writer</div></div><span class="stamp" style="font-size:13px;transform:rotate(-6deg);border-width:2.5px;padding:0 7px">REPLY</span></div>
+  <div style="margin:10px 0 0 6px;border-left:2.5px solid rgba(255,255,255,.4);padding-left:12px;font-size:11.5px;line-height:1.35">
+   <div style="position:relative;padding:3px 0"><i style="position:absolute;left:-18px;top:6px;width:9px;height:9px;border-radius:50%;background:#fff"></i>Matched 76% <span style="opacity:.7">· Mon 9:02</span></div>
+   <div style="position:relative;padding:3px 0"><i style="position:absolute;left:-18px;top:6px;width:9px;height:9px;border-radius:50%;background:#fff"></i>Filled 8 · you answered 1 <span style="opacity:.7">· 9:10</span></div>
+   <div style="position:relative;padding:3px 0"><i style="position:absolute;left:-18px;top:6px;width:9px;height:9px;border-radius:50%;background:#fff"></i>You submitted on hevodata.com <span style="opacity:.7">· 9:14</span></div>
+   <div style="position:relative;padding:3px 0;font-weight:800"><i style="position:absolute;left:-18px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--lime)"></i>"Can you do a call Thursday?" <span style="opacity:.8">· today 6:40</span></div>
+  </div>
+  <div style="display:flex;gap:7px;margin-top:9px"><div class="pill" style="flex:1;border:2.5px solid #fff;padding:8px;font-size:13px">Add note</div><div class="pill" style="flex:1.4;background:var(--lime);color:var(--ink);padding:8px;font-size:13px">Reply in Gmail</div></div>
+ </div>
+ <div class="card" style="margin-top:7px;padding:9px 11px"><div class="row2"><span style="display:flex;gap:8px;align-items:center"><span class="logo" style="width:26px;height:26px;font-size:11px;background:#5B3DF5;color:#fff">R</span><b style="font-size:12.5px">Rubrik</b></span><span class="tag" style="background:#E8F0FF;color:var(--blue)">HANDED OFF</span></div></div>
+ <div class="card" style="margin-top:6px;padding:9px 11px"><div class="row2"><span style="display:flex;gap:8px;align-items:center"><span class="logo" style="width:26px;height:26px;font-size:11px;background:#FC6D26;color:#fff">G</span><b style="font-size:12.5px">GitLab</b></span><span class="tag" style="background:#EEE;color:#555">QUIET 6 DAYS</span></div></div>
+ <div style="margin-top:7px;font-size:11px;opacity:.6;display:flex;justify-content:space-between"><span>2 filed as "Not this time"</span><b>See</b></div>
+ <div class="tb"><div><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div class="on"><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Tracker · a paper trail.</b> Each step has a time. "You submitted on hevodata.com" keeps the hand-off honest. Rejections are filed quietly as "Not this time", never pushed at you.</div></div>
+
+<!-- 9 YOU / RULES -->
+<div><div class="ph"><div class="sc" style="background:var(--lime);color:var(--ink)">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div style="display:flex;gap:10px;align-items:center"><span class="logo" style="width:52px;height:52px;border-radius:50%;font-size:20px;background:var(--ink);color:var(--lime)">AI</span><div><div class="big" style="font-size:26px">Asha Iyer</div><div style="font-size:11px;font-weight:700">BITS Pilani · CS '26 · sample profile</div></div></div>
+ <div class="card" style="margin-top:10px">
+  <div class="row2"><b style="font-size:13px">Your picks get sharper</b><b class="mono">4/6</b></div>
+  <div style="display:flex;gap:4px;margin-top:6px"><i style="flex:1;height:6px;border-radius:6px;background:var(--lane)"></i><i style="flex:1;height:6px;border-radius:6px;background:var(--lane)"></i><i style="flex:1;height:6px;border-radius:6px;background:var(--lane)"></i><i style="flex:1;height:6px;border-radius:6px;background:var(--lane)"></i><i style="flex:1;height:6px;border-radius:6px;background:#e5e5e5"></i><i style="flex:1;height:6px;border-radius:6px;background:#e5e5e5"></i></div>
+  <div class="row2" style="font-size:12px;margin-top:8px"><span>Add one project</span><b style="color:var(--blue)">+6 matches →</b></div>
+ </div>
+ <div style="margin-top:8px;background:var(--ink);color:#fff;border-radius:18px;padding:11px 12px">
+  <div class="row2"><b style="font-size:13px">Your rules</b><b style="color:var(--lime);font-size:12px">Edit</b></div>
+  <div style="font-size:12px;line-height:1.75;margin-top:4px">
+   <div>• Fresher-friendly only <span style="opacity:.5">· hides 15.8k</span></div>
+   <div>• Bengaluru or remote</div>
+   <div>• ≥ ₹6 LPA when pay is stated</div>
+   <div>• Max 5 picks a day</div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:8px;padding:10px 12px">
+  <b style="font-size:13px">What Hirelane never does</b>
+  <div style="font-size:11.5px;line-height:1.55;margin-top:4px">
+   <div>✕ Submits for you. You press the button.</div>
+   <div>✕ Guesses your pay or invents an answer.</div>
+   <div>✕ Shames you for a missed streak.</div>
+   <div>✕ Sells your resume.</div>
+  </div>
+ </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px">
+  <div style="background:var(--pink);color:#fff;border-radius:16px;padding:10px"><svg class="ic"><use href="#file"/></svg><div style="font-weight:800;font-size:13px;margin-top:4px">2 resumes</div><div style="font-size:10.5px">SDE-first · Data-first</div></div>
+  <div style="background:var(--ink);color:#fff;border-radius:16px;padding:10px"><div class="row2"><b style="font-size:13px">Pause</b><span style="width:30px;height:18px;border-radius:99px;background:#3a3a44;position:relative"><i style="position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff"></i></span></div><div style="font-size:10.5px;margin-top:6px;opacity:.75">exams week? picks stop, nothing lost</div></div>
+ </div>
+ <div class="tb"><div><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div class="on"><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>You · rules + promises.</b> The progress card says what each step buys ("+6 matches"). Rules are plain sentences you can edit. The "never does" card is the trust layer, written in our voice.</div></div>
+
+<!-- 10 RECAP -->
+<div><div class="ph"><div class="sc" style="background:var(--blue);color:#fff">
+ <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
+ <div style="display:flex;gap:4px;margin-top:2px"><i style="flex:1;height:4px;border-radius:4px;background:#fff"></i><i style="flex:1;height:4px;border-radius:4px;background:#fff"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.35)"></i><i style="flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.35)"></i></div>
+ <div class="row2" style="margin-top:12px"><b>Your week · 11–17 Oct</b><span class="small" style="color:#fff">2/4</span></div>
+ <div class="big" style="font-size:140px;color:var(--lime);margin-top:6px">6</div>
+ <div class="big" style="font-size:28px">forms filled.<br>2 replies.<br>0 retyping.</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:14px">
+  <div class="card" style="background:var(--pink);color:#fff;padding:10px"><div class="big" style="font-size:24px">4 min</div><div style="font-size:10.5px;font-weight:700">avg. per application</div></div>
+  <div class="card" style="background:var(--sun);padding:10px"><div class="big" style="font-size:24px">Rubrik</div><div style="font-size:10.5px;font-weight:700">best match · 82</div></div>
+ </div>
+ <div style="margin-top:8px;font-size:11px;opacity:.8">Top 12% of BITS freshers on Hirelane this week · sample</div>
+ <div style="position:absolute;left:14px;right:14px;bottom:80px;display:flex;gap:8px"><div class="pill" style="flex:1;background:#fff;color:var(--ink)">Share to story ↗</div><div class="pill" style="flex:.7;border:3px solid #fff">Next ▶</div></div>
+ <div class="tb"><div><svg><use href="#home"/></svg>Home</div><div><svg><use href="#disc"/></svg>Discover</div><div><svg><use href="#comp"/></svg>Companies</div><div><svg><use href="#net"/></svg>Network</div><div class="on"><svg><use href="#you"/></svg>You</div></div>
+</div></div><div class="lab"><b>Recap · Wrapped, weekly.</b> Kept for celebration only, not the daily feed. Honest counts ("forms filled", not "applications sent by us"), a peer line, and share to story.</div></div>
+</div>
+
+<div class="notes">
+ <div><b>Borrowed from Shortlist's detailing</b> (not its look): real numbers in microcopy, the match shows its maths with misses, a source and freshness line on every job, a 4-second undo, timestamped activity, "Not this time" filing, and a "never does" promise card.</div>
+ <div><b>Kept from the approved Wrapped rounds:</b> ink frames, pink/lime/blue/sun blocks, giant Bricolage numbers, stamps, tilted stacks, story bars, the recap. Colour still changes per card; only small text avoids pink and coloured fills.</div>
+ <div><b>Fixes for the current app:</b> no soft-skill chips (Collaboration, Communication); requirements become ✓/✕ with quotes instead of a text wall; the action bar can't cover headings; no dark-green photo hero.</div>
+ <div><b>Data check (local board, 17 Oct):</b> 75 open entry/intern roles in India and 161 remote out of 16.8k. The fresher feed is thin, so the product needs more India entry-level sources before the UI can shine. Skill tags are noisy, and "salary stated" is true on rows with no amount.</div>
+</div>
+</body></html>
