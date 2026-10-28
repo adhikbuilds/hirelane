@@ -2265,3 +2265,12 @@ body {
     max-width: 480px;
   }
 }
+
+.wr-needs-opts label {
+  position: relative;
+}
+
+.wr-needs-opts input {
+  width: 1px;
+  height: 1px;
+}

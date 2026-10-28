@@ -1406,3 +1406,41 @@ body {
   }
 }
 
+
+/* Wide tables and the funnel scroll inside their own card on phones; the page never scrolls sideways. */
+.cp-card {
+  overflow-x: auto;
+}
+
+@media (max-width: 960px) {
+  .cp-main,
+  .cp-top > div {
+    min-width: 0;
+  }
+
+  .cp-ledger dd {
+    font-size: 1.5rem;
+  }
+}
+
+.cp-drive-layout > *,
+.cp-drive-form > * {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .cp-crit {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+.cp-chip {
+  position: relative;
+}
+
+.cp-field .cp-chip input {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+}
