@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "../../app/public.css";
 
 /** Shared header for the public site: wordmark, the two audience sub-tabs, sign in. */
 export function PublicHeader({ active }: { active: "home" | "students" | "universities" }) {
