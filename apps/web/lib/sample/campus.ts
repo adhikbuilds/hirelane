@@ -48,3 +48,27 @@ export const SAMPLE_CAMPUS: CampusOverview = {
     { company: "IT services firm (sample)", role: "Trainee Engineer", rules: "60% throughout, B.E/B.Tech, MCA", eligible: 0, applied: 0, deadline: "2 Nov", status: "open" },
   ],
 };
+
+export type ProgrammeRow = { programme: string; finalYears: number; joined: number; ready: number; eligible: number; applied: number; interviews: number; offers: number } | { programme: string; hidden: true; finalYears: number };
+
+export const SAMPLE_PROGRAMMES: ProgrammeRow[] = [
+  { programme: "B.Com (General)", finalYears: 186, joined: 121, ready: 92, eligible: 80, applied: 56, interviews: 21, offers: 14 },
+  { programme: "B.Com (Computer Applications)", finalYears: 74, joined: 52, ready: 41, eligible: 36, applied: 25, interviews: 11, offers: 8 },
+  { programme: "BBA", finalYears: 112, joined: 79, ready: 58, eligible: 50, applied: 33, interviews: 12, offers: 8 },
+  { programme: "BBA (Logistics)", hidden: true, finalYears: 9 },
+  { programme: "B.Com (Honours)", finalYears: 31, joined: 16, ready: 10, eligible: 8, applied: 4, interviews: 2, offers: 1 },
+];
+
+export type OfferRow = { id: string; student: string; programme: string; employer: string; lpa: number; source: "Hirelane" | "On-campus drive"; letter: boolean; status: "verified" | "waiting" | "rejected" };
+
+export const SAMPLE_OFFERS: OfferRow[] = [
+  { id: "o1", student: "Sample Student 04", programme: "B.Com (General)", employer: "Mass recruiter (sample)", lpa: 3.2, source: "Hirelane", letter: true, status: "waiting" },
+  { id: "o2", student: "Sample Student 11", programme: "BBA", employer: "Private bank (sample)", lpa: 4.0, source: "Hirelane", letter: true, status: "waiting" },
+  { id: "o3", student: "Sample Student 17", programme: "B.Com (Computer Applications)", employer: "SaaS startup (sample)", lpa: 4.5, source: "Hirelane", letter: false, status: "waiting" },
+  { id: "o4", student: "Sample Student 02", programme: "B.Com (General)", employer: "Retail chain (sample)", lpa: 2.8, source: "On-campus drive", letter: true, status: "verified" },
+  { id: "o5", student: "Sample Student 09", programme: "BBA", employer: "Logistics firm (sample)", lpa: 3.6, source: "Hirelane", letter: true, status: "verified" },
+];
+
+export const SAMPLE_NOTICE = `Off-campus drive: Customer Success Associate, Bengaluru (on-site)
+Eligibility: B.Com / BBA / BBM, 2025 or 2026 passout. Minimum 60% or 6.0 CGPA in graduation and 55% in 10th and 12th. No active backlogs.
+CTC: 3.6 LPA. Apply on the company careers page by 6 Nov.`;

@@ -1,15 +1,14 @@
 import { Public_Sans } from "next/font/google";
 import Link from "next/link";
+import type React from "react";
 import type { CampusOverview } from "@/lib/sample/campus";
 import "../../app/campus.css";
 
 const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
 
-const NAV = ["Overview", "Students", "Drives", "Outcomes and NAAC", "Settings"];
+export const pct = (n: number, of: number) => (of > 0 ? Math.round((n / of) * 100) : 0);
 
-const pct = (n: number, of: number) => (of > 0 ? Math.round((n / of) * 100) : 0);
-
-function Icon({ d }: { d: string }) {
+export function Icon({ d }: { d: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d={d} />
@@ -17,29 +16,37 @@ function Icon({ d }: { d: string }) {
   );
 }
 
-const STATUS = {
+export const STATUS = {
   open: { tone: "good", label: "Open", d: "M5 12l5 5 9-10" },
   closing: { tone: "warn", label: "Closing soon", d: "M12 7v5l3 3" },
   closed: { tone: "risk", label: "Closed", d: "M6 6l12 12M18 6L6 18" },
 } as const;
 
-/** Placement console overview: the institutional register of the brand. Server component, no client JS. */
-export function CampusConsole({ data }: { data: CampusOverview }) {
-  const unplaced = data.finalYears - data.placedOnCampus;
-  const top = data.funnel[0]?.count ?? 0;
+export type CampusPage = "overview" | "students" | "drives" | "outcomes" | "settings";
+
+const NAV: { id: CampusPage; label: string; href: string }[] = [
+  { id: "overview", label: "Overview", href: "/dev/campus" },
+  { id: "students", label: "Students", href: "/dev/campus/students" },
+  { id: "drives", label: "Drives", href: "/dev/campus/drives" },
+  { id: "outcomes", label: "Outcomes and NAAC", href: "/dev/campus/outcomes" },
+  { id: "settings", label: "Settings", href: "/dev/campus/settings" },
+];
+
+/** Console frame: navy sidebar with the college name. Server component. */
+export function CampusShell({ college, active, children }: { college: string; active: CampusPage; children: React.ReactNode }) {
   return (
     <div className={`cp ${publicSans.variable} ${publicSans.className}`}>
       <aside className="cp-side">
         <div className="cp-college">
-          <strong>{data.college}</strong>
+          <strong>{college}</strong>
           <span>Placement cell</span>
         </div>
         <nav aria-label="Console">
           <ul className="cp-nav">
-            {NAV.map((n, i) => (
-              <li key={n}>
-                <Link href="#" aria-current={i === 0 ? "page" : undefined}>
-                  {n}
+            {NAV.map((n) => (
+              <li key={n.id}>
+                <Link href={n.href} aria-current={n.id === active ? "page" : undefined}>
+                  {n.label}
                 </Link>
               </li>
             ))}
@@ -49,9 +56,33 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
           Powered by <b>hirelane</b>
         </p>
       </aside>
-
       <main className="cp-main" id="console">
-        {data.sample ? <p className="cp-sample">Sample cohort for demos. Real numbers come from your students&apos; activity; nothing here is a real student.</p> : null}
+        {children}
+      </main>
+    </div>
+  );
+}
+
+export function SampleNote() {
+  return <p className="cp-sample">Sample cohort for demos. Real numbers come from your students&apos; activity; nothing here is a real student.</p>;
+}
+
+export function Privacy() {
+  return (
+    <p className="cp-privacy">
+      <Icon d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
+      You see totals only. Any group under 10 students is hidden, and each student chooses whether to share their outcomes.
+    </p>
+  );
+}
+
+/** Placement console overview: the institutional register of the brand. Server component, no client JS. */
+export function CampusConsole({ data }: { data: CampusOverview }) {
+  const unplaced = data.finalYears - data.placedOnCampus;
+  const top = data.funnel[0]?.count ?? 0;
+  return (
+    <CampusShell college={data.college} active="overview">
+        {data.sample ? <SampleNote /> : null}
 
         <header className="cp-top">
           <div>
@@ -70,10 +101,7 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
           </div>
         </header>
 
-        <p className="cp-privacy">
-          <Icon d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
-          You see totals only. Any group under 10 students is hidden, and each student chooses whether to share their outcomes.
-        </p>
+        <Privacy />
 
         <dl className="cp-ledger">
           <div>
@@ -104,20 +132,29 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
           <section className="cp-card" aria-labelledby="funnel-h">
             <h2 id="funnel-h">Students not placed on campus</h2>
             <p className="cp-card-sub">
-              {unplaced} students. Each bar is the share of the {top} who joined.
+              {unplaced} students. The red figure between steps is how many stopped there; the table below says why.
             </p>
-            <ol className="cp-funnel">
-              {data.funnel.map((f) => (
-                <li key={f.label} title={`${f.label}: ${f.count} (${pct(f.count, top)}%)`}>
-                  <b>{f.label}</b>
-                  <span>
-                    {f.count} <small>({pct(f.count, top)}%)</small>
-                  </span>
-                  <span className="cp-bar" aria-hidden="true">
-                    <i style={{ width: `${pct(f.count, top)}%` }} />
-                  </span>
-                </li>
-              ))}
+            <ol className="cp-stages">
+              {data.funnel.map((f, i) => {
+                const next = data.funnel[i + 1];
+                const drop = next ? f.count - next.count : 0;
+                return (
+                  <li key={f.label} className="cp-stage">
+                    <span className="cp-stage-n">{f.count}</span>
+                    <span className="cp-stage-l">{f.label}</span>
+                    <span className="cp-stage-p">{pct(f.count, top)}% of joined</span>
+                    <span className="cp-stage-track" aria-hidden="true">
+                      <i style={{ width: `${pct(f.count, top)}%` }} />
+                    </span>
+                    {next ? (
+                      <a className="cp-drop" href="#stuck-h" aria-label={`${drop} students stopped before ${next.label}; see blockers`}>
+                        <Icon d="M12 5v14m0 0l-5-5m5 5l5-5" />
+                        {drop}
+                      </a>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ol>
           </section>
 
@@ -219,7 +256,6 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
             </tbody>
           </table>
         </section>
-      </main>
-    </div>
+    </CampusShell>
   );
 }
