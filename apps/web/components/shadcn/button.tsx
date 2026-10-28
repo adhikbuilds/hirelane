@@ -27,7 +27,7 @@ const buttonVariants = cva(
         lg: "t-body h-14 px-8",
         icon: "size-12",
         "icon-sm": "size-10",
-        pill: "h-13 w-full rounded-full px-6 text-[1.0625rem]",
+        pill: "min-h-13 h-auto w-full rounded-full px-6 py-3 text-center text-[1.0625rem] leading-tight whitespace-normal",
         "pill-sm": "h-11 rounded-full px-5 text-base",
       },
     },

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AccountShell } from "@/components/account/AccountShell";
-import { CheckScreen, HandoffToast, SwipeCard } from "@/components/app/Picks";
+import { CheckScreen, HandoffToast } from "@/components/app/Picks";
+import { SwipeDeck } from "@/components/app/SwipeDeck";
+import { DECK } from "@/lib/sample/deck";
 import { TabBar } from "@/components/app/TabBar";
 import { SAMPLE_ANSWERS, SAMPLE_PICK } from "@/lib/sample/loop";
 
@@ -15,7 +17,7 @@ export default function PicksPreview() {
       <div className="wr-app">
         <p className="wr-sample">Sample role and student. On a phone you see one step at a time; on a laptop the card and the check sit side by side.</p>
         <div className="wr-app wr-workbench" style={{ padding: 0 }}>
-          <SwipeCard card={SAMPLE_PICK} index={1} total={3} />
+          <SwipeDeck cards={DECK} />
           <div className="wr-app" style={{ padding: 0 }}>
             <CheckScreen card={SAMPLE_PICK} answers={SAMPLE_ANSWERS} />
             <HandoffToast company={SAMPLE_PICK.company} weekCount={4} />

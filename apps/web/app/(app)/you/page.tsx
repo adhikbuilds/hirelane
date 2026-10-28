@@ -78,17 +78,22 @@ export default async function YouPage({ searchParams }: { searchParams: Promise<
           </Card>
         </CardStack>
 
-        <Card aria-labelledby="delete-h">
-          <CardTitle id="delete-h">Delete your account</CardTitle>
-          <CardDescription>This signs you out everywhere and deletes your account and everything in it. It can&apos;t be undone.</CardDescription>
-          {e === "not_confirmed" ? <Alert>Tick the box to confirm, then press Delete my account.</Alert> : null}
-          <form action={deleteAccount} className="acct-stack-y">
-            <CheckboxField name="confirm" title="Yes, delete my account" description="I understand this can't be undone." />
-            <Button type="submit" variant="danger" size="pill">
-              Delete my account
+        <details className="wr-account" open={e === "not_confirmed" || undefined}>
+          <summary>Account and data</summary>
+          <div className="wr-account-body">
+            <p className="acct-note">Download a copy of everything Hirelane keeps about you, or delete your account.</p>
+            <Button asChild variant="on-night" size="pill-sm">
+              <a href="/api/v1/me/export">Download my data</a>
             </Button>
-          </form>
-        </Card>
+            <form action={deleteAccount} className="acct-stack-y">
+              {e === "not_confirmed" ? <Alert>Tick the box to confirm, then press Delete my account.</Alert> : null}
+              <CheckboxField name="confirm" title="Yes, delete my account" description="This signs you out everywhere and deletes everything. It can't be undone." className="wr-account-check" />
+              <button type="submit" className="acct-linkbtn wr-danger-link">
+                Delete my account
+              </button>
+            </form>
+          </div>
+        </details>
       </div>
     </AccountShell>
   );

@@ -60,7 +60,7 @@ export function Home({ data }: { data: HomeData }) {
           </ul>
           <Button asChild variant="lime" size="pill-sm">
             <Link href="/picks">
-              Swipe {picks.total}, about {picks.minutes} min
+              Start swiping
             </Link>
           </Button>
         </div>

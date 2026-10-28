@@ -159,48 +159,55 @@ export function Tracker({ items }: { items: TrackerItem[] }) {
   );
 }
 
-/** Weekly recap: Wrapped-style, celebration only, honest counts, built to be shared. */
+/** Weekly recap: Wrapped-style story slides. One big moment per slide; honest counts; built to be shared. No JS. */
 export function RecapCard({ recap }: { recap: Recap }) {
+  const slides = [
+    { tone: "blue", kicker: `Your week, ${recap.weekLabel}`, big: "23", line: "roles checked against your marks.", sub: "4 were worth your time." },
+    { tone: "lime", kicker: "Applied, on their own sites", big: String(recap.handedOff), line: "applications. Zero retyping.", sub: "Every answer came from your resume.", stamp: "Applied" },
+    { tone: "pink", kicker: "Somebody wrote back", big: String(recap.replies), line: `reply. ${recap.bestMatch} wants a call.`, sub: "Thursday, 4 pm. Good luck." },
+    { tone: "sun", kicker: "You levelled up", big: "7/9", line: "resume checks pass now.", sub: "It was 3/9 on Monday. Next week: roles at 2 companies where you know someone." },
+  ];
   return (
-    <section className="wr-recap-card" aria-labelledby="recap-card-h">
-      <div className="wr-swipe-top">
-        <p className="wr-tile-label">Your week, {recap.weekLabel}</p>
-        <p className="wr-tile-label">2 of 4</p>
-      </div>
-      <ol className="acct-bars wr-bars-cream" aria-label="Recap progress">
-        <li data-state="done" />
-        <li data-state="now" />
-        <li />
-        <li />
+    <section className="wr-recap" aria-labelledby="recap-h">
+      <h1 id="recap-h" className="sr-only">
+        Your week on Hirelane
+      </h1>
+      <ol className="wr-recap-reel">
+        {slides.map((s, i) => (
+          <li key={s.kicker} className="wr-slide" data-tone={s.tone}>
+            <ol className="acct-bars wr-slide-bars" aria-hidden="true">
+              {slides.map((_, j) => (
+                <li key={j} data-state={j < i ? "done" : j === i ? "now" : "todo"} />
+              ))}
+            </ol>
+            <p className="wr-slide-kicker">{s.kicker}</p>
+            <p className="wr-slide-big">{s.big}</p>
+            <p className="wr-slide-line">{s.line}</p>
+            <p className="wr-slide-sub">{s.sub}</p>
+            {s.stamp ? (
+              <span className="wr-slide-stamp" aria-hidden="true">
+                {s.stamp}
+              </span>
+            ) : null}
+            <p className="wr-slide-brand" aria-hidden="true">
+              hire<b>lane</b>
+            </p>
+          </li>
+        ))}
       </ol>
-      <p className="wr-recap-big" aria-hidden="true">
-        {recap.handedOff}
-      </p>
-      <h2 id="recap-card-h" className="wr-recap-lines">
-        <span>forms handed off.</span>
-        <span>
-          {recap.replies} {recap.replies === 1 ? "reply" : "replies"}.
-        </span>
-        <span>{recap.retyping} retyping.</span>
-      </h2>
-      <div className="wr-bento">
-        <p className="wr-tile wr-tile-pink">
-          <span className="wr-mid">{recap.minutesPerApplication} min</span>
-          <span className="wr-tile-fix">per application, on average</span>
-        </p>
-        <p className="wr-tile wr-tile-sun">
-          <span className="wr-mid wr-mid-word">{recap.bestMatch}</span>
-          <span className="wr-tile-fix">your best match</span>
-        </p>
-      </div>
-      <div className="wr-drive-actions">
-        <Button asChild variant="lime" size="pill-sm">
-          <Link href="#">Share to story</Link>
+      <aside className="wr-share" aria-label="Share your week">
+        <h2 className="wr-paste-title">Share your week</h2>
+        <p className="wr-tile-fix">Made for a 9:16 story. Your marks and companies you skipped are never on it.</p>
+        <Button asChild variant="lime" size="pill">
+          <Link href="#">Share to Instagram story</Link>
         </Button>
-        <Button asChild variant="on-night" size="pill-sm">
-          <Link href="#">Next</Link>
+        <Button asChild variant="on-night" size="pill">
+          <Link href="#">Download the image</Link>
         </Button>
-      </div>
+        <Button asChild variant="on-night" size="pill">
+          <Link href="#">Send on WhatsApp</Link>
+        </Button>
+      </aside>
     </section>
   );
 }

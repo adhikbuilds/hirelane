@@ -1004,6 +1004,7 @@ body {
 
 .wr-answers dd {
   margin: 0;
+  overflow-wrap: anywhere;
   font-weight: 800;
 }
 
@@ -1073,6 +1074,11 @@ body {
   border: 2px solid var(--wr-ink-wash-strong);
   font-size: 0.875rem;
   font-weight: 700;
+}
+
+.wr-resume-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .wr-resume-row a {
@@ -1697,4 +1703,401 @@ body {
 
 .wr-lock-action {
   margin-top: 8px;
+}
+
+/* Account and data: present (DPDP right to erasure) but tucked away at the bottom of You. */
+.wr-account {
+  border-top: 2px solid var(--wr-cream-wash);
+  padding-top: 16px;
+}
+
+.wr-account summary {
+  cursor: pointer;
+  color: var(--wr-muted-on-night);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.wr-account-body {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.wr-account-body .acct-note {
+  color: var(--wr-muted-on-night);
+}
+
+.wr-account-check {
+  background: var(--wr-cream);
+  color: var(--wr-ink);
+}
+
+.acct-linkbtn.wr-danger-link {
+  color: var(--wr-coral);
+}
+
+/* ---------- Swipe deck (the one client island) ---------- */
+.wr-deck {
+  display: grid;
+  gap: 12px;
+  outline: none;
+}
+
+.wr-deck:focus-visible {
+  outline: 3px solid var(--wr-lime);
+  outline-offset: 8px;
+  border-radius: var(--wr-radius-card);
+}
+
+.wr-deck-stack {
+  position: relative;
+  display: grid;
+  padding-bottom: 16px;
+}
+
+.wr-deck-peek {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--wr-radius-card);
+  background: var(--wr-pink);
+  border: 2px solid var(--wr-ink);
+}
+
+.wr-deck-peek[data-depth="1"] { transform: translateY(8px) scale(0.96) rotate(-3deg); }
+.wr-deck-peek[data-depth="2"] { transform: translateY(16px) scale(0.92) rotate(3deg); opacity: 0.7; }
+.wr-deck-peek[data-tone="sun"] { background: var(--wr-sun); }
+.wr-deck-peek[data-tone="blue"] { background: var(--wr-blue); }
+.wr-deck-peek[data-tone="lime"] { background: var(--wr-lime); }
+
+.wr-deck-card {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--wr-radius-card);
+  border: 2px solid var(--wr-ink);
+  background: var(--wr-lime);
+  color: var(--wr-ink);
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wr-deck-card[data-dragging] {
+  transition: none;
+  cursor: grabbing;
+}
+
+.wr-deck-card[data-tone="sun"] { background: var(--wr-sun); }
+.wr-deck-card[data-tone="blue"] { background: var(--wr-blue); color: var(--wr-cream); }
+.wr-deck-card[data-tone="pink"] { background: var(--wr-pink); }
+
+.wr-stamp {
+  position: absolute;
+  top: 24px;
+  padding: 4px 12px;
+  border: 4px solid currentColor;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  pointer-events: none;
+  background: var(--wr-cream);
+}
+
+.wr-stamp[data-kind="apply"] { left: 20px; color: var(--wr-lane); transform: rotate(-12deg); }
+.wr-stamp[data-kind="skip"] { right: 20px; color: var(--wr-danger-ink); transform: rotate(12deg); }
+
+.wr-deck-co {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.wr-deck-signals {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wr-deck-signals li {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--wr-ink);
+  color: var(--wr-cream);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.wr-deck-pay {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--wr-ink);
+  color: var(--wr-sun);
+}
+
+.wr-deck-pay b {
+  font-size: 1.375rem;
+  color: var(--wr-cream);
+}
+
+.wr-deck-pay:not([data-stated]) b {
+  color: var(--wr-sun);
+  font-size: 1rem;
+}
+
+.wr-deck-pay span {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.wr-deck-fit {
+  display: grid;
+  gap: 8px;
+}
+
+.wr-deck-match {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 8px;
+  font-weight: 700;
+}
+
+.wr-deck-meter {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--wr-ink-wash-strong);
+  overflow: hidden;
+}
+
+.wr-deck-meter i {
+  display: block;
+  height: 100%;
+  background: var(--wr-ink);
+}
+
+.wr-deck-warm {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--wr-cream);
+  color: var(--wr-ink);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.wr-deck-more {
+  font: inherit;
+  font-weight: 800;
+  justify-self: start;
+  padding: 8px 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.wr-deck-more:active { opacity: 0.7; }
+
+.wr-deck-detail {
+  display: grid;
+  gap: 8px;
+}
+
+.wr-deck-detail h4 {
+  margin: 8px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.wr-deck-list,
+.wr-deck-rounds {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  line-height: 1.4;
+}
+
+.wr-deck-effort {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.wr-deck-empty {
+  padding: 32px 20px;
+  border-radius: var(--wr-radius-card);
+  border: 2px dashed var(--wr-cream-wash-strong);
+  text-align: center;
+}
+
+.wr-deck-empty h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.wr-deck-empty p {
+  margin: 8px 0 0;
+  color: var(--wr-muted-on-night);
+}
+
+.wr-deck-toast {
+  position: sticky;
+  bottom: 96px;
+  z-index: 5;
+}
+
+.wr-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.wr-reasons button {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--wr-ink);
+  background: transparent;
+  color: var(--wr-ink);
+  cursor: pointer;
+}
+
+.wr-reasons button:active { opacity: 0.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wr-deck-card { transition: none; }
+}
+
+/* ---------- Weekly recap: Wrapped story slides ---------- */
+.wr-recap {
+  display: grid;
+  gap: 20px;
+}
+
+.wr-recap-reel {
+  margin: 0 -16px;
+  padding: 0 16px 8px;
+  list-style: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(86vw, 380px);
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.wr-slide {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  scroll-snap-align: center;
+  border-radius: 24px;
+  padding: 20px;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto auto;
+  overflow: hidden;
+  background: var(--wr-blue);
+  color: var(--wr-cream);
+}
+
+.wr-slide[data-tone="lime"] { background: var(--wr-lime); color: var(--wr-ink); }
+.wr-slide[data-tone="pink"] { background: var(--wr-pink); color: var(--wr-ink); }
+.wr-slide[data-tone="sun"] { background: var(--wr-sun); color: var(--wr-ink); }
+
+.wr-slide-bars li { background: color-mix(in srgb, currentColor 25%, transparent); }
+.wr-slide-bars li[data-state="done"],
+.wr-slide-bars li[data-state="now"] { background: currentColor; }
+
+.wr-slide-kicker {
+  margin: 16px 0 0;
+  font-weight: 700;
+}
+
+.wr-slide-big {
+  margin: 0;
+  align-self: end;
+  font-weight: 800;
+  font-size: clamp(6rem, 30vw, 9rem);
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.wr-slide-line {
+  margin: 12px 0 0;
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.wr-slide-sub {
+  margin: 12px 0 0;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.wr-slide-stamp {
+  position: absolute;
+  top: 34%;
+  right: 16px;
+  padding: 4px 12px;
+  border: 4px solid var(--wr-ink);
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.5rem;
+  transform: rotate(-10deg);
+}
+
+.wr-slide-brand {
+  margin: 20px 0 0;
+  font-weight: 800;
+  font-size: 1.125rem;
+  opacity: 0.85;
+}
+
+.wr-share {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+@media (min-width: 1024px) {
+  .wr-recap {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    align-items: start;
+  }
+
+  .wr-recap-reel {
+    margin: 0;
+    padding: 0 0 12px;
+    grid-auto-columns: 300px;
+  }
+
+  .wr-slide-big { font-size: 7rem; }
+  .wr-slide-line { font-size: 1.75rem; }
 }
