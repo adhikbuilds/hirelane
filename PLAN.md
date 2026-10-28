@@ -693,12 +693,13 @@ Campus Slice 4b is gated on G4.
     - 0 LLM calls in these slices.
 13. **Migrations.** 0007 is `rls_posture`. Order:
     - **0008** auth: users, auth_identities, sessions (+client, absolute_expires_at), otp_challenges (+purpose), consents (+age_18_plus, campus_share, offer_letter_tpo), product_events, idempotency_keys
-    - **0009** profiles (college_tier, cohort_code, grad_year and degree removed), work_authorizations, answer_bank, resumes (revised; `dek_wrapped` dropped; the ≤ 3 trigger counts roots), file_access_log, eligibility_profiles
-    - **0010** campus
-    - **0011** matching
-    - **0012** applications
-    - **0013** drives and outcomes (after G4)
-    - **0014+** inbound and billing
+    - **0009** auth hardening (narrow `hirelane_auth` role; added in Slice 2 after the security review, 2026-10-29)
+    - **0010** profiles (college_tier, cohort_code, grad_year and degree removed), work_authorizations, answer_bank, resumes (revised; `dek_wrapped` dropped; the ≤ 3 trigger counts roots), file_access_log, eligibility_profiles
+    - **0011** campus
+    - **0012** matching
+    - **0013** applications
+    - **0014** drives and outcomes (after G4)
+    - **0015+** inbound and billing
 
     RLS is ENABLE, not FORCE. `verify-rls` gains the modes `own-r` and `ten`, a SECURITY DEFINER registry and an `updateSql` hook.
 14. **Retention.** Downloads go to `file_access_log`, written in the same transaction. Resume or account deletion purges the blob and `parsed_enc` within 24 h: `resume:purge` runs immediately, with a daily sweep as backstop.

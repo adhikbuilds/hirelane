@@ -15,6 +15,7 @@
     "@hirelane/agent": "workspace:^",
     "@hirelane/db": "workspace:^",
     "@hirelane/engine": "workspace:^",
+    "@hirelane/services": "workspace:^",
     "@hirelane/vault": "workspace:^",
     "@radix-ui/react-slider": "^1.6.1",
     "class-variance-authority": "^0.7.1",
