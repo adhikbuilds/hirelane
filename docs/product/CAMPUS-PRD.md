@@ -36,6 +36,7 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | R7 | Guided builder for students with no usable resume: 6–8 questions → a one-page PDF an ATS can read | the builder output passes our own readability check |
 | R8 | Up to 3 resumes, an audited download, delete, and purge within 24 h | purge test proves the 24 h bound |
 | R9 | 0 LLM calls on resume content without the `llm_resume` consent | `llm_calls` count is 0 in the e2e test |
+| R10 | **LinkedIn data upload** (owner, 2026-10-29): the student uploads their own "Get a copy of your data" ZIP (Profile, Education, Positions, Skills, Connections CSVs). It goes through the same zip guard as DOCX and is parsed in the worker. Education, positions and skills pre-fill the profile and eligibility, and the student confirms each field. Connections stay private to the user, for the later referral finder, and are never shared across users | the ZIP fixture pre-fills the confirm screen; the zip-bomb fixture is rejected; 0 connection rows are readable by another user |
 
 ### E. Eligibility (C1 engine, C2 in use)
 | ID | Requirement | Acceptance |
@@ -54,6 +55,7 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | A3 | Phone OTP: optional, after the owner picks a vendor |
 | A4 | Delete account → everything purged within 24 h |
 | A5 | Accounts stay off in production until a grievance officer is named |
+| A6 | **Sign in with LinkedIn** (owner, 2026-10-29): official OpenID Connect (scopes `openid profile email`) next to Google. It gives name, email and photo only. No LinkedIn MCP, no session cookies, no scraping (LinkedIn User Agreement §8.2 and §2.2) |
 
 ### C. Campus (C2; C3–C5 gated on G4, the placement-cell conversations)
 | ID | Requirement | Gate |
@@ -74,6 +76,7 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | S3 | Drive inbox (= C4) as a supply source | G4 |
 | S4 | Honest counts: "2 new roles you're eligible for this week", never padded | — |
 | S5 | **Paste a job** (owner, 2026-10-29: build right after Slices 1–2): the student pastes the text of any job (Naukri, LinkedIn, a WhatsApp forward); we parse it, score fit and eligibility, scam-flag it, and add it to the tracker with "apply at source". **We never fetch the link** | — |
+| S5a | **Share a job into Hirelane** (owner, 2026-10-29): a PWA `share_target` in the web manifest, so "Share → Hirelane" from the LinkedIn, Naukri or WhatsApp app on Android opens Paste a job with the text and link filled in. We still never fetch the link | — |
 | S6 | **Drive inbox moved earlier** (owner, 2026-10-29): build the TPO paste and parse right after Slices 1–2, reusing S5's parser; the full TPO console still waits for G4 | — |
 | S7 | **Remote-for-India filter** (owner, 2026-10-29): show non-India jobs only when they are remote and open to India; everything else is hidden by default | — |
 | S8 | Licensed feeds (Adzuna, Careerjet, Jooble): only with a written licence that allows showing our score; see docs/recon/job-feeds-2026-10-29.md | owner + licence |
