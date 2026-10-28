@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { extractInThread, nodeSupportsExtraction } from '../src/resume/extract/thread';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { childPermissionArgs, childReadPaths, extractInThread, nodeSupportsExtraction } from '../src/resume/extract/thread';
 import * as fx from './fixtures/generate-resume-fixtures';
 import { flateBombPdf } from './fixtures/flate-bomb';
 import { MAX_BYTES } from '../src/resume/extract/limits';
@@ -72,5 +74,32 @@ describe('extractInThread', () => {
     expect(nodeSupportsExtraction('23.5.0')).toBe(false);
     expect(nodeSupportsExtraction('23.6.0')).toBe(true);
     expect(nodeSupportsExtraction('24.14.0')).toBe(true);
+  });
+});
+
+describe('extract child sandbox', () => {
+  const run = (code: string) => spawnSync(process.execPath, [...childPermissionArgs(), '-e', code], { encoding: 'utf8', env: {} });
+  const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
+
+  it('cannot read the repo-root env file, package.json or the default storage dir', () => {
+    for (const rel of ['.env', '.env.local', '.env.example', 'package.json']) {
+      const r = run(`require('fs').readFileSync(${JSON.stringify(repoRoot + rel)})`);
+      expect(r.status, rel).not.toBe(0);
+      expect(r.stderr, rel).toMatch(/ERR_ACCESS_DENIED|Access to this API has been restricted/);
+    }
+    const r = run(`require('fs').readdirSync(${JSON.stringify(repoRoot + 'storage')})`);
+    expect(r.stderr).toMatch(/ERR_ACCESS_DENIED|Access to this API has been restricted/);
+  });
+
+  it('can still read what the parser needs', () => {
+    const paths = childReadPaths();
+    expect(paths).toHaveLength(5);
+    const r = run(`require('fs').readFileSync(${JSON.stringify(paths[0] + 'pdf.ts')}); require('fs').readdirSync(${JSON.stringify(paths[1])}); require('fs').readdirSync(${JSON.stringify(paths[2])})`);
+    expect(r.status).toBe(0);
+  });
+
+  it('accepts a Node Buffer (shared pool view) and still extracts it', async () => {
+    const r = await extractInThread(Buffer.from(fx.textPdf()));
+    expect('text' in r).toBe(true);
   });
 });

@@ -26,6 +26,8 @@ export const ALLOWLIST: { pattern: string; why: string }[] = [
   { pattern: 'apps/web/lib/job-markdown-data.ts', why: 'public job markdown (added)' },
   { pattern: 'apps/web/lib/sitemap-http.ts', why: 'sitemaps (added)' },
   { pattern: 'apps/web/lib/waitlist.ts', why: 'pre-account waitlist (added)' },
+  // Erasure: one SELECT of the deleting user's own blob_keys. hirelane_auth has no grant on resumes and the rows must be read before the cascade.
+  { pattern: 'apps/web/lib/auth/erasure.ts', why: 'DPDP account erasure reads the user\'s blob keys (added 2026-10-29)' },
   // Tests set up fixtures as the owner.
   { pattern: '**/test/**', why: 'tests' },
   { pattern: '**/tests/**', why: 'tests' },

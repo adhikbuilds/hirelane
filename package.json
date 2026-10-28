@@ -17,7 +17,7 @@
     "brand-guard": "vite-node scripts/brand-guard.ts",
     "no-submit-guard": "vite-node scripts/no-submit-guard.ts",
     "withadmin-guard": "vite-node scripts/withadmin-guard.ts",
-    "verify": "pnpm test && pnpm typecheck && pnpm lint:deps && pnpm brand-guard && pnpm no-submit-guard && pnpm withadmin-guard && pnpm db:verify-schema && pnpm db:verify-rls && pnpm db:verify-auth",
+    "verify": "pnpm test && pnpm typecheck && pnpm lint:deps && pnpm brand-guard && pnpm no-submit-guard && pnpm withadmin-guard && pnpm engine:eval && pnpm db:verify-schema && pnpm db:verify-rls && pnpm db:verify-auth",
     "setup:keys": "pnpm --filter @hirelane/vault --silent setup:keys",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
@@ -34,7 +34,8 @@
     "agent:eval": "echo \"agent:eval: not implemented until Phase 4\"",
     "enrich:run": "pnpm --filter @hirelane/runner enrich:run",
     "report:coverage": "vite-node scripts/report-coverage.ts --",
-    "bench:board": "vite-node scripts/bench-board.ts"
+    "bench:board": "vite-node scripts/bench-board.ts",
+    "budget": "vite-node scripts/js-budget.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

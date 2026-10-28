@@ -53,6 +53,19 @@ describe('verifyRls fixture', () => {
     expect(r.failures.some((f) => /fx_ins.*update/.test(f))).toBe(true);
   });
 
+  it('fails when an own-nd table (no hard delete) allows delete', async () => {
+    const r = await run({ fixtureFaults: ['grant-delete'] });
+    expect(r.failures.some((f) => /fx_nd.*delete/.test(f))).toBe(true);
+  });
+
+  it('registers the 0010 tables and passes their checks', async () => {
+    const r = await run({ fixture: false });
+    expect(r.failures).toEqual([]);
+    for (const t of ['profiles', 'work_authorizations', 'answer_bank', 'resumes', 'file_access_log', 'eligibility_profiles']) {
+      expect(RLS_TABLES.some((s) => s.name === t), t).toBe(true);
+    }
+  });
+
   it('refuses a non-local database', async () => {
     await expect(verifyRls(admin, { url: 'postgres://u:p@db.example.com:5432/x' })).rejects.toThrow(/local/);
   });

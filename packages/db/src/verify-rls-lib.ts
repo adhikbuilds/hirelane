@@ -15,12 +15,13 @@ import { isLocalUrl } from './env.js';
  */
 /**
  * own      read and write own rows (select, insert, update, delete)
+ * own-nd   read, insert and update own rows; the app role cannot delete (soft delete only; the owner purges)
  * own-r    read and update own rows; the app role can neither insert nor delete (owner creates and deletes)
  * ins-only read and insert own rows; no update, no delete
  * rev      revoked from the app role entirely
  * pub      readable by the app role, nothing else
  */
-export type RlsMode = 'own' | 'own-r' | 'rev' | 'ins-only' | 'pub';
+export type RlsMode = 'own' | 'own-r' | 'own-nd' | 'rev' | 'ins-only' | 'pub';
 
 export interface RlsTableSpec {
   /** Short label used in messages. */
@@ -99,12 +100,37 @@ export const RLS_TABLES: RlsTableSpec[] = [
     "INSERT INTO otp_challenges (channel, purpose, target_hmac, code_hash, expires_at, user_id) VALUES ('email', 'login', 'rls', 'rls', now() + interval '1 day', $1)",
   ),
   authSpec('auth_identities', 'rev', 'user_id', "INSERT INTO auth_identities (user_id, provider, subject) VALUES ($1::uuid, 'google', 'rls-' || gen_random_uuid())"),
+  // 0010 profiles, resumes, eligibility. Rows are seeded as the owner; probes run as the app role.
+  authSpec('profiles', 'own', 'user_id', 'INSERT INTO profiles (user_id) VALUES ($1)', { insertSql: 'INSERT INTO profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id' }),
+  authSpec('work_authorizations', 'own', 'user_id', "INSERT INTO work_authorizations (user_id, country, status) VALUES ($1, 'IN', 'citizen')", {
+    insertSql: "INSERT INTO work_authorizations (user_id, country, status) VALUES ($1, 'US', 'visa_held')",
+  }),
+  authSpec('answer_bank', 'own', 'user_id', "INSERT INTO answer_bank (user_id, question_key, answer_enc) VALUES ($1, 'rls_seed', '\\x00')", {
+    insertSql: "INSERT INTO answer_bank (user_id, question_key, answer_enc) VALUES ($1, 'rls_probe', '\\x00')",
+  }),
+  authSpec(
+    'resumes',
+    'own-nd',
+    'user_id',
+    "INSERT INTO resumes (user_id, source, mime, size_bytes, file_hmac, blob_key) VALUES ($1, 'upload', 'application/pdf', 10, 'rls-seed-' || gen_random_uuid(), 'rls/seed-' || gen_random_uuid())",
+    {
+      insertSql:
+        "INSERT INTO resumes (user_id, source, mime, size_bytes, file_hmac, blob_key) VALUES ($1, 'upload', 'application/pdf', 10, 'rls-probe-' || gen_random_uuid(), 'rls/probe-' || gen_random_uuid())",
+      updateSql: 'UPDATE resumes SET label = label WHERE user_id = $1',
+    },
+  ),
+  authSpec('file_access_log', 'ins-only', 'user_id', "INSERT INTO file_access_log (user_id, action) VALUES ($1, 'download')", {
+    insertSql: "INSERT INTO file_access_log (user_id, action) VALUES ($1, 'preview')",
+  }),
+  authSpec('eligibility_profiles', 'own', 'user_id', 'INSERT INTO eligibility_profiles (user_id, confirmed_at) VALUES ($1, now())', {
+    insertSql: 'INSERT INTO eligibility_profiles (user_id, confirmed_at) VALUES ($1, now()) ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id',
+  }),
 ];
 
 /** Tables with a user_id column that are intentionally not row-isolated. */
 const USER_ID_EXEMPT = new Set(['feature_flags']);
 
-export type FixtureFault = 'no-rls' | 'open-insert' | 'grant-revoked' | 'grant-update';
+export type FixtureFault = 'no-rls' | 'open-insert' | 'grant-revoked' | 'grant-update' | 'grant-delete';
 
 export interface VerifyRlsOptions {
   /** Connection string of the database under test. Must be local: the harness creates a role. */
@@ -139,7 +165,7 @@ function fixtureSpecs(schema: string): RlsTableSpec[] {
       await c.query(`INSERT INTO ${schema}.${name} (user_id, note) VALUES ($1, 'seed')`, [userId]);
     },
   });
-  return [mk('fx_own', 'own'), mk('fx_rev', 'rev'), mk('fx_ins', 'ins-only'), mk('fx_pub', 'pub')];
+  return [mk('fx_own', 'own'), mk('fx_rev', 'rev'), mk('fx_ins', 'ins-only'), mk('fx_pub', 'pub'), mk('fx_nd', 'own-nd')];
 }
 
 function fixtureDdl(schema: string, owner: string, faults: readonly FixtureFault[]): string[] {
@@ -173,6 +199,10 @@ function fixtureDdl(schema: string, owner: string, faults: readonly FixtureFault
           `GRANT SELECT, INSERT, UPDATE ON ${schema}.fx_ins TO hirelane_app`,
         ]
       : [`GRANT SELECT, INSERT ON ${schema}.fx_ins TO hirelane_app`]),
+    `CREATE TABLE ${schema}.fx_nd (${cols})`,
+    `ALTER TABLE ${schema}.fx_nd ENABLE ROW LEVEL SECURITY`,
+    `CREATE POLICY fx_nd_all ON ${schema}.fx_nd FOR ALL TO hirelane_app USING (${SAME_USER}) WITH CHECK (${SAME_USER})`,
+    `GRANT SELECT, INSERT, UPDATE${faults.includes('grant-delete') ? ', DELETE' : ''} ON ${schema}.fx_nd TO hirelane_app`,
     `CREATE TABLE ${schema}.fx_pub (${cols})`,
     `GRANT SELECT ON ${schema}.fx_pub TO hirelane_app`,
     `RESET ROLE`,
@@ -225,7 +255,7 @@ async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: s
     ok(m?.force === false, `${n}: FORCE ROW LEVEL SECURITY is set (decision: ENABLE without FORCE)`);
   }
 
-  if (spec.mode === 'own' || spec.mode === 'ins-only' || spec.mode === 'own-r') {
+  if (spec.mode === 'own' || spec.mode === 'ins-only' || spec.mode === 'own-r' || spec.mode === 'own-nd') {
     const own = await count(a, a);
     ok(own.code === undefined && own.rows[0]?.n === 1, `${n}: user A cannot read A's own row`);
     const other = await count(a, b);
@@ -233,7 +263,7 @@ async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: s
     const none = await probe(owner, null, `SELECT 1 FROM ${t}`);
     ok(none.code !== undefined || none.rows.length === 0, `${n}: rows are visible with no user context`);
   }
-  if (spec.mode === 'own' || spec.mode === 'ins-only') {
+  if (spec.mode === 'own' || spec.mode === 'ins-only' || spec.mode === 'own-nd') {
     ok(await denied(a, ins, [b]), `${n}: user A can insert a row for user B`);
     const mine = await probe(owner, a, ins, [a]);
     ok(mine.code === undefined, `${n}: user A cannot insert their own row${mine.code ? ` (${mine.code})` : ''}`);
@@ -245,6 +275,13 @@ async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: s
     ok(ub.code === undefined && ub.rowCount === 0, `${n}: user A can update user B's rows`);
     const ua = await probe(owner, a, upd, [a]);
     ok(ua.code === undefined && (ua.rowCount ?? 0) >= 1, `${n}: user A cannot update their own row${ua.code ? ` (${ua.code})` : ''}`);
+  }
+  if (spec.mode === 'own-nd') {
+    const ub = await probe(owner, a, upd, [b]);
+    ok(ub.code === undefined && ub.rowCount === 0, `${n}: user A can update user B's rows`);
+    const ua = await probe(owner, a, upd, [a]);
+    ok(ua.code === undefined && (ua.rowCount ?? 0) >= 1, `${n}: user A cannot update their own row${ua.code ? ` (${ua.code})` : ''}`);
+    ok(await denied(a, del, [a]), `${n}: the app role can delete its own row (deletion is owner-only; soft delete instead)`);
   }
   if (spec.mode === 'own') {
     const ub = await probe(owner, a, upd, [b]);

@@ -5,3 +5,9 @@
 7 */6 * * * ingest:schedule
 # Enrichment: every 6 hours at minute 37 (30 minutes after ingest); it only touches postings that changed.
 37 */6 * * * enrich:schedule
+# Resume retention: hourly backstop for the 24 h purge bound (deleted and replaced resumes). Each run is cheap and indexed.
+13 * * * * resume:purge-sweep
+# Stuck resumes: hourly. Re-queues extract for rows stuck in 'uploaded' and revives rows stuck in 'extracting'.
+43 * * * * resume:stuck-sweep
+# Idempotency keys hold full response bodies; delete after 24 h.
+27 * * * * idempotency:sweep

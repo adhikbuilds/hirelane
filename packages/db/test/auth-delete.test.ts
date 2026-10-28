@@ -49,3 +49,25 @@ describe('deleteAccount', () => {
     expect((await c.query('SELECT 1 FROM otp_challenges WHERE user_id = $1', [u.id])).rowCount).toBe(0);
   });
 });
+
+describe('deleteAccount: purge hook', () => {
+  it('runs the hook after sessions are revoked and before the users row goes', async () => {
+    const u = await mkUser(c);
+    let sawUserRow = false;
+    await deleteAccount(c, u.id, T0, {
+      purgeBlobs: async (id) => {
+        sawUserRow = ((await c.query('SELECT 1 FROM users WHERE id = $1', [id])).rowCount ?? 0) > 0;
+      },
+    });
+    expect(sawUserRow).toBe(true);
+    expect((await c.query('SELECT 1 FROM users WHERE id = $1', [u.id])).rowCount).toBe(0);
+  });
+
+  it('rolls everything back when the hook fails, so the erasure can be retried', async () => {
+    const u = await mkUser(c);
+    const s = await createSession(c, { userId: u.id, client: 'web', now: T0 });
+    await expect(deleteAccount(c, u.id, T0, { purgeBlobs: async () => { throw new Error('disk gone'); } })).rejects.toThrow('disk gone');
+    expect((await c.query('SELECT 1 FROM users WHERE id = $1', [u.id])).rowCount).toBe(1);
+    expect(await lookupSession(c, s.token, T0)).not.toBeNull();
+  });
+});

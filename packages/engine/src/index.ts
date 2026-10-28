@@ -92,3 +92,9 @@ export type { Criterion, CriterionLevel, EligibilityProfileInput, CgpaRule, Verd
 export type { ExtractMeta } from './resume/types';
 export { assessHealth, checkFileName } from './resume/health';
 export type { HealthInput, HealthReport, FileNameProblem, FileNameResult } from './resume/health';
+
+// --- campus: paste-a-job (S5) and scam signals (C6)
+export { parsePastedJob, scoreForProfile, sourceHintFromUrl } from './jobtext';
+export type { ParsedJob, ParseOptions, SourceHint, JobField, FieldEvidence, ProfileFit, ScoreOptions, JobScore } from './jobtext';
+export { detectScamSignals, FREE_MAIL_DOMAINS, URL_SHORTENER_HOSTS, FRESHER_UNREALISTIC_ANNUAL_INR, LOW_SKILL_UNREALISTIC_ANNUAL_INR } from './scam';
+export type { ScamSignalId, ScamSeverity, ScamRisk, ScamSignal, ScamResult, ScamOptions } from './scam';

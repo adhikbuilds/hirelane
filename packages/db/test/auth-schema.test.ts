@@ -61,7 +61,7 @@ describe('0008 auth schema', () => {
   it('constrains provider, client, channel, purpose and consent kind', async () => {
     const u = await mkUser(c);
     expect(await rejects(`INSERT INTO auth_identities (user_id, provider, subject) VALUES ($1, 'password', 's')`, [u.id])).toBe('23514');
-    for (const p of ['google', 'email_otp', 'phone_otp']) {
+    for (const p of ['google', 'email_otp', 'phone_otp', 'linkedin']) {
       expect(await rejects(`INSERT INTO auth_identities (user_id, provider, subject) VALUES ($1, $2, $3)`, [u.id, p, `sub-${p}`])).toBeUndefined();
     }
     expect(await rejects(`INSERT INTO sessions (id_hash, user_id, client, expires_at, absolute_expires_at) VALUES ('x', $1, 'ios', now(), now())`, [u.id])).toBe('23514');
