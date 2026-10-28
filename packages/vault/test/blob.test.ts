@@ -1,0 +1,61 @@
+import { mkdtemp, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { BlobNotFoundError, LocalBlobStore, localBlobStoreFromEnv, VaultError } from '../src/index.js';
+
+let root: string;
+let store: LocalBlobStore;
+beforeEach(async () => {
+  root = await mkdtemp(join(tmpdir(), 'hl-vault-'));
+  store = new LocalBlobStore(root);
+});
+afterEach(async () => rm(root, { recursive: true, force: true }));
+
+describe('LocalBlobStore', () => {
+  it('puts, gets, checks and deletes', async () => {
+    await store.put('resumes/u1/r1.bin', Buffer.from('hello'));
+    expect((await store.get('resumes/u1/r1.bin')).toString()).toBe('hello');
+    expect(await store.exists('resumes/u1/r1.bin')).toBe(true);
+    await store.delete('resumes/u1/r1.bin');
+    expect(await store.exists('resumes/u1/r1.bin')).toBe(false);
+    await store.delete('resumes/u1/r1.bin'); // idempotent
+  });
+  it('throws BlobNotFoundError for a missing key', async () => {
+    await expect(store.get('nope')).rejects.toBeInstanceOf(BlobNotFoundError);
+  });
+  it('overwrites atomically and leaves no temp files', async () => {
+    await store.put('a/b', Buffer.from('1'));
+    await store.put('a/b', Buffer.from('22'));
+    expect((await store.get('a/b')).toString()).toBe('22');
+    expect(await readdir(join(root, 'a'))).toEqual(['b']);
+  });
+  it('writes private files', async () => {
+    await store.put('k', Buffer.from('x'));
+    expect((await stat(join(root, 'k'))).mode & 0o077).toBe(0);
+  });
+  it.each(['../evil', 'a/../../evil', '/abs/path', 'a//b', '', '.', '..', 'a/./b', 'a\\b', 'a\0b', '.hidden', 'a/.tmp', 'x'.repeat(600), 'a b', 'é'])(
+    'rejects key %j',
+    async (key) => {
+      await expect(store.put(key, Buffer.from('x'))).rejects.toBeInstanceOf(VaultError);
+      await expect(store.get(key)).rejects.toBeInstanceOf(VaultError);
+      await expect(store.delete(key)).rejects.toBeInstanceOf(VaultError);
+      await expect(store.exists(key)).rejects.toBeInstanceOf(VaultError);
+    },
+  );
+  it('does not follow a symlink out of the root', async () => {
+    const outside = await mkdtemp(join(tmpdir(), 'hl-outside-'));
+    try {
+      await writeFile(join(outside, 'secret'), 'nope');
+      await symlink(outside, join(root, 'link'));
+      await expect(store.get('link/secret')).rejects.toBeInstanceOf(VaultError);
+      await expect(store.put('link/new', Buffer.from('x'))).rejects.toBeInstanceOf(VaultError);
+    } finally {
+      await rm(outside, { recursive: true, force: true });
+    }
+  });
+  it('reads its root from HIRELANE_STORAGE_DIR, defaulting to ./storage', () => {
+    expect(localBlobStoreFromEnv({ HIRELANE_STORAGE_DIR: root }).root).toBe(resolve(root));
+    expect(localBlobStoreFromEnv({}).root).toBe(resolve('./storage'));
+  });
+});
