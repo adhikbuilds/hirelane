@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { assessHealth, evaluateEligibility, parseCriteria } from "@hirelane/engine";
 import type { ExtractMeta } from "@hirelane/engine";
-import { AccountShell } from "@/components/account/AccountShell";
+import { StudentShell } from "@/components/student/Shell";
 import { EligibilityVerdict, ResumeHealth } from "@/components/app/ResumeHealth";
-import { TabBar } from "@/components/app/TabBar";
 
 export const metadata: Metadata = { title: "Resume preview", robots: { index: false, follow: false } };
 
@@ -56,14 +55,13 @@ export default function ResumePreview() {
     { cgpaRule: null },
   );
   return (
-    <AccountShell>
+    <StudentShell active="me" initials="R">
       <div className="wr-app">
         <p className="wr-sample">Sample resume and drive notice, checked by the real engine. Nothing here is a real person.</p>
         <h1 className="acct-display wr-hello">Your resume.</h1>
         <ResumeHealth report={report} />
         <EligibilityVerdict result={result} roleLabel="Trainee Engineer, IT services firm (sample)" />
-        <TabBar active="you" />
       </div>
-    </AccountShell>
+    </StudentShell>
   );
 }

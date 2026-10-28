@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { evaluateEligibility, parseCriteria } from "@hirelane/engine";
-import { AccountShell } from "@/components/account/AccountShell";
+import { StudentShell } from "@/components/student/Shell";
 import { PasteJob } from "@/components/app/PasteNetwork";
-import { TabBar } from "@/components/app/TabBar";
 
 export const metadata: Metadata = { title: "Paste a job preview", robots: { index: false, follow: false } };
 
@@ -15,7 +14,7 @@ export default function PastePreview() {
   if (process.env.NODE_ENV === "production") notFound();
   const result = evaluateEligibility(parseCriteria(LEGIT), { pct_10: 71, secondary_kind: "12th", pct_secondary: 58, degree: "B.Com", grad_pct_equiv: 64, grad_conversion: "direct", passout_year: 2025, active_backlogs: 0, confirmed: true }, { cgpaRule: null });
   return (
-    <AccountShell>
+    <StudentShell active="home" initials="R">
       <div className="wr-app">
         <p className="wr-sample">Two sample pastes: a real-looking drive (checked by the real engine) and a scam. Not real postings.</p>
         <h1 className="acct-display wr-hello">Paste a job.</h1>
@@ -31,8 +30,7 @@ export default function PastePreview() {
             { label: "Pay too high for the role", quote: "Work from home data entry, 45,000/month" },
           ]}
         />
-        <TabBar active="home" />
       </div>
-    </AccountShell>
+    </StudentShell>
   );
 }

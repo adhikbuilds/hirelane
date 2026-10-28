@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/shadcn/button";
 import type { DeckCard } from "@/lib/sample/deck";
-import { TabBar } from "./TabBar";
 
 function Tick({ ok }: { ok: boolean | "partial" }) {
   return (
@@ -138,7 +137,6 @@ export function JobDetail({ card, sample }: { card: DeckCard; sample: boolean })
           <Link href="/picks">Get it ready</Link>
         </Button>
       </div>
-      <TabBar active="home" />
     </div>
   );
 }
@@ -219,7 +217,6 @@ export function CompanyPage({ card, roles, sample }: { card: DeckCard; roles: De
           ))}
         </ul>
       </section>
-      <TabBar active="discover" />
     </div>
   );
 }

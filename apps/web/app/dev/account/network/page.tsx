@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AccountShell } from "@/components/account/AccountShell";
+import { StudentShell } from "@/components/student/Shell";
 import { Network, type WarmCompany } from "@/components/app/PasteNetwork";
-import { TabBar } from "@/components/app/TabBar";
 
 export const metadata: Metadata = { title: "Who you know preview", robots: { index: false, follow: false } };
 
@@ -16,14 +15,13 @@ const COMPANIES: WarmCompany[] = [
 export default function NetworkPreview() {
   if (process.env.NODE_ENV === "production") notFound();
   return (
-    <AccountShell>
+    <StudentShell active="me" initials="R">
       <div className="wr-app">
         <p className="wr-sample">Sample connections (initials only). Real ones come from the student&apos;s own LinkedIn file and stay private to them.</p>
         <h1 className="acct-display wr-hello">Who you know.</h1>
         <Network uploaded={false} companies={[]} draftFor={null} stage="requested" />
         <Network uploaded companies={COMPANIES} draftFor={COMPANIES[0] ?? null} />
-        <TabBar active="you" />
       </div>
-    </AccountShell>
+    </StudentShell>
   );
 }

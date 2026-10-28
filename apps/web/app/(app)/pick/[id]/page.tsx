@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { AccountShell } from "@/components/account/AccountShell";
+import { StudentShell } from "@/components/student/Shell";
 import { JobDetail } from "@/components/app/Detail";
 import { DECK } from "@/lib/sample/deck";
 
@@ -12,8 +12,8 @@ export default async function PickPage({ params }: { params: Promise<{ id: strin
   const card = DECK.find((c) => c.id === id);
   if (!card) notFound();
   return (
-    <AccountShell>
+    <StudentShell active="home" initials="R">
       <JobDetail card={card} sample />
-    </AccountShell>
+    </StudentShell>
   );
 }

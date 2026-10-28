@@ -307,3 +307,215 @@
   max-width: 520px;
   width: 100%;
 }
+
+/* ---------- Direction A re-skin of the shared app components (only role cards, job heroes and recap slides keep colour) ---------- */
+.st .wr-app {
+  padding: 0;
+  max-width: 880px;
+  gap: 16px;
+}
+
+.st .acct-display,
+.st .acct-display.wr-hello {
+  font-family: inherit;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: none;
+  color: var(--cp-ink);
+}
+
+.st .wr-sample {
+  border: 1px dashed var(--cp-muted);
+  border-radius: 8px;
+  color: var(--cp-muted);
+  font-size: 0.8125rem;
+}
+
+.st .wr-tile:not(.wr-deck-card),
+.st [data-slot="card"] {
+  background: var(--cp-surface);
+  color: var(--cp-ink);
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius);
+}
+
+.st .wr-tile-pink { border-left: 4px solid var(--cp-risk); }
+.st .wr-tile-lime { border-left: 4px solid var(--cp-good); }
+.st .wr-tile-sun { border-left: 4px solid var(--cp-warn); }
+.st .wr-tile-blue,
+.st .wr-tile-ink { border-left: 4px solid var(--cp-navy); }
+
+.st .wr-stack::before,
+.st .wr-card-deck::before {
+  display: none;
+}
+
+.st .wr-tile-label,
+.st .wr-tile-fix,
+.st .wr-check-reason,
+.st .wr-fit-quote,
+.st [data-slot="card-description"] {
+  color: var(--cp-muted);
+}
+
+.st .wr-paste-title,
+.st [data-slot="card-title"] {
+  font-family: inherit;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--cp-ink);
+}
+
+.st .wr-mid {
+  color: var(--cp-ink);
+}
+
+.st .wr-pill {
+  border-radius: 6px;
+  font-weight: 600;
+  background: var(--cp-paper);
+  color: var(--cp-muted);
+}
+
+.st .wr-pill[data-status="eligible"],
+.st .wr-pill[data-tag="match"],
+.st .wr-pill[data-state="interview"] { background: var(--cp-good-soft); color: var(--cp-good); }
+.st .wr-pill[data-status="check"],
+.st .wr-pill[data-tag="drive"],
+.st .wr-pill[data-state="quiet"] { background: var(--cp-warn-soft); color: var(--cp-warn); }
+.st .wr-pill[data-status="not_eligible"],
+.st .wr-pill[data-status="scam"],
+.st .wr-pill[data-tag="reply"],
+.st .wr-pill[data-state="replied"] { background: var(--cp-risk-soft); color: var(--cp-risk); }
+
+.st .wr-check-icon {
+  border-color: var(--cp-line);
+  border-radius: 8px;
+}
+
+.st .wr-checks li[data-status="pass"] .wr-check-icon { background: var(--cp-good-soft); color: var(--cp-good); }
+.st .wr-checks li[data-status="fail"] .wr-check-icon { background: var(--cp-risk-soft); color: var(--cp-risk); }
+.st .wr-checks li[data-status="unknown"] .wr-check-icon { background: var(--cp-warn-soft); color: var(--cp-warn); }
+
+.st .wr-elig {
+  background: var(--cp-good-soft);
+  color: var(--cp-good);
+}
+
+.st .wr-fit {
+  background: var(--cp-paper);
+}
+
+.st .wr-track-list .wr-tile[data-state="replied"],
+.st .wr-track-list .wr-tile[data-state="interview"],
+.st .wr-drive-list .wr-tile[data-status],
+.st .wr-drive-list .wr-tile[data-status="not_eligible"] {
+  background: var(--cp-surface);
+  color: var(--cp-ink);
+}
+
+.st .wr-board-h,
+.st .wr-feed-note,
+.st .wr-feed-h {
+  color: var(--cp-muted);
+}
+
+.st .wr-board-h span {
+  color: var(--cp-ink);
+}
+
+.st .wr-filters a {
+  border-color: var(--cp-line);
+  color: var(--cp-ink);
+}
+
+.st .wr-filters a[aria-current="true"] {
+  background: var(--cp-navy);
+  border-color: var(--cp-navy);
+  color: var(--cp-on-navy);
+}
+
+.st .wr-timeline {
+  border-left-color: var(--cp-line);
+}
+
+.st .wr-logo {
+  background: var(--cp-navy);
+  color: var(--cp-on-navy);
+}
+
+.st .wr-textarea,
+.st .wr-file {
+  border: 1px solid var(--cp-line);
+  border-radius: 8px;
+  background: var(--cp-paper);
+  font-family: inherit;
+}
+
+.st .wr-draft {
+  background: var(--cp-paper);
+  border-color: var(--cp-line);
+}
+
+.st .wr-lock-icon {
+  border: 1px solid var(--cp-line);
+  border-radius: 8px;
+}
+
+.st .wr-lock-steps li[data-state="done"] .wr-lock-icon { background: var(--cp-good-soft); color: var(--cp-good); }
+.st .wr-lock-steps li[data-state="now"] .wr-lock-icon { background: var(--cp-navy); color: var(--cp-on-navy); }
+
+.st .wr-back {
+  color: var(--cp-navy);
+}
+
+.st .wr-action-bar {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-line);
+  bottom: 80px;
+}
+
+/* Buttons: navy primary like the front page; outline secondaries. */
+.st [data-slot="button"][data-variant="lime"] {
+  background: var(--cp-navy);
+  border: 1px solid var(--cp-navy);
+  color: var(--cp-on-navy);
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.st [data-slot="button"][data-variant="outline"],
+.st [data-slot="button"][data-variant="on-night"] {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-line);
+  color: var(--cp-navy);
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.st [data-slot="button"][data-variant="danger"] {
+  border: 1px solid var(--cp-line);
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.st .acct-linkbtn {
+  color: var(--cp-navy);
+  font-family: inherit;
+}
+
+.st .wr-account summary,
+.st .wr-account-body .acct-note {
+  color: var(--cp-muted);
+}
+
+@media (min-width: 1024px) {
+  .st .wr-action-bar {
+    bottom: 24px;
+  }
+}

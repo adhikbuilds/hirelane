@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AccountShell } from "@/components/account/AccountShell";
+import { StudentShell } from "@/components/student/Shell";
 import { CheckScreen, HandoffToast } from "@/components/app/Picks";
 import { SwipeDeck } from "@/components/app/SwipeDeck";
 import { DECK } from "@/lib/sample/deck";
-import { TabBar } from "@/components/app/TabBar";
 import { SAMPLE_ANSWERS, SAMPLE_PICK } from "@/lib/sample/loop";
 
 export const metadata: Metadata = { title: "Picks preview", robots: { index: false, follow: false } };
@@ -13,7 +12,7 @@ export const metadata: Metadata = { title: "Picks preview", robots: { index: fal
 export default function PicksPreview() {
   if (process.env.NODE_ENV === "production") notFound();
   return (
-    <AccountShell>
+    <StudentShell active="home" initials="R">
       <div className="wr-app">
         <p className="wr-sample">Sample role and student. On a phone you see one step at a time; on a laptop the card and the check sit side by side.</p>
         <div className="wr-app wr-workbench" style={{ padding: 0 }}>
@@ -23,8 +22,7 @@ export default function PicksPreview() {
             <HandoffToast company={SAMPLE_PICK.company} weekCount={4} />
           </div>
         </div>
-        <TabBar active="home" />
       </div>
-    </AccountShell>
+    </StudentShell>
   );
 }
