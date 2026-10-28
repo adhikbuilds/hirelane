@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { z } from "zod";
 import { ROLE_FAMILIES } from "@hirelane/engine";
 import { withAdmin } from "@hirelane/db";
-import { checkRateLimit, clientIp, trustProxyHops, type RateLimitResult } from "../../../../../lib/rate-limit";
+import { checkRateLimit, clientIp, guardedLimit, scaledLimit, trustProxyHops, type RateLimitResult } from "../../../../../lib/rate-limit";
 import { buildSnapshot, perWeekFrom, PROXY_METHOD, WINDOW_DAYS, type ProxyJob, type Snapshot } from "../../../../../lib/autopilot-proxy";
 import { cachedJson, errorResponse } from "../../_lib/http";
 
@@ -48,8 +48,10 @@ const cachedSnapshot = unstable_cache(() => loadSnapshot(), ["autopilot-proxy-v1
 export const defaultAutopilotDeps: AutopilotDeps = {
   snapshot: () => cachedSnapshot(),
   limit: (ip) =>
-    withAdmin((c) =>
-      checkRateLimit(c, `public-api:${ip}`, { limit: RATE_LIMIT, windowSeconds: RATE_WINDOW_SECONDS, prune: Math.random() < 0.01 }),
+    guardedLimit(() =>
+      withAdmin((c) =>
+        checkRateLimit(c, `public-api:${ip}`, { limit: scaledLimit(ip, RATE_LIMIT), windowSeconds: RATE_WINDOW_SECONDS, prune: Math.random() < 0.01 }),
+      ),
     ),
   hops: () => trustProxyHops(),
 };
@@ -58,17 +60,16 @@ export function createAutopilotHandler(deps: AutopilotDeps = defaultAutopilotDep
   return async function GET(req: Request): Promise<Response> {
     let headers: Record<string, string> = {};
     try {
-      try {
-        const r = await deps.limit(clientIp(req.headers, { hops: deps.hops(), socketAddress: null }));
-        headers = { "RateLimit-Limit": String(r.limit), "RateLimit-Remaining": String(r.remaining) };
-        if (!r.allowed) {
-          return errorResponse(429, "rate_limited", `Rate limit of ${r.limit} requests per minute exceeded`, {
-            headers: { ...headers, "Retry-After": String(r.retryAfter) },
-          });
-        }
-      } catch (e) {
-        // A limiter outage fails open: this is a public read-only route.
-        console.error("autopilot stats rate limiter unavailable", e instanceof Error ? e.message : e);
+      const r = await guardedLimit(() => deps.limit(clientIp(req.headers, { hops: deps.hops(), socketAddress: null })));
+      if (r.busy) {
+        // A limiter outage fails closed with a visible 429 "busy", never a silent pass.
+        return errorResponse(429, "busy", "The service is busy. Try again shortly.", { headers: { "Retry-After": String(r.retryAfter) } });
+      }
+      headers = { "RateLimit-Limit": String(r.limit), "RateLimit-Remaining": String(r.remaining) };
+      if (!r.allowed) {
+        return errorResponse(429, "rate_limited", `Rate limit of ${r.limit} requests per minute exceeded`, {
+          headers: { ...headers, "Retry-After": String(r.retryAfter) },
+        });
       }
 
       const params = new URL(req.url).searchParams;

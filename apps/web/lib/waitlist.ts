@@ -4,7 +4,7 @@
  */
 import { withAdmin } from "@hirelane/db";
 import { z } from "zod";
-import { checkRateLimit, clientIp, trustProxyHops, type Queryable, type RateLimitResult } from "./rate-limit";
+import { checkRateLimit, clientIp, guardedLimit, scaledLimit, trustProxyHops, type Queryable, type RateLimitResult } from "./rate-limit";
 
 export const WAITLIST_LIMIT = 20;
 export const WAITLIST_WINDOW_SECONDS = 60;
@@ -36,8 +36,10 @@ export type WaitlistDeps = {
 
 export const defaultWaitlistDeps: WaitlistDeps = {
   limit: (ip) =>
-    withAdmin((c) =>
-      checkRateLimit(c, `waitlist:${ip}`, { limit: WAITLIST_LIMIT, windowSeconds: WAITLIST_WINDOW_SECONDS, prune: Math.random() < 0.05 }),
+    guardedLimit(() =>
+      withAdmin((c) =>
+        checkRateLimit(c, `waitlist:${ip}`, { limit: scaledLimit(ip, WAITLIST_LIMIT), windowSeconds: WAITLIST_WINDOW_SECONDS, prune: Math.random() < 0.05 }),
+      ),
     ),
   save: (v) => withAdmin((c) => addToWaitlist(c, v)),
   hops: () => trustProxyHops(),
@@ -75,7 +77,10 @@ export function createWaitlistHandler(deps: WaitlistDeps = defaultWaitlistDeps) 
       r = await deps.limit(clientIp(req.headers, { hops: deps.hops(), socketAddress: null }));
     } catch (e) {
       console.error("waitlist rate limiter unavailable", e instanceof Error ? e.message : "unknown");
-      return json(503, { error: { code: "unavailable", message: "Try again in a minute" } });
+      return json(503, { error: { code: "unavailable", message: "Try again in a minute" } }, { "Retry-After": "5" });
+    }
+    if (r.busy) {
+      return json(503, { error: { code: "unavailable", message: "Try again in a minute" } }, { "Retry-After": String(r.retryAfter) });
     }
     if (!r.allowed) {
       return json(429, { error: { code: "rate_limited", message: "Too many sign-ups, try again shortly" } }, { "Retry-After": String(r.retryAfter) });

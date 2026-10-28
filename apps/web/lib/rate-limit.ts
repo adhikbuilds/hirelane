@@ -1,14 +1,17 @@
 /**
  * Fixed-window rate limiting through the `rate_limits` table, keyed by client IP.
  *
- * The IP comes ONLY from the configured trusted-proxy depth (env TRUST_PROXY_HOPS, default 0):
- *  - 0: no proxy is trusted, X-Forwarded-For is never read. The caller supplies the socket address; without one the
- *       client is "unknown" and shares a single bucket. That fails safe: a spoofed header cannot buy a fresh bucket.
- *       (Next route handlers do not expose the socket, so a bare `next start` shares one bucket. Run behind a proxy
- *       and set the hop count for per-client limits.)
- *  - N >= 1: the entry N places from the right of X-Forwarded-For, i.e. the address the outermost trusted proxy saw.
- *       Entries to its left are client-controlled and ignored.
+ * Client identity, in order:
+ *  1. `x-real-ip` when it is a valid IP, ONLY if env TRUST_X_REAL_IP=1 (opt-in). Set it only when the edge in front of
+ *     this app overwrites any client-sent value (Vercel does). Otherwise a client could mint a new bucket per request.
+ *  2. env TRUST_PROXY_HOPS = N >= 1: the entry N places from the right of X-Forwarded-For, i.e. the address the
+ *     outermost trusted proxy saw. Entries to its left are client-controlled and ignored. With 0, X-Forwarded-For is never read.
+ *  3. The socket address when the caller has one (Next route handlers do not expose it).
+ *  4. Nothing identifies the client. In production the bucket is a short hash of user-agent + accept-language
+ *     ("anon:<hash>"), so there is never ONE global bucket; it is weaker than an IP, so set x-real-ip or TRUST_PROXY_HOPS.
+ *     In development/test it is the shared "local" key, whose budget is widened by `scaledLimit` so e2e runs are not starved.
  */
+import { createHash } from "node:crypto";
 import { isIP } from "node:net";
 
 export type Queryable = { query: (text: string, values?: unknown[]) => Promise<{ rows: any[]; rowCount?: number | null }> };
@@ -57,17 +60,60 @@ function normalise(raw: string | undefined | null): string {
   return "unknown";
 }
 
+const LOCAL_KEY = "local";
+/** The shared dev/test key gets a wider budget so parallel e2e workers on one machine do not starve each other. */
+const LOCAL_MULTIPLIER = 50;
+
+export const isLocalKey = (key: string): boolean => key === LOCAL_KEY;
+export const scaledLimit = (key: string, base: number): number => (isLocalKey(key) ? base * LOCAL_MULTIPLIER : base);
+
 export function clientIp(
   headers: { get: (name: string) => string | null },
-  opts: { hops: number; socketAddress?: string | null },
+  opts: { hops: number; socketAddress?: string | null; env?: Record<string, string | undefined> },
 ): string {
-  if (opts.hops <= 0) return normalise(opts.socketAddress);
-  const chain = (headers.get("x-forwarded-for") ?? "").split(",").map((p) => p.trim());
-  if (chain.length < opts.hops || chain.every((p) => p === "")) return "unknown";
-  return normalise(chain[chain.length - opts.hops]);
+  const env = opts.env ?? process.env;
+  // x-real-ip is client-controlled unless the edge overwrites it, so it is read only on explicit opt-in.
+  if (env["TRUST_X_REAL_IP"] === "1") {
+    const real = normalise(headers.get("x-real-ip"));
+    if (real !== "unknown") return real;
+  }
+
+  if (opts.hops > 0) {
+    const chain = (headers.get("x-forwarded-for") ?? "").split(",").map((p) => p.trim());
+    if (chain.length >= opts.hops && !chain.every((p) => p === "")) {
+      const viaChain = normalise(chain[chain.length - opts.hops]);
+      if (viaChain !== "unknown") return viaChain;
+    }
+  }
+
+  const socket = normalise(opts.socketAddress);
+  if (socket !== "unknown") return socket;
+
+  if (env["NODE_ENV"] !== "production") return LOCAL_KEY;
+  const fp = `${headers.get("user-agent") ?? ""}\n${headers.get("accept-language") ?? ""}`;
+  return `anon:${createHash("sha256").update(fp).digest("hex").slice(0, 16)}`;
 }
 
-export type RateLimitResult = { allowed: boolean; limit: number; remaining: number; retryAfter: number; resetAt: Date };
+/** `busy: true` means the limiter itself failed: the request was NOT counted and must not be served as if allowed. */
+export type RateLimitResult = { allowed: boolean; limit: number; remaining: number; retryAfter: number; resetAt: Date; busy?: true };
+
+export const BUSY_RETRY_SECONDS = 5;
+
+/**
+ * Runs a limiter call and converts any failure (DB down, missing table, pool exhausted) into a typed busy result.
+ * Fails closed: `allowed` is false. Only the message of the error is logged, never request data.
+ */
+export async function guardedLimit(
+  run: () => Promise<RateLimitResult>,
+  opts: { log?: (msg: string) => void } = {},
+): Promise<RateLimitResult> {
+  try {
+    return await run();
+  } catch (e) {
+    (opts.log ?? ((m) => console.error(m)))(`rate limiter unavailable: ${e instanceof Error ? e.name : "unknown"}`);
+    return { allowed: false, busy: true, limit: 0, remaining: 0, retryAfter: BUSY_RETRY_SECONDS, resetAt: new Date(Date.now() + BUSY_RETRY_SECONDS * 1000) };
+  }
+}
 
 /**
  * Counts one request in the current fixed window. One atomic upsert, so concurrent requests are counted exactly.

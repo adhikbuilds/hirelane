@@ -90,10 +90,12 @@ describe("GET /api/public/stats/autopilot", () => {
     expect(deps.snapshot).not.toHaveBeenCalled();
   });
 
-  it("fails open when the limiter is down", async () => {
+  it("answers a visible 429 busy with Retry-After when the limiter is down, and serves no data", async () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await make({ limit: () => Promise.reject(new Error("rate_limits missing")) }).get("?min=5");
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(429);
+    expect(Number(res.headers.get("retry-after"))).toBeGreaterThanOrEqual(1);
+    expect((await res.json()).error.code).toBe("busy");
     spy.mockRestore();
   });
 

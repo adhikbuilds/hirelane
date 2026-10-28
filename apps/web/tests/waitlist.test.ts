@@ -80,6 +80,11 @@ describe("POST /api/waitlist", () => {
     expect((await createWaitlistHandler(d)(post(good))).status).toBe(503);
     const failing = deps({ save: async () => { throw new Error("insert asha@example.com failed"); } });
     expect((await createWaitlistHandler(failing)(post(good))).status).toBe(500);
+    const busy = deps({ limit: async () => ({ ...allowed, allowed: false, busy: true, retryAfter: 5 }) });
+    const busyRes = await createWaitlistHandler(busy)(post(good));
+    expect(busyRes.status).toBe(503);
+    expect(busyRes.headers.get("retry-after")).toBe("5");
+    expect(busy.saved).toEqual([]);
     expect(JSON.stringify(err.mock.calls)).not.toContain("asha@example.com");
     err.mockRestore();
   });
