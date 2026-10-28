@@ -73,6 +73,11 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | S2 | New public ATS connectors: Workday, SuccessFactors, Darwinbox, Keka, Zoho Recruit; each after a dated terms note | **owner approved the terms check, 2026-10-29**; each connector still needs its note |
 | S3 | Drive inbox (= C4) as a supply source | G4 |
 | S4 | Honest counts: "2 new roles you're eligible for this week", never padded | — |
+| S5 | **Paste a job** (owner, 2026-10-29: build right after Slices 1–2): the student pastes the text of any job (Naukri, LinkedIn, a WhatsApp forward); we parse it, score fit and eligibility, scam-flag it, and add it to the tracker with "apply at source". **We never fetch the link** | — |
+| S6 | **Drive inbox moved earlier** (owner, 2026-10-29): build the TPO paste and parse right after Slices 1–2, reusing S5's parser; the full TPO console still waits for G4 | — |
+| S7 | **Remote-for-India filter** (owner, 2026-10-29): show non-India jobs only when they are remote and open to India; everything else is hidden by default | — |
+| S8 | Licensed feeds (Adzuna, Careerjet, Jooble): only with a written licence that allows showing our score; see docs/recon/job-feeds-2026-10-29.md | owner + licence |
+| S9 | **Never:** scraping Naukri, LinkedIn, Superset or other job boards, or getting around their bot blocks (their terms forbid it; IT Act s.43 risk) | — |
 
 ### P. Platform
 | ID | Requirement |
@@ -122,9 +127,10 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
   - 0 sends by Hirelane
 
 ## 7. Releases
-- **C1:** R1–R9, E1–E5 (engine), A1–A5, P1–P3, S1, S4. Built as Slices 1–3 in [../design/campus-build-plan.md](../design/campus-build-plan.md).
+- **C1:** R1–R9, E1–E5 (engine), A1–A5, P1–P3, S1, S4, then S5 (paste a job), S6 (drive inbox paste) and S7. Built as Slices 1–3 in [../design/campus-build-plan.md](../design/campus-build-plan.md).
 - **C2 (pilot):** C1, C2, C6, then C3–C5 and C7 after G4, plus the core loop M3–M7 and S2 connectors that pass their terms note.
 - **C3:** Android app on `/api/v1`; OCR; Hindi copy; employer roles via the college's recruiter network.
+- **Later (laptops):** a browser extension that scores the job page the student is already viewing on any site. The student's own browser reads the page; our servers don't. Android has no extensions, so this is a laptop-only extra.
 
 ## 8. Open decisions
 1. Pilot campuses (one segment A, one segment B) and who makes first contact.
