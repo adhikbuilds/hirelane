@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type DragEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Check, FileText, Lock, RotateCcw, UploadCloud } from "lucide-react";
 import { REJECTION_TEXT, validatePdf, type DropRejection } from "../../ui/DropZone";
-import { PARSE_FIXTURE, PARSE_STEPS } from "../../landing/resume-drop";
+import { PARSE_FIXTURE, PARSE_STEPS } from "./parse-fixture";
 import { Button } from "@/components/shadcn/button";
 import { cn } from "@/lib/utils";
 import { PANEL, PhotoBackdrop, Rise } from "./panel";
@@ -143,6 +143,12 @@ export function StartPanelView({ photoSrc = "/landing/road-1800.jpg" }: { photoS
               <p id="start-error" role="alert" className={cn("t-small mt-3 font-bold text-foreground", !error && "sr-only")}>
                 {error ? REJECTION_TEXT[error] : ""}
               </p>
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <p className="t-body font-bold">Or skip the sample. Accounts open soon, and we&apos;ll email you once, when they do.</p>
+                <div className="mt-4">
+                  <WaitlistForm source="landing" />
+                </div>
+              </div>
             </div>
           ) : (
             <div data-testid="resume-parse" data-ui>

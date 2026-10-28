@@ -327,7 +327,7 @@ test.describe("landing v3", () => {
     await dialog.scrollIntoViewIfNeeded();
     const input = dialog.locator('input[type="file"]');
     await input.setInputFiles({ name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("hello world, not a pdf") });
-    await expect(dialog.getByRole("alert")).toContainText("not a PDF");
+    await expect(dialog.locator("#start-error")).toContainText("not a PDF");
     await expect(dialog).toHaveAttribute("data-stage", "idle");
     await input.setInputFiles({ name: "cv.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4\n%fake\n") });
     await expect(dialog).toHaveAttribute("data-stage", "done", { timeout: 8000 });

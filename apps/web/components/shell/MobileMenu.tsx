@@ -124,7 +124,7 @@ export function MobileMenu({ pathname }: { pathname: string }) {
                     {START_FREE.label}
                   </Link>
                   <p className="mt-3 text-center text-[13px] text-ink-3">
-                    You approve every application.
+                    Early access opens soon. Nothing is sent without you.
                   </p>
                 </div>
               </motion.div>

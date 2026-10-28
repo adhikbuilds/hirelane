@@ -182,10 +182,18 @@ describe("start panel", () => {
     expect(screen.getByRole("heading", { name: "Start with your resume." })).toBeInTheDocument();
   });
 
+  it("offers the waitlist form in the idle state without a PDF", () => {
+    render(<StartPanelView />);
+    expect(screen.getByTestId("drop-zone")).toBeInTheDocument();
+    expect(screen.getByTestId("waitlist-form")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Get early access" })).toBeEnabled();
+    expect(screen.queryByTestId("resume-parse")).toBeNull();
+  });
+
   it("rejects a text file", async () => {
     render(<StartPanelView />);
     fireEvent.change(input(), { target: { files: [new File(["hello"], "notes.txt", { type: "text/plain" })] } });
-    expect(await screen.findByRole("alert")).toHaveTextContent("not a PDF");
+    await waitFor(() => expect(document.getElementById("start-error")).toHaveTextContent("not a PDF"));
     expect(screen.queryByTestId("resume-parse")).toBeNull();
     noNetwork();
   });
@@ -193,7 +201,7 @@ describe("start panel", () => {
   it("rejects a .pdf whose bytes are not a PDF", async () => {
     render(<StartPanelView />);
     fireEvent.change(input(), { target: { files: [new File(["<html>nope</html>"], "fake.pdf", { type: "application/pdf" })] } });
-    expect(await screen.findByRole("alert")).toHaveTextContent("not a PDF");
+    await waitFor(() => expect(document.getElementById("start-error")).toHaveTextContent("not a PDF"));
     expect(screen.queryByTestId("resume-parse")).toBeNull();
     noNetwork();
   });

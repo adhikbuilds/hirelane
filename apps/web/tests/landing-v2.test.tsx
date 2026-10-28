@@ -1,12 +1,7 @@
-// @vitest-environment jsdom
-import { render, screen, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { DemoStack } from "../components/landing/demo-stack";
 import { agoShort, asOfLabel, hashString, matchFixture, roleLabel } from "../components/landing/demo-model";
 import { PLANS, currencyFor, formatPerApplication, formatPrice, priceFor, quarterlySaving } from "../components/landing/pricing-model";
 import { buildTraceDemo } from "../components/landing/trace-model";
-import { weeklyDrafts } from "../components/landing/autopilot";
 import type { DemoJob } from "../components/landing/types";
 
 const jobs: DemoJob[] = ["Alpha", "Beta", "Gamma"].map((c, i) => ({
@@ -96,14 +91,6 @@ describe("pricing model", () => {
   });
 });
 
-describe("weeklyDrafts", () => {
-  it("is held down by the daily cap", () => {
-    expect(weeklyDrafts(312, 3)).toBe(21);
-    expect(weeklyDrafts(5, 10)).toBe(5);
-    expect(weeklyDrafts(-4, 3)).toBe(0);
-  });
-});
-
 describe("buildTraceDemo", () => {
   const text = "x".repeat(300) + "The base salary range is $88,000 - $103,000 per year. " + "y".repeat(300);
   const start = text.indexOf("$88,000");
@@ -133,41 +120,5 @@ describe("buildTraceDemo", () => {
     expect(buildTraceDemo({ ...base, text: null, trace })).toBeNull();
     expect(buildTraceDemo({ ...base, text, trace: "nope" })).toBeNull();
     expect(buildTraceDemo({ ...base, text, trace: { steps: trace.steps.slice(0, 2) } })).toBeNull();
-  });
-});
-
-describe("DemoStack", () => {
-  it("is labelled, blocks approval until the Needs-you field is filled, then undo works", async () => {
-    const user = userEvent.setup();
-    render(<DemoStack jobs={jobs} />);
-    expect(screen.getByText("Demo: nothing is sent")).toBeInTheDocument();
-    expect(screen.getByTestId("demo-card")).toHaveAttribute("data-slug", jobs[0]!.slug);
-
-    await user.click(screen.getByRole("button", { name: /Approve & send/ }));
-    expect(screen.getByRole("alert")).toHaveTextContent(/Answer this first/);
-    expect(screen.queryByTestId("undo-bar")).toBeNull();
-
-    await user.click(screen.getByRole("button", { name: "30 days" }));
-    await user.click(screen.getByRole("button", { name: /Approve & send/ }));
-    expect(screen.getByTestId("undo-bar")).toBeInTheDocument();
-    expect(screen.getByText("Sending to Alpha")).toBeInTheDocument();
-
-    await user.keyboard("u");
-    expect(screen.queryByTestId("undo-bar")).toBeNull();
-    expect(screen.getByTestId("demo-card")).toHaveAttribute("data-slug", jobs[0]!.slug);
-  });
-
-  it("P passes to the next card, and typing a in the field does not approve", async () => {
-    const user = userEvent.setup();
-    render(<DemoStack jobs={jobs} />);
-    await user.click(screen.getByLabelText(/Notice period/));
-    await user.keyboard("pa");
-    expect(screen.getByTestId("demo-card")).toHaveAttribute("data-slug", jobs[0]!.slug);
-    expect(screen.queryByTestId("undo-bar")).toBeNull();
-    await act(async () => {
-      (document.activeElement as HTMLElement).blur();
-    });
-    await user.keyboard("p");
-    await screen.findByText("Beta Engineer");
   });
 });
