@@ -13,9 +13,13 @@ export function StudentLanding() {
   return (
     <AccountShell
       right={
-        <Button asChild variant="lime" size="pill-sm">
-          <Link href="/signin">Sign in</Link>
-        </Button>
+        <nav className="ld-nav" aria-label="Site">
+          <Link href="/jobs">Browse jobs</Link>
+          <Link href="/colleges">For colleges</Link>
+          <Button asChild variant="lime" size="pill-sm">
+            <Link href="/signin">Sign in</Link>
+          </Button>
+        </nav>
       }
     >
       <div className="ld">

@@ -273,7 +273,7 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
             <h2>Can&apos;t be checked yet</h2>
             <p className="cp-big cp-warn-text">27</p>
             <p className="cp-card-sub">CGPA without a scale on their resume. Set your university&apos;s rule in Settings and most of these resolve.</p>
-            <Link className="cp-btn" data-variant="outline" href="/dev/campus/settings">
+            <Link className="cp-btn" data-variant="outline" href="/campus/settings">
               Set the CGPA rule
             </Link>
           </section>

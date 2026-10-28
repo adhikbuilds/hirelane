@@ -2102,3 +2102,26 @@ body {
   .wr-slide-big { font-size: 7rem; }
   .wr-slide-line { font-size: 1.75rem; }
 }
+
+.ld-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.ld-nav > a:not([data-slot]) {
+  text-decoration: none;
+  color: var(--wr-muted-on-night);
+}
+
+.ld-nav > a:not([data-slot]):hover {
+  color: var(--wr-cream);
+}
+
+@media (max-width: 560px) {
+  .ld-nav > a:not([data-slot]) {
+    display: none;
+  }
+}

@@ -4,10 +4,13 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 /** Account screens (sign-in, welcome, You) are full-screen app pages in the Wrapped style, so they hide the site chrome. */
-export const ACCOUNT_PREFIXES = ["/signin", "/welcome", "/you", "/home", "/dev/account", "/dev/campus", "/campus", "/dev/landing"] as const;
+export const ACCOUNT_PREFIXES = ["/signin", "/welcome", "/you", "/home", "/picks", "/drives", "/tracker", "/recap", "/paste", "/network", "/resume", "/dev/account", "/dev/campus", "/campus", "/dev/landing", "/colleges"] as const;
+
+/** The new landing at "/" brings its own header, so the site chrome hides there too (exact match only). */
+const EXACT = ["/"];
 
 export function isAccountPath(pathname: string): boolean {
-  return ACCOUNT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return EXACT.includes(pathname) || ACCOUNT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export function ChromeGate({ children }: { children: ReactNode }) {

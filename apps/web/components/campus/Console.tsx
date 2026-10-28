@@ -35,11 +35,11 @@ export const STATUS = {
 export type CampusPage = "overview" | "students" | "drives" | "outcomes" | "settings";
 
 const NAV: { id: CampusPage; label: string; href: string }[] = [
-  { id: "overview", label: "Overview", href: "/dev/campus" },
-  { id: "students", label: "Students", href: "/dev/campus/students" },
-  { id: "drives", label: "Drives", href: "/dev/campus/drives" },
-  { id: "outcomes", label: "Outcomes and NAAC", href: "/dev/campus/outcomes" },
-  { id: "settings", label: "Settings", href: "/dev/campus/settings" },
+  { id: "overview", label: "Overview", href: "/campus" },
+  { id: "students", label: "Students", href: "/campus/students" },
+  { id: "drives", label: "Drives", href: "/campus/drives" },
+  { id: "outcomes", label: "Outcomes and NAAC", href: "/campus/outcomes" },
+  { id: "settings", label: "Settings", href: "/campus/settings" },
 ];
 
 /** Console frame: navy sidebar with the college name. Server component. */
