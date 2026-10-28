@@ -17,8 +17,11 @@ export const ALLOWLIST: { pattern: string; why: string }[] = [
   // Existing legitimate callers found on 2026-10-28 (all read public job data or the waitlist)
   { pattern: 'packages/db/**', why: 'defines withAdmin; migrate, seed, reset, verify scripts' },
   { pattern: 'apps/web/app/lists/**', why: 'public curated lists (added)' },
-  { pattern: 'apps/web/components/**', why: 'public landing and job-page data (added)' },
-  { pattern: 'apps/web/lib/queries/**', why: 'public job and company queries (added)' },
+  { pattern: 'apps/web/components/landing/data.ts', why: 'public landing data (added)' },
+  { pattern: 'apps/web/components/landing-v3/sections/data.ts', why: 'public landing data (added)' },
+  { pattern: 'apps/web/components/job/similar.ts', why: 'public similar-jobs query (added)' },
+  { pattern: 'apps/web/lib/queries/jobs.ts', why: 'public job and company queries (added)' },
+  { pattern: 'apps/web/lib/queries/landing.ts', why: 'public landing queries (added)' },
   { pattern: 'apps/web/lib/ingest-data.ts', why: 'public status page data (added)' },
   { pattern: 'apps/web/lib/job-data.ts', why: 'public job page data (added)' },
   { pattern: 'apps/web/lib/job-markdown-data.ts', why: 'public job markdown (added)' },

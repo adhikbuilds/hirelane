@@ -34,6 +34,8 @@ describe('isAllowedPath', () => {
     'packages/agent/src/applications/x.ts',
     'packages/engine/src/x.ts',
     'apps/web/app/apps/page.tsx',
+    'apps/web/components/app/x.tsx',
+    'apps/web/lib/queries/me.ts',
   ])('rejects %s', (p) => expect(isAllowedPath(p)).toBe(false));
   it('keeps every allowlist entry as a path glob', () => {
     for (const a of ALLOWLIST) expect(a.pattern).toMatch(/^(apps|packages|workers|e2e|\*\*)[/]/);
