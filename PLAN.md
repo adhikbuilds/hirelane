@@ -608,6 +608,109 @@ Changes to the phases below:
   one by one) to the Phase 1 board list. Today only 1,178 of 16,320 open roles (7%, at 61 companies) are in India, yet
   pricing and positioning are India-first.
 
+### Amendment B (owner direction 2026-10-29): campus-first; resume hardened first
+
+Source: docs/product/CAMPUS-FIRST.md. Build plan: docs/design/campus-build-plan.md. Where this amendment and any earlier section of this file, docs/design/hld-lld-core-loop.md or docs/product/FINAL-PRD.md disagree, **this amendment wins**.
+**Build order:**
+1. Slice 1 (pure resume and eligibility engine) and Slice 2 (accounts), in parallel.
+2. Slice 3: upload, extract, confirm, eligibility profile, builder, /api/v1.
+3. HLD M3–M7.
+
+Campus Slice 4b is gated on G4.
+
+1. **Direction.**
+   - The payer is the placement cell.
+   - The user is the student the on-campus drives didn't place.
+   - Screens are designed for tier-3 students: phone-only, low-end Android, metered data.
+   - Students use it free when their college pays.
+2. **Resume inputs.** This replaces "PDF only" in HLD §2.1 and HLD gap 14, and amends PLAN 4.4.
+   - Text PDF and **DOCX**, ≤ 5 MB. PDFs ≤ 3 pages; DOCX gets a soft word-count warning instead. Magic bytes are checked (`%PDF-` / `PK\x03\x04`). No photos or images.
+   - DOCX goes through a zip guard before inflating:
+     - ≤ 300 entries
+     - only the document, header, footer and `docProps/core.xml` parts are inflated
+     - streamed inflate with real byte caps (10 MB per entry, 25 MB total, ratio ≤ 200)
+   - Reject `.docm`/`vbaProject.bin`, `altChunk`, nested archives, and any `<!DOCTYPE`/`<!ENTITY`. There is no XML parser. External relationships are flagged.
+   - **PDF:** pdf.js pinned past CVE-2024-4367, `isEvalSupported:false`, no remote font or cmap fetches. JavaScript, actions and embedded files are never executed or extracted. Encrypted PDFs are refused.
+   - **Image-only PDFs: detect first, OCR deferred.**
+     - `text_layer = none` when there are fewer than about 30 non-space characters per page.
+     - `text_layer = garbled` when more than 30% of the text is private-use characters or U+FFFD (Canva).
+     - Either case is health issue #1, with two fixes: re-export as text, or use the builder.
+     - OCR is a separate owner decision.
+   - Extraction lives in `workers/runner/src/resume/extract/`, in a fresh `worker_threads` Worker per job (`resourceLimits` 256 MB, 10 s, then terminate). The dep-cruiser rule `extractors-worker-only` bans unpdf, pdfjs-dist, fflate, pdfkit and fontkit outside `workers/runner`.
+   - Upload is a route handler (`POST /api/v1/resumes`), not a server action. The original file name lives only inside `parsed_enc`.
+   - Graphile job payloads carry IDs only.
+3. **Parse.** This replaces PLAN 4.4 "Sonnet structured parse" and `agent:parse-resume`.
+   - The task is `resume:extract`. It runs rules only, is India-aware, and makes 0 LLM calls (an LLM only with `llm_resume` consent, later). Section, education, sensitive and health logic are pure code in `packages/engine/src/resume/`.
+   - Education entries: 10th, 12th or diploma, UG, optional PG, each with board, %/CGPA and scale, start and passout years. Active backlogs and backlog history are kept separate.
+   - Every field carries confidence and is editable on one confirm screen. **Nothing feeds matching or eligibility until the student confirms.**
+4. **Sensitive data.**
+   - Detected on NFKC-normalised text with Devanagari digits mapped:
+     - Aadhaar: 12 digits, first digit 2–9, Verhoeff-valid, context-scored so +91 phones and roll numbers don't match. Masked forms and the 16-digit VID are flagged.
+     - PAN
+     - DOB or age
+     - parents' names (including S/o and D/o)
+     - religion, caste/category and marital status, matched only next to a label ("Christ University" must not match)
+     - image presence, reported as "image found"
+   - The filename and file metadata are scanned too.
+   - Findings store kind and offsets, **never the value**. Aadhaar and PAN are masked in place (same length) **before** `parsed_enc` is sealed, and are never displayed. The original sealed file is untouched. The student is prompted to upload a clean copy or use the builder, and the old original is purged within 24 h.
+5. **Health check** (deterministic, free).
+   - Nine fixed checks: ats_readable, one_page, contact_present, no_biodata_ids, no_padding, bullets_with_numbers, project_proof_links, skills_in_text, sensible_file_name.
+   - Each returns pass / fail / unknown with a reason and a fix. DOCX one_page is unknown. With no text layer, ats_readable fails and the rest are unknown.
+   - Shown as "N of 9 checks pass", failing checks first. **No score out of 100.**
+6. **Guided builder.** This replaces `resume:render` "Playwright PDF".
+   - 6–8 short questions produce a one-page, single-column PDF that an ATS can read.
+   - Rendered in the worker with **pdfkit** and one bundled OFL font (Noto Sans, so ₹ renders). pdf-lib with fontkit is the fallback.
+   - A round-trip test is required: builder output must pass our own text-layer check.
+   - No Playwright and no client-side PDF libraries.
+7. **Eligibility profile** (`eligibility_profiles`, 0009; RLS own; plain columns written only on confirm, because matching and k ≥ 10 SQL aggregates need them).
+   - Columns: pct_10, board_10; secondary_kind (12th|diploma), pct_secondary, board_secondary; degree, branch_code, branch_raw; grad_score, grad_scale (4/5/10/100), grad_pct_equiv, grad_conversion (`campus:<id>`|`direct`|`unknown`), grad_is_final; active_backlogs, backlog_history; gap_years; passout_year; lateral_entry; field_meta (source and confidence, no values); source_resume_id; confirmed_at.
+   - No gap-reason column.
+   - CGPA→% conversion comes only from `campuses.cgpa_rule`. Without it, a CGPA-vs-% criterion is **unknown**.
+   - Academic numbers are never shown per student to a TPO.
+8. **`engine/eligibility.ts`** (pure, test-first).
+   - `parseCriteria(text)` → criteria with evidence spans: minimum %/CGPA per level or "throughout", no active backlogs, max backlog history, passout years, degrees, branches (alias table), max gap.
+   - `evaluateEligibility` → pass / fail / unknown per criterion. Diploma substitutes for 12th where stated. Missing input means unknown.
+   - **Fail is a worthwhile-gate blocker. Unknown never blocks.** Eligibility is an optional `isWorthwhile` input.
+   - The corpus is synthetic, modelled on real drive notices that the main session sources (tdd-guide has no web access).
+9. **Accounts.** This replaces PLAN §6 passwords and §7.2 signup, login and reset.
+   - Google OIDC (PKCE) plus a 6-digit email code. Opaque sessions: the `__Host-hl_session` cookie for web, and `Authorization: Bearer hl_at_…` for a future Android app.
+     - Bearer sessions use the same `sessions` table with `client='android'`, a 30-day sliding expiry and a 90-day absolute expiry. No JWT.
+     - The Bearer path is designed now and built later.
+   - **Phone OTP:** the columns and the `phone_otp` provider ship in 0008. Sending waits for the owner's vendor decision.
+   - **18+ gate (DPDP s.9):** no `users` row exists until the person attests "I am 18 or older", recorded as consent `age_18_plus`. No DOB is collected.
+10. **The `accounts` flag.** Sign-up and every resume or builder write sit behind it. It is on in the dev seed and e2e, and off elsewhere until the grievance officer is named.
+11. **Web and /api/v1 parity.**
+    - New package `packages/services`: `fn(ctx, input)`, zod at the boundary, `ServiceError(code, status)`, `withUser` only. It is never on the withAdmin allowlist.
+    - Server actions and `/api/v1/*` handlers both call it. The dep-cruiser rule `api-v1-thin` stops routes and actions from importing `@hirelane/db`, and a test fails if an action has no v1 twin.
+    - v1 conventions: Origin check on cookie mutations, `Idempotency-Key` on mutations, problem+json errors.
+    - The v1 OpenAPI doc lives at `/api/v1/openapi.json`, separate from the public one.
+12. **Keep it light** (binding acceptance criteria).
+    - No new infrastructure.
+    - Student pages are server-rendered and ship ≤ 100 KB gzip of first-load JS per route, checked by `pnpm budget`. They may not import motion, radix-ui or sonner.
+    - Heavy work runs only in workers/runner.
+    - 0 LLM calls in these slices.
+13. **Migrations.** 0007 is `rls_posture`. Order:
+    - **0008** auth: users, auth_identities, sessions (+client, absolute_expires_at), otp_challenges (+purpose), consents (+age_18_plus, campus_share, offer_letter_tpo), product_events, idempotency_keys
+    - **0009** profiles (college_tier, cohort_code, grad_year and degree removed), work_authorizations, answer_bank, resumes (revised; `dek_wrapped` dropped; the ≤ 3 trigger counts roots), file_access_log, eligibility_profiles
+    - **0010** campus
+    - **0011** matching
+    - **0012** applications
+    - **0013** drives and outcomes (after G4)
+    - **0014+** inbound and billing
+
+    RLS is ENABLE, not FORCE. `verify-rls` gains the modes `own-r` and `ten`, a SECURITY DEFINER registry and an `updateSql` hook.
+14. **Retention.** Downloads go to `file_access_log`, written in the same transaction. Resume or account deletion purges the blob and `parsed_enc` within 24 h: `resume:purge` runs immediately, with a daily sweep as backstop.
+15. **Campus.**
+    - **Access:** TPOs read only through SECURITY DEFINER functions under `withUser`, over daily `cohort_stats_daily` snapshots.
+    - **Suppression:** k = 10, counted over *verified* members. A cell is suppressed if n < 10 or |P| − n < 10. Counts are rounded to 5, dimensions are fixed, and there are no caller filters.
+    - **Student control:** share levels are aggregate (default), outcomes or full. The TPO never sees resume contents, answers or marks. Every TPO read of a student is logged and visible to that student.
+    - **Joining:** campus codes are 8-character base32, looked up by HMAC and rate-limited. Code joins don't count toward k. College-email domains are entered by ops and proved by OTP; one mailbox gets one seat.
+    - **Roster import:** stores email HMAC and a placed flag only. No names or roll numbers.
+    - **Drive inbox:** never fetches the pasted link.
+    - **Outcomes:** labelled "student-reported" or "TPO-verified". The NAAC export is CSV-injection safe and audited.
+    - **Gating:** C3–C5 are **gated on G4**.
+16. **Process.** CLAUDE.md wins over §9's roster. tdd-guide builds logic and its tests. The main session builds UI (after loading `frontend-design`) and verifies library and vendor claims. security-reviewer reviews every slice, Slice 1 included.
+
 ### Phase 0: Scaffold
 **Goal:** a monorepo that is empty but real, runs offline end to end, and follows solum conventions.
 
