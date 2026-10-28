@@ -88,8 +88,9 @@ Migrations start at **0007**, because 0005 and 0006 are taken.
 | 0007 | `auth_identities` | user_id, provider (`google`/`email_otp`/`phone_otp`), subject (Google `sub`, or an HMAC of the email or phone), verified_at | UQ(provider, subject) | rev | none (sub or HMAC) |
 | 0007 | `sessions` | id_hash (sha256 of the token), user_id, expires_at, last_seen_at, revoked_at, ua_hash | pk id_hash; (user_id) | rev | none |
 | 0007 | `otp_challenges` | id, channel, target_hmac, code_hash, attempts ≤5, expires_at (+10 min), consumed_at, ip_hash | (target_hmac, created_at) | rev | none |
+| 0007 | `product_events` (WTP review) | id, user_id, event, props jsonb (no PII), at | (event, at), (user_id, at) | own, ins-only | none |
 | 0007 | `consents` | id, user_id, kind (`terms`/`privacy`/`llm_resume`/`llm_contacts`/`whatsapp`/`email_picks`/`analytics`), granted, doc_version, at | append-only; (user_id, kind, at desc) | own, ins-only | none |
-| 0008 | `profiles` | user_id pk, grad_year, degree, college_text, role_families[], cities[], remote_ok, level, floor_minor/currency, tz default `Asia/Kolkata`, picks_hour default 9, paused_until | | own | college_text |
+| 0008 | `profiles` | user_id pk, grad_year, degree, college_text, college_tier, cohort_code (WTP review), role_families[], cities[], remote_ok, level, floor_minor/currency, tz default `Asia/Kolkata`, picks_hour default 9, paused_until | | own | college_text |
 | 0008 | `work_authorizations` | as in PLAN | PK(user_id, country) | own | none |
 | 0008 | `answer_bank` | user_id, question_key, answer_enc, sensitive, source | UQ(user_id, question_key) | own | answer_enc |
 | 0008 | `resumes` | id, user_id, parent_id, label, blob_key, dek_wrapped, mime (PDF only), pages, parsed_enc, skills[], years_exp, embedding vector(384), embedding_model, parse_mode (`rules`/`llm`), parse_status, confirmed_at, is_default, deleted_at | UQ(user_id) WHERE is_default; at most 3 active (trigger) | own | blob, parsed_enc. skills[] stays in the clear because matching needs it |
@@ -260,3 +261,13 @@ Owner, 2026-10-28: "Azure later; scope features first". The slice runs end to en
 | Observability | pino + `llm_calls` | Azure Monitor / App Insights, or OTel → Grafana |
 
 Not tied to Azure: Google OAuth, WhatsApp Cloud API, Web Push, PostHog/Umami, Razorpay/Stripe.
+
+## 8. Changes from the business review
+These come from [../product/WTP-REVIEW-2026-10-28.md](../product/WTP-REVIEW-2026-10-28.md):
+- **0007:** `product_events`.
+- **0008:** `profiles.college_tier` and `profiles.cohort_code`.
+- **M5:** record time-on-task events.
+- **M6:** record intent for the payment link and for "tailoring: notify me".
+- **M7:** a manual "Got a reply" button (`reportReply`, `applications.first_reply_at`) and replies broken down by tier.
+- **No-code gates in parallel:** G2, G3, campus conversations and A5.
+- **Founder outreach:** cut.
