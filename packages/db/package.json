@@ -10,6 +10,7 @@
     "seed": "vite-node src/seed.ts",
     "reset": "vite-node src/reset.ts",
     "verify-schema": "vite-node src/verify-schema.ts",
+    "verify-rls": "vite-node src/verify-rls.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
