@@ -2125,3 +2125,143 @@ body {
     display: none;
   }
 }
+
+/* ---------- Job and company pages ---------- */
+.wr-back {
+  justify-self: start;
+  color: var(--wr-muted-on-night);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.wr-job-hero {
+  border-radius: var(--wr-radius-card);
+  padding: 24px 20px;
+  display: grid;
+  gap: 12px;
+  background: var(--wr-lime);
+  color: var(--wr-ink);
+  border: 2px solid var(--wr-ink);
+}
+
+.wr-job-hero[data-tone="sun"] { background: var(--wr-sun); }
+.wr-job-hero[data-tone="blue"] { background: var(--wr-blue); color: var(--wr-cream); }
+
+.wr-job-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(2.25rem, 9vw, 3.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.wr-fit-plain {
+  background: transparent;
+  padding: 0;
+}
+
+.wr-sub-h {
+  margin: 12px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.wr-rounds-line {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wr-rounds-line li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--wr-ink);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.wr-rounds-line span {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--wr-ink);
+  color: var(--wr-lime);
+  font-size: 0.75rem;
+}
+
+.wr-action-bar {
+  position: sticky;
+  bottom: 88px;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 999px;
+  background: var(--wr-ink);
+  border: 2px solid var(--wr-ink-edge);
+}
+
+.wr-spark {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  height: 56px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.wr-spark li {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: var(--wr-ink);
+}
+
+.wr-role-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.wr-role-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--wr-ink-wash);
+}
+
+.wr-role-list a {
+  display: grid;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.wr-role-list span {
+  font-size: 0.875rem;
+}
+
+.wr-deck-effort a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
+
+@media (min-width: 1024px) {
+  .wr-action-bar {
+    bottom: 24px;
+    max-width: 480px;
+  }
+}

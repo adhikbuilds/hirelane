@@ -217,7 +217,9 @@ export function SwipeDeck({ cards }: { cards: DeckCard[] }) {
               </div>
             ) : null}
 
-            <p className="wr-deck-effort">Your answers are ready. One tap and you check them.</p>
+            <p className="wr-deck-effort">
+              Your answers are ready. <a href={`/pick/${card.id}`}>Open the full page</a>
+            </p>
           </article>
         ) : (
           <div className="wr-deck-empty">
