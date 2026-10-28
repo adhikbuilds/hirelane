@@ -28,7 +28,7 @@ export const SAMPLE_CAMPUS: CampusOverview = {
   placedOnCampus: 96,
   offCampusOffers: { total: 31, verified: 22 },
   funnel: [
-    { label: "Joined Hirelane", count: 268, action: "Invite the other 144" },
+    { label: "Joined Hirelane", count: 268, action: "Invite the other 48" },
     { label: "Resume ready", count: 201, action: "Run a resume clinic" },
     { label: "Eligible for a role", count: 174, action: "See blocking cutoffs" },
     { label: "Applied", count: 118, action: "Send a reminder" },
@@ -56,7 +56,7 @@ export const SAMPLE_PROGRAMMES: ProgrammeRow[] = [
   { programme: "B.Com (Computer Applications)", finalYears: 74, joined: 52, ready: 41, eligible: 36, applied: 25, interviews: 11, offers: 8 },
   { programme: "BBA", finalYears: 112, joined: 79, ready: 58, eligible: 50, applied: 33, interviews: 12, offers: 8 },
   { programme: "BBA (Logistics)", hidden: true, finalYears: 9 },
-  { programme: "B.Com (Honours)", finalYears: 31, joined: 16, ready: 10, eligible: 8, applied: 4, interviews: 2, offers: 1 },
+  { programme: "B.Com (Honours)", hidden: true, finalYears: 31 },
 ];
 
 export type OfferRow = { id: string; student: string; programme: string; employer: string; lpa: number; source: "Hirelane" | "On-campus drive"; letter: boolean; status: "verified" | "waiting" | "rejected" };
@@ -64,7 +64,7 @@ export type OfferRow = { id: string; student: string; programme: string; employe
 export const SAMPLE_OFFERS: OfferRow[] = [
   { id: "o1", student: "Sample Student 04", programme: "B.Com (General)", employer: "Mass recruiter (sample)", lpa: 3.2, source: "Hirelane", letter: true, status: "waiting" },
   { id: "o2", student: "Sample Student 11", programme: "BBA", employer: "Private bank (sample)", lpa: 4.0, source: "Hirelane", letter: true, status: "waiting" },
-  { id: "o3", student: "Sample Student 17", programme: "B.Com (Computer Applications)", employer: "SaaS startup (sample)", lpa: 4.5, source: "Hirelane", letter: false, status: "waiting" },
+  { id: "o3", student: "Sample Student 17", programme: "B.Com (Computer Applications)", employer: "SaaS startup (sample)", lpa: 4.5, source: "Hirelane", letter: true, status: "waiting" },
   { id: "o4", student: "Sample Student 02", programme: "B.Com (General)", employer: "Retail chain (sample)", lpa: 2.8, source: "On-campus drive", letter: true, status: "verified" },
   { id: "o5", student: "Sample Student 09", programme: "BBA", employer: "Logistics firm (sample)", lpa: 3.6, source: "Hirelane", letter: true, status: "verified" },
 ];

@@ -21,14 +21,24 @@ export interface MockIssuer {
 
 const b64 = (b: Buffer | string) => Buffer.from(b).toString("base64url");
 
-export function createMockIssuer(issuer = "https://issuer.example.test", clock: () => Date = () => new Date()): MockIssuer {
+export interface MockIssuerOptions {
+  /** Callback URL the token endpoint insists on. Default is the Google one. */
+  redirectUri?: string;
+  /** Discovery lists S256 in code_challenge_methods_supported, and authorize() insists on a challenge. Default true. */
+  pkce?: boolean;
+  /** The `issuer` value inside the discovery document, when it differs from the URL it is served under. */
+  discoveryIssuer?: string;
+}
+
+export function createMockIssuer(issuer = "https://issuer.example.test", clock: () => Date = () => new Date(), opts: MockIssuerOptions = {}): MockIssuer {
+  const pkce = opts.pkce ?? true;
   const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
   const other = generateKeyPairSync("rsa", { modulusLength: 2048 });
   const jwk = { ...publicKey.export({ format: "jwk" }), kid: "k1", alg: "RS256", use: "sig" };
   const clientId = "client-123.apps.example.test";
   const clientSecret = "mock-secret";
-  const redirectUri = "http://localhost:3001/auth/google/callback";
-  const codes = new Map<string, { challenge: string; nonce: string; user: { sub: string; email: string; emailVerified?: boolean }; claims: Record<string, unknown> }>();
+  const redirectUri = opts.redirectUri ?? "http://localhost:3001/auth/google/callback";
+  const codes = new Map<string, { challenge: string | null; nonce: string; user: { sub: string; email: string; emailVerified?: boolean }; claims: Record<string, unknown> }>();
   const requests: { url: string; method: string }[] = [];
   let forced: string | null = null;
 
@@ -46,7 +56,13 @@ export function createMockIssuer(issuer = "https://issuer.example.test", clock: 
     requests.push({ url, method });
     const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
     if (url === `${issuer}/.well-known/openid-configuration`) {
-      return json({ issuer, authorization_endpoint: `${issuer}/authorize`, token_endpoint: `${issuer}/token`, jwks_uri: `${issuer}/jwks` });
+      return json({
+        issuer: opts.discoveryIssuer ?? issuer,
+        authorization_endpoint: `${issuer}/authorize`,
+        token_endpoint: `${issuer}/token`,
+        jwks_uri: `${issuer}/jwks`,
+        ...(pkce ? { code_challenge_methods_supported: ["S256"] } : {}),
+      });
     }
     if (url === `${issuer}/jwks`) return json({ keys: [jwk] });
     if (url === `${issuer}/token` && method === "POST") {
@@ -55,7 +71,8 @@ export function createMockIssuer(issuer = "https://issuer.example.test", clock: 
       if (!entry || form.get("client_secret") !== clientSecret || form.get("client_id") !== clientId || form.get("redirect_uri") !== redirectUri || form.get("grant_type") !== "authorization_code") {
         return json({ error: "invalid_grant" }, 400);
       }
-      const challenge = createHash("sha256").update(form.get("code_verifier") ?? "").digest("base64url");
+      // With a challenge on record the verifier must match it; without one a verifier must not be sent at all.
+      const challenge = form.has("code_verifier") ? createHash("sha256").update(form.get("code_verifier") ?? "").digest("base64url") : null;
       if (challenge !== entry.challenge) return json({ error: "invalid_grant", error_description: "pkce" }, 400);
       codes.delete(form.get("code")!);
       const now = Math.floor(clock().getTime() / 1000);
@@ -83,9 +100,10 @@ export function createMockIssuer(issuer = "https://issuer.example.test", clock: 
       const u = new URL(authUrl);
       if (u.origin + u.pathname !== `${issuer}/authorize`) throw new Error("not the mock authorize endpoint");
       const p = u.searchParams;
-      if (p.get("code_challenge_method") !== "S256") throw new Error("PKCE S256 missing");
+      if (pkce && p.get("code_challenge_method") !== "S256") throw new Error("PKCE S256 missing");
+      if (!pkce && (p.has("code_challenge") || p.has("code_challenge_method"))) throw new Error("PKCE sent although not advertised");
       const code = randomBytes(12).toString("hex");
-      codes.set(code, { challenge: p.get("code_challenge")!, nonce: p.get("nonce")!, user, claims });
+      codes.set(code, { challenge: p.get("code_challenge"), nonce: p.get("nonce")!, user, claims });
       return { code, state: p.get("state")! };
     },
   };

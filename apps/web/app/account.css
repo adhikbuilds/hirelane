@@ -1333,6 +1333,7 @@ body {
 @media (min-width: 1024px) {
   .acct:has(.wr-tabbar) {
     padding-left: 232px;
+    background: linear-gradient(to right, var(--wr-ink) 232px, var(--wr-night) 232px);
   }
 
   .acct:has(.wr-tabbar) .acct-top {

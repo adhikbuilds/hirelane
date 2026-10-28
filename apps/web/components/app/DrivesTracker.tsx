@@ -165,7 +165,7 @@ export function RecapCard({ recap }: { recap: Recap }) {
     { tone: "blue", kicker: `Your week, ${recap.weekLabel}`, big: "23", line: "roles checked against your marks.", sub: "4 were worth your time." },
     { tone: "lime", kicker: "Applied, on their own sites", big: String(recap.handedOff), line: "applications. Zero retyping.", sub: "Every answer came from your resume.", stamp: "Applied" },
     { tone: "pink", kicker: "Somebody wrote back", big: String(recap.replies), line: `reply. ${recap.bestMatch} wants a call.`, sub: "Thursday, 4 pm. Good luck." },
-    { tone: "sun", kicker: "You levelled up", big: "7/9", line: "resume checks pass now.", sub: "It was 3/9 on Monday. Next week: roles at 2 companies where you know someone." },
+    { tone: "sun", kicker: "Coming up", big: "2", line: "drives you qualify for close this week.", sub: "Process Associate closes Saturday. You know someone at 2 companies hiring." },
   ];
   return (
     <section className="wr-recap" aria-labelledby="recap-h">

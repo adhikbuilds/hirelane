@@ -14,7 +14,7 @@ const PURPOSE = "auth/pending-signup";
 
 const pendingSchema = z.object({
   v: z.literal(1),
-  provider: z.enum(["google", "email_otp"]),
+  provider: z.enum(["google", "linkedin", "email_otp"]),
   subject: z.string().min(1).max(256),
   email: z.string().min(3).max(254),
   iat: z.number(),
@@ -24,7 +24,7 @@ export type PendingSignup = z.infer<typeof pendingSchema>;
 
 export async function createPendingSignup(
   keys: KeyProvider,
-  who: { provider: "google" | "email_otp"; subject: string; email: string },
+  who: { provider: "google" | "linkedin" | "email_otp"; subject: string; email: string },
   now: Date,
 ): Promise<string> {
   return signPayload(keys, PURPOSE, { v: 1, ...who, iat: now.getTime(), exp: now.getTime() + PENDING_TTL_MS });

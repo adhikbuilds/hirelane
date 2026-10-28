@@ -117,7 +117,7 @@ export function tokenFromRequest(headers: { get: (name: string) => string | null
 
 // ---------- identities ----------
 
-export type Provider = "google" | "email_otp" | "phone_otp";
+export type Provider = "google" | "linkedin" | "email_otp" | "phone_otp";
 
 /**
  * Finds the account for a verified identity, linking by verified email when only the address matches.

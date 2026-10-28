@@ -2,6 +2,9 @@ import Link from "next/link";
 import type { OfferRow, ProgrammeRow } from "@/lib/sample/campus";
 import { Icon, pct } from "./Console";
 
+/** Cells under 10 are never shown as numbers (Amendment B §15). */
+const K = (n: number) => (n < 10 ? <span className="cp-muted">under 10</span> : n);
+
 const OFFER_STATUS = {
   verified: { tone: "good", label: "Verified", d: "M5 12l5 5 9-10" },
   waiting: { tone: "warn", label: "Waiting for you", d: "M12 7v5l3 3" },
@@ -45,7 +48,7 @@ export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
                     <td>{r.programme}</td>
                     <td className="cp-num">{r.finalYears}</td>
                     <td colSpan={6} className="cp-hidden">
-                      Fewer than 10 students joined, so this row is hidden to protect their privacy.
+                      Hidden to protect students in small groups. Two small programmes are hidden together, so neither can be worked out from the totals.
                     </td>
                   </tr>
                 ) : (
@@ -55,12 +58,12 @@ export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
                     <td className="cp-num">
                       {r.joined} <small>{pct(r.joined, r.finalYears)}%</small>
                     </td>
-                    <td className="cp-num">{r.ready}</td>
-                    <td className="cp-num">{r.eligible}</td>
-                    <td className="cp-num">{r.applied}</td>
-                    <td className="cp-num">{r.interviews}</td>
+                    <td className="cp-num">{K(r.ready)}</td>
+                    <td className="cp-num">{K(r.eligible)}</td>
+                    <td className="cp-num">{K(r.applied)}</td>
+                    <td className="cp-num">{K(r.interviews)}</td>
                     <td className="cp-num">
-                      <b className="cp-good">{r.offers}</b>
+                      <b className="cp-good">{K(r.offers)}</b>
                     </td>
                   </tr>
                 ),
@@ -153,8 +156,8 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
               <Field label="Location" value="Bengaluru" />
               <Field label="Work mode" value="On-site" />
               <Field label="Openings" value="" hint="Not in the notice. Optional." />
-              <Field label="CTC (fixed)" value="3.2 LPA" hint="Check: the notice says 3.6 LPA total" />
-              <Field label="CTC (variable)" value="0.4 LPA" />
+              <Field label="CTC (total)" value="3.6 LPA" />
+              <Field label="Fixed and variable split" value="" hint="Check: the notice doesn't give a split." />
               <Field label="Bond or service agreement" value="None mentioned" />
               <Field label="Joining" value="June 2026" />
               <Field label="Apply link" value="https://careers.example.com/cs-associate" wide hint="Students apply here. We never open it ourselves." />
@@ -232,10 +235,10 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
 
           <section id="step-5" className="cp-card" aria-labelledby="s5">
             <h2 id="s5">5. Review and publish</h2>
-            <p className="cp-card-sub">Students see the drive in their app with a countdown and the rules they meet. Students who don&apos;t qualify never see it.</p>
+            <p className="cp-card-sub">Students see the drive in their app with a countdown and the rules they meet. Students who clearly don&apos;t qualify never see it; students we couldn&apos;t check see it with the reason.</p>
             <div className="cp-actions">
               <button className="cp-btn" type="submit">
-                Publish to 143 students
+                Publish to 170 students
               </button>
               <button className="cp-btn" data-variant="outline" type="button">
                 Schedule for 9:00 tomorrow
@@ -248,7 +251,7 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
           <section className="cp-card">
             <h2>Who this reaches</h2>
             <p className="cp-big">143</p>
-            <p className="cp-card-sub">students qualify on every rule</p>
+            <p className="cp-card-sub">students qualify on every rule. 27 more see it marked &quot;we couldn&apos;t check one rule&quot;, so 170 get it.</p>
             <table className="cp-table">
               <tbody>
                 <tr>
@@ -320,7 +323,7 @@ export function OutcomesPage({ offers, outgoing, higherStudies }: { offers: Offe
           <dd>{placedTotal}</dd>
         </div>
         <div>
-          <dt>Gone for higher studies</dt>
+          <dt>Higher studies (reported by students)</dt>
           <dd>{higherStudies}</dd>
         </div>
         <div>
@@ -333,7 +336,7 @@ export function OutcomesPage({ offers, outgoing, higherStudies }: { offers: Offe
       <section className="cp-card" aria-labelledby="offers-h">
         <h2 id="offers-h">Offers to check</h2>
         <p className="cp-card-sub">
-          {offers.length - verified} waiting, {verified} verified. Each row shows the letter the student uploaded; you mark it verified or not accepted.
+          9 waiting and 22 verified this year; showing the latest {offers.length}. Open a letter to mark it verified or not accepted.
         </p>
         <div className="cp-scroll">
           <table className="cp-table">
@@ -403,7 +406,7 @@ export function SettingsPage() {
             <p className="cp-formula">
               Percentage = CGPA × 9.5 <span>8.1 CGPA becomes 77.0%</span>
             </p>
-            <p className="cp-card-sub">Each rule shows the university page it came from. Wrong? Upload your circular and we&apos;ll correct it.</p>
+            <p className="cp-card-sub">Source: Sample University academic regulations, section 12 (sample link), checked 12 Oct 2026. Wrong? Upload your circular and we&apos;ll correct it.</p>
           </form>
         </section>
         <section className="cp-card" aria-labelledby="join-h">

@@ -37,7 +37,7 @@ body {
 
 .cp {
   min-height: 100dvh;
-  background: var(--cp-paper);
+  background: linear-gradient(to right, var(--cp-navy) 248px, var(--cp-paper) 248px);
   color: var(--cp-ink);
   font-family: var(--font-public), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;

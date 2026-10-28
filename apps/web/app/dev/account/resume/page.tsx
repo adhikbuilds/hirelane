@@ -44,7 +44,7 @@ const META: ExtractMeta = {
   producerFamily: "canva",
 };
 
-const NOTICE = "Eligibility: 60% throughout in 10th, 12th and graduation. No active backlogs. 2025 and 2026 passouts only. B.Com, BBA, BCA eligible.";
+const NOTICE = "Eligibility: 60% throughout in 10th, 12th and graduation. B.E/B.Tech or MCA only. 2025 and 2026 passouts.";
 
 /** Dev-only preview: the real engine runs on synthetic text, so this is what a student would really see. */
 export default function ResumePreview() {
@@ -61,7 +61,7 @@ export default function ResumePreview() {
         <p className="wr-sample">Sample resume and drive notice, checked by the real engine. Nothing here is a real person.</p>
         <h1 className="acct-display wr-hello">Your resume.</h1>
         <ResumeHealth report={report} />
-        <EligibilityVerdict result={result} roleLabel="Process Associate drive (sample)" />
+        <EligibilityVerdict result={result} roleLabel="Trainee Engineer, IT services firm (sample)" />
         <TabBar active="you" />
       </div>
     </AccountShell>

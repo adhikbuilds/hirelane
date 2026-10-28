@@ -216,8 +216,8 @@ export function Home({ data }: { data: HomeData }) {
             <dd>{week.replies}</dd>
           </div>
           <div>
-            <dt>minutes of typing saved</dt>
-            <dd>{week.minutesSaved}</dd>
+            <dt>answers filled for you</dt>
+            <dd>{week.answersFilled}</dd>
           </div>
         </dl>
         {week.recapReady ? (

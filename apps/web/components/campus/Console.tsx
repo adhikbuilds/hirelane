@@ -119,9 +119,9 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
             <dd>{data.finalYears}</dd>
           </div>
           <div>
-            <dt>Joined Hirelane</dt>
+            <dt>Not placed on campus who joined</dt>
             <dd>
-              {data.joined} <small>{pct(data.joined, data.finalYears)}%</small>
+              {data.joined} <small>of {unplaced}</small>
             </dd>
           </div>
           <div>
@@ -141,7 +141,7 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
         <section className="cp-card" aria-labelledby="funnel-h">
           <h2 id="funnel-h">Students not placed on campus</h2>
           <p className="cp-card-sub">
-            {unplaced} students. The hatched part of each column is how many stopped at that step; each column has the next thing to do.
+            {unplaced} students weren&apos;t placed on campus; {top} of them joined Hirelane. Every column counts those {top}. The hatched part is how many stopped at that step.
           </p>
           <ol className="cp-funnel">
             {data.funnel.map((f, i) => {

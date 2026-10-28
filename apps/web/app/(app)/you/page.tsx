@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const NEVER = [
   "Apply or send anything in your name. You press submit on the company's own site.",
-  "Show your resume or marks to your college. Your placement cell only sees totals, never you.",
+  "Show your resume or marks to your college. They see totals, and your outcomes only if you choose to share them.",
   "Charge you to apply, or ask for a registration fee.",
   "Sell your data or share it with employers.",
   "Keep your resume after you delete it. It's gone within 24 hours.",

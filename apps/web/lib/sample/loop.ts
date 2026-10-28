@@ -101,31 +101,6 @@ export const SAMPLE_DRIVES: DriveItem[] = [
       { text: "No active backlogs", status: "pass" },
     ],
   },
-  {
-    id: "d3",
-    company: "An IT services firm (sample)",
-    role: "Trainee Engineer",
-    ctc: "3.6 LPA",
-    deadlineLabel: "Mon 2 Nov",
-    daysLeft: 4,
-    status: "not_eligible",
-    headline: "Needs 60% in 12th; you have 58%",
-    rules: [
-      { text: "60% in 10th, 12th and graduation", status: "fail" },
-      { text: "B.E/B.Tech, MCA", status: "fail" },
-    ],
-  },
-  {
-    id: "d4",
-    company: "Unknown sender (sample)",
-    role: "Work-from-home Data Entry",
-    ctc: "45,000 a month",
-    deadlineLabel: "Today",
-    daysLeft: 0,
-    status: "scam",
-    headline: "Asks for a ₹1,500 registration fee and a Telegram chat",
-    rules: [],
-  },
 ];
 
 export const SAMPLE_TRACKER: TrackerItem[] = [
