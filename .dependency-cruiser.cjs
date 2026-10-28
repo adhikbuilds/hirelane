@@ -28,7 +28,7 @@ module.exports = {
       comment: 'agent may import engine and db only',
       severity: 'error',
       from: { path: pkg('agent') + 'src/' },
-      to: { path: ['^packages/(?!agent|engine|db)', '^apps/', '^workers/'] },
+      to: { path: ['^packages/(?!agent|engine|db|vault)', '^apps/', '^workers/'] },
     },
     {
       name: 'web-boundaries',
@@ -36,6 +36,27 @@ module.exports = {
       severity: 'error',
       from: { path: '^apps/web/' },
       to: { path: ['^packages/(ingest)/', '^workers/'] },
+    },
+    {
+      name: 'vault-is-leaf',
+      comment: 'vault imports no other workspace package, app or worker (envelope crypto stays a leaf)',
+      severity: 'error',
+      from: { path: pkg('vault') + 'src/' },
+      to: { path: ['^packages/(?!vault)', '^apps/', '^workers/'] },
+    },
+    {
+      name: 'nothing-imports-apps',
+      comment: 'packages and workers never import apps',
+      severity: 'error',
+      from: { path: ['^packages/', '^workers/'] },
+      to: { path: '^apps/' },
+    },
+    {
+      name: 'submit-is-isolated',
+      comment: 'only packages/agent/src/submit/ may import the submit module (architecture.md 2.2)',
+      severity: 'error',
+      from: { pathNot: '^packages/agent/src/submit/' },
+      to: { path: '^packages/agent/src/submit/' },
     },
     {
       name: 'workers-not-imported',
