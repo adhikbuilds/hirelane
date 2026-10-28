@@ -51,10 +51,14 @@ const TABS: { id: TabId; label: string; href: string; icon: ReactNode }[] = [
   },
 ];
 
-/** Bottom tab bar for the student app. Links only: no client JS. */
+/** Bottom tab bar on phones, left sidebar on desktop (same links, CSS only). No client JS. */
 export function TabBar({ active }: { active: TabId }) {
   return (
     <nav className="wr-tabbar" aria-label="App">
+      <Link href="/home" className="wr-tabbar-brand">
+        {"hire"}
+        <span>lane</span>
+      </Link>
       <ul>
         {TABS.map((t) => (
           <li key={t.id}>

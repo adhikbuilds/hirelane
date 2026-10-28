@@ -5,7 +5,7 @@ const CHECK_TITLE: Record<string, string> = {
   ats_readable: "Hiring software can read it",
   one_page: "Fits on one page",
   contact_present: "Email and phone are on it",
-  no_biodata_ids: "No ID numbers or personal details",
+  no_biodata_ids: "No personal details like date of birth",
   no_padding: "No objective or declaration filler",
   bullets_with_numbers: "Points show numbers",
   project_proof_links: "Projects have links",

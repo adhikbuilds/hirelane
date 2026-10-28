@@ -30,7 +30,7 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | R1 | Upload a text PDF or DOCX, ≤ 5 MB; PDFs ≤ 3 pages | magic bytes checked; a malicious file never crashes the worker |
 | R2 | Detect resumes an ATS can't read (image-only, or Canva-garbled) and say so first | the image-only fixture shows "an ATS can't read this file" plus two fixes |
 | R3 | India-aware parse: 10th, 12th/diploma, graduation %/CGPA, board, passout year, backlogs, projects, internships, certifications, skills, links | field accuracy ≥ 90% on the labelled synthetic set |
-| R4 | Sensitive-data scan: Aadhaar (Verhoeff check), PAN, DOB, parents' names, religion, caste, marital status, photo | Aadhaar recall 100% with 0 false positives on phone and roll-number negatives; values never stored or shown |
+| R4 | ~~Sensitive-data scan as a product feature~~ **De-scoped by the owner, 2026-10-29:** employers don't ask for Aadhaar or PAN, so no screen, health-check copy or pitch mentions them. The already-built background masking (engine/resume/sensitive.ts) stays only as a silent privacy safety net, so an ID number a student typed is never stored in parsed text, unless the owner asks to remove it too | no student-facing mention; masking tests stay green |
 | R5 | Health check: 9 fixed checks, "N of 9 pass", each with a fix; no fake score | every check has ≥ 3 passing and ≥ 3 failing fixtures |
 | R6 | Confirm screen: every parsed field editable; nothing is used until confirmed | an edited value lands in the eligibility profile with `confirmed_at` |
 | R7 | Guided builder for students with no usable resume: 6–8 questions → a one-page PDF an ATS can read | the builder output passes our own readability check |
@@ -45,7 +45,8 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | E2 | Parse posting and drive criteria: "60% throughout", "no active backlogs", "2026 batch", branch lists, gap rules | criterion accuracy ≥ 90%; 0 wrong "fail" on items labelled unknown |
 | E3 | Per role: pass / fail / unknown per criterion, with the posting's words | "Needs 60% in 12th, you have 58%" shown as a blocker |
 | E4 | Fail blocks the role from picks; unknown never does | property test over 1,000 random profiles |
-| E5 | CGPA→% only via the college's own rule; otherwise unknown | no guessed conversions |
+| E5 | **CGPA validation and conversion (owner priority, 2026-10-29).** (a) Validate: CGPA within its scale (4/5/10), SGPA vs CGPA told apart, CGPA consistent with the stated percentage when both are given, marks written as "412/500" converted to a percent, impossible values flagged for the student to fix. (b) Convert CGPA→% from a per-university rule table (public formulas: e.g. a university's own "percentage = (CGPA − 0.75) × 10" style rule), each row with its source URL and the date it was checked. The student picks their university once; a campus rule overrides it. (c) With no known rule, the verdict stays unknown and says which rule is missing, never a guess | rule table with ≥ 25 universities common among tier-2/3 colleges, each sourced; conversion tests per row; 0 guessed conversions |
+| E6 | **Show the maths:** every eligibility line that used a conversion shows it ("8.1 CGPA = 73.5% by your university's rule, needs 60%: you qualify") | visible on drive, pick and paste-a-job verdicts |
 
 ### A. Accounts (C1)
 | ID | Requirement |

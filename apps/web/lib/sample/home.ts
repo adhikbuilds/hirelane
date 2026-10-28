@@ -29,6 +29,8 @@ export type HomeData = {
   drives: { id: string; company: string; role: string; deadlineLabel: string; daysLeft: number; status: "eligible" | "check" | "not_eligible"; reason: string }[];
   feed: { at: string; text: string; tag: "match" | "reply" | "gone" | "drive" }[];
   week: { handedOff: number; replies: number; minutesSaved: number; recapReady: boolean };
+  /** From the student's own uploaded LinkedIn Connections.csv (sealed, private to them). null = not uploaded yet. */
+  warm: { companies: { name: string; people: { initials: string }[] }[] } | null;
 };
 
 export const SAMPLE_HOME: HomeData = {
@@ -51,7 +53,7 @@ export const SAMPLE_HOME: HomeData = {
     ],
     minutes: 3,
   },
-  resume: { passed: 6, total: 9, topFix: "Your resume has your Aadhaar number. Remove it." },
+  resume: { passed: 6, total: 9, topFix: "Your CGPA has no scale. Add \"out of 10\" so drives can check it." },
   qualify: { count: 7, blockedBy: { label: "60% in 12th", count: 4 } },
   drives: [
     { id: "d1", company: "A mass recruiter (sample)", role: "Process Associate", deadlineLabel: "Sat 31 Oct", daysLeft: 2, status: "eligible", reason: "You meet all 4 rules" },
@@ -63,4 +65,10 @@ export const SAMPLE_HOME: HomeData = {
     { at: "07:15", text: "Payoneer closed a role you saved", tag: "gone" },
   ],
   week: { handedOff: 4, replies: 1, minutesSaved: 38, recapReady: true },
+  warm: {
+    companies: [
+      { name: "Zenoti", people: [{ initials: "AK" }] },
+      { name: "Payoneer", people: [{ initials: "SM" }, { initials: "RJ" }] },
+    ],
+  },
 };

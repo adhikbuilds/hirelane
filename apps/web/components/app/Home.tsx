@@ -18,14 +18,14 @@ import { TabBar } from "./TabBar";
 export function Home({ data }: { data: HomeData }) {
   const { picks, resume, qualify, drives, feed, week } = data;
   return (
-    <div className="wr-app">
+    <div className="wr-app wr-home">
       {data.sample ? (
-        <p className="wr-sample">
+        <p className="wr-sample wr-area-sample">
           Sample student. This is how Home looks; real numbers appear once picks are live.
         </p>
       ) : null}
 
-      <header className="wr-home-head">
+      <header className="wr-home-head wr-area-head">
         <div>
           <p className="wr-date">{data.dateLabel}</p>
           <h1 className="acct-display wr-hello">Morning, {data.firstName}.</h1>
@@ -34,7 +34,7 @@ export function Home({ data }: { data: HomeData }) {
         <Streak days={data.streakDays} paused={data.paused} />
       </header>
 
-      <section className="wr-tile wr-tile-pink wr-picks" aria-labelledby="picks-h">
+      <section className="wr-tile wr-tile-pink wr-picks wr-area-picks" aria-labelledby="picks-h">
         <h2 id="picks-h" className="wr-tile-label">
           Today&apos;s picks, read {picks.readAgo}
         </h2>
@@ -66,7 +66,7 @@ export function Home({ data }: { data: HomeData }) {
         </div>
       </section>
 
-      <div className="wr-bento">
+      <div className="wr-bento wr-area-bento">
         {resume ? (
           <section className="wr-tile wr-tile-sun" aria-labelledby="resume-h">
             <h2 id="resume-h" className="wr-tile-label">
@@ -112,7 +112,7 @@ export function Home({ data }: { data: HomeData }) {
       </div>
 
       {drives.length > 0 ? (
-        <section className="wr-tile wr-tile-blue" aria-labelledby="drives-h">
+        <section className="wr-tile wr-tile-blue wr-area-drives" aria-labelledby="drives-h">
           <h2 id="drives-h" className="wr-tile-label">
             From your placement cell
           </h2>
@@ -138,7 +138,43 @@ export function Home({ data }: { data: HomeData }) {
         </section>
       ) : null}
 
-      <section className="wr-tile wr-tile-cream" aria-labelledby="paste-h">
+      <section className="wr-tile wr-tile-lime wr-area-warm" aria-labelledby="warm-h">
+        <h2 id="warm-h" className="wr-tile-label">
+          Who you know
+        </h2>
+        {data.warm && data.warm.companies.length > 0 ? (
+          <>
+            <ul className="wr-warm-list">
+              {data.warm.companies.map((c) => (
+                <li key={c.name}>
+                  <span className="wr-faces" aria-hidden="true">
+                    {c.people.map((p) => (
+                      <span key={p.initials}>{p.initials}</span>
+                    ))}
+                  </span>
+                  <span>
+                    {c.people.length} {c.people.length === 1 ? "person" : "people"} at {c.name}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="wr-tile-fix">From your LinkedIn connections. Only you can see them.</p>
+            <Link className="wr-tile-link" href="/network">
+              Ask for a referral
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="wr-tile-text">See who you know at each company before you apply.</p>
+            <p className="wr-tile-fix">Upload your LinkedIn connections file. It stays private to you.</p>
+            <Link className="wr-tile-link" href="/network">
+              Add my connections
+            </Link>
+          </>
+        )}
+      </section>
+
+      <section className="wr-tile wr-tile-cream wr-area-paste" aria-labelledby="paste-h">
         <h2 id="paste-h" className="wr-paste-title">
           Found a job somewhere else?
         </h2>
@@ -148,7 +184,7 @@ export function Home({ data }: { data: HomeData }) {
         </Button>
       </section>
 
-      <section className="wr-feed" aria-labelledby="feed-h">
+      <section className="wr-feed wr-area-feed" aria-labelledby="feed-h">
         <h2 id="feed-h" className="wr-feed-h">
           While you slept
         </h2>
@@ -166,7 +202,7 @@ export function Home({ data }: { data: HomeData }) {
         <p className="wr-feed-note">Nothing goes out without your tap.</p>
       </section>
 
-      <section className="wr-tile wr-tile-ink wr-recap" aria-labelledby="recap-h">
+      <section className="wr-tile wr-tile-ink wr-recap wr-area-recap" aria-labelledby="recap-h">
         <h2 id="recap-h" className="wr-tile-label">
           Your week so far
         </h2>
@@ -191,7 +227,7 @@ export function Home({ data }: { data: HomeData }) {
         ) : null}
       </section>
 
-      <section className="wr-pause" aria-labelledby="pause-h">
+      <section className="wr-pause wr-area-pause" aria-labelledby="pause-h">
         <h2 id="pause-h">Exams coming up?</h2>
         <p>Pause picks for up to 3 weeks. Your streak waits for you.</p>
         <Button asChild variant="on-night" size="pill-sm">

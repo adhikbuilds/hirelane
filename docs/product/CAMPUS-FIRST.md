@@ -97,7 +97,7 @@ Changes from the HLD M2 ("sealed PDF upload; rules-only parse; inline fixes"):
 - R-p-2 Every parsed field editable on one confirm screen, with a confidence flag. Nothing feeds matching until the student confirms.
 
 **Safety**
-- R-s-1 **Sensitive-data scan**: Aadhaar (12 digits passing the Verhoeff check), PAN pattern, DOB, father's/mother's name, religion, caste, marital status, photo. Warn the student, and leave them out of anything we generate. Aadhaar/PAN found → never stored in parsed text.
+- R-s-1 (**de-scoped from the product by the owner, 2026-10-29**; background masking kept as a silent safety net, see PRD R4) **Sensitive-data scan**: Aadhaar (12 digits passing the Verhoeff check), PAN pattern, DOB, father's/mother's name, religion, caste, marital status, photo. Warn the student, and leave them out of anything we generate. Aadhaar/PAN found → never stored in parsed text.
 - R-s-2 Upload hardening: ≤ 5 MB, ≤ 3 pages, magic bytes, PDF JavaScript and embedded files ignored, parse in a worker with time and memory caps, contents never logged, envelope encryption (packages/vault), audited download, deletion within 24 h.
 - R-s-3 18+ attestation at sign-up (DPDP s.9) until a parental-consent flow exists.
 - R-s-4 No LLM on resume content without the `llm_resume` consent (unchanged).
