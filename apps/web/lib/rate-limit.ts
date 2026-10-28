@@ -117,12 +117,12 @@ export async function guardedLimit(
 
 /**
  * Counts one request in the current fixed window. One atomic upsert, so concurrent requests are counted exactly.
- * `prune` deletes windows older than an hour; callers pass it on a small fraction of requests.
+ * `prune` deletes windows older than an hour (`pruneAfterSeconds` overrides, e.g. for daily buckets); callers pass it on a small fraction of requests.
  */
 export async function checkRateLimit(
   client: Queryable,
   bucket: string,
-  opts: { limit: number; windowSeconds: number; now?: Date; prune?: boolean },
+  opts: { limit: number; windowSeconds: number; now?: Date; prune?: boolean; pruneAfterSeconds?: number },
 ): Promise<RateLimitResult> {
   const now = opts.now ?? new Date();
   const ms = opts.windowSeconds * 1000;
@@ -134,7 +134,7 @@ export async function checkRateLimit(
     [bucket, start],
   );
   if (opts.prune) {
-    await client.query("DELETE FROM rate_limits WHERE window_start < $1", [new Date(now.getTime() - 3_600_000)]);
+    await client.query("DELETE FROM rate_limits WHERE window_start < $1", [new Date(now.getTime() - (opts.pruneAfterSeconds ?? 3600) * 1000)]);
   }
   const count = Number(rows[0].count);
   const resetAt = new Date(start.getTime() + ms);

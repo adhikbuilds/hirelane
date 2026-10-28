@@ -18,7 +18,6 @@ describe('isAllowedPath', () => {
     'apps/web/app/api/public/_lib/handlers.ts',
     'apps/web/app/jobs/actions.ts',
     'apps/web/app/api/webhooks/inbound-email/route.ts',
-    'apps/web/lib/auth/session.ts',
     'apps/web/app/ops/page.tsx',
     'workers/runner/src/tasks/ingest.ts',
     'packages/ingest/src/run/run.ts',
@@ -31,6 +30,7 @@ describe('isAllowedPath', () => {
     'apps/web/app/api/me/route.ts',
     'apps/web/app/api/resumes/route.ts',
     'apps/web/lib/authx/x.ts',
+    'apps/web/lib/auth/session.ts', // auth uses withAuth now, not the owner role
     'packages/agent/src/applications/x.ts',
     'packages/engine/src/x.ts',
     'apps/web/app/apps/page.tsx',

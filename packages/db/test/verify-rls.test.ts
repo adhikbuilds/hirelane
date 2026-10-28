@@ -118,10 +118,10 @@ describe('verifyRls role posture and registry', () => {
       { name: 'reg_rev', table: 'public.reg_rev', mode: 'rev', userColumn: 'user_id', seed: seed('reg_rev'), cleanup: cleanup('reg_rev') },
     ];
     try {
-      const r = await run({ tables: specs });
+      const r = await run({ tables: [...RLS_TABLES, ...specs] });
       expect(r.failures).toEqual([]);
       expect((await admin.query('SELECT 1 FROM reg_own')).rowCount).toBe(0);
-      const missing = await run({ tables: [{ ...specs[0]!, name: 'gone', table: 'public.gone' }] });
+      const missing = await run({ tables: [...RLS_TABLES, { ...specs[0]!, name: 'gone', table: 'public.gone' }] });
       expect(missing.failures.some((f) => /gone/.test(f))).toBe(true);
     } finally {
       await admin.query('DROP TABLE reg_own, reg_rev');
@@ -130,5 +130,55 @@ describe('verifyRls role posture and registry', () => {
 
   it('ships an empty-by-default registry that later milestones extend', () => {
     expect(Array.isArray(RLS_TABLES)).toBe(true);
+  });
+});
+
+describe('verifyRls on the 0008 auth tables', () => {
+  it('registers all seven auth tables and passes', async () => {
+    const names = RLS_TABLES.map((t) => t.name);
+    for (const n of ['users', 'consents', 'product_events', 'idempotency_keys', 'sessions', 'otp_challenges', 'auth_identities']) {
+      expect(names).toContain(n);
+    }
+    const r = await run({ fixture: false });
+    expect(r.failures).toEqual([]);
+    expect(r.checks).toBeGreaterThan(40);
+  });
+
+  it('fails when the app role can insert into users', async () => {
+    await admin.query('GRANT INSERT ON users TO hirelane_app');
+    await admin.query('CREATE POLICY users_fault_ins ON users FOR INSERT TO hirelane_app WITH CHECK (true)');
+    try {
+      const r = await run({ fixture: false });
+      expect(r.failures.some((f) => /users.*insert/.test(f))).toBe(true);
+    } finally {
+      await admin.query('DROP POLICY users_fault_ins ON users');
+      await admin.query('REVOKE INSERT ON users FROM hirelane_app');
+    }
+  });
+
+  it('fails when sessions becomes readable by the app role', async () => {
+    await admin.query('GRANT SELECT ON sessions TO hirelane_app');
+    try {
+      const r = await run({ fixture: false });
+      expect(r.failures.some((f) => /sessions/.test(f))).toBe(true);
+    } finally {
+      await admin.query('REVOKE ALL ON sessions FROM hirelane_app');
+    }
+  });
+
+  it('fails when a registered table loses row level security', async () => {
+    await admin.query('ALTER TABLE consents DISABLE ROW LEVEL SECURITY');
+    try {
+      const r = await run({ fixture: false });
+      expect(r.failures.some((f) => /consents/.test(f))).toBe(true);
+    } finally {
+      await admin.query('ALTER TABLE consents ENABLE ROW LEVEL SECURITY');
+    }
+  });
+
+  it('leaves no synthetic users behind', async () => {
+    await run({ fixture: false });
+    const n = await admin.query("SELECT count(*)::int AS n FROM users WHERE email LIKE 'rls-%@example.test'");
+    expect(n.rows[0].n).toBe(0);
   });
 });

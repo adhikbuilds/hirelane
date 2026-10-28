@@ -13,7 +13,14 @@ import { isLocalUrl } from './env.js';
  * fixture (one table per mode) proves the harness itself, created and dropped by a temporary
  * NON-superuser owner role so SET ROLE membership is exercised the way production will use it.
  */
-export type RlsMode = 'own' | 'rev' | 'ins-only' | 'pub';
+/**
+ * own      read and write own rows (select, insert, update, delete)
+ * own-r    read and update own rows; the app role can neither insert nor delete (owner creates and deletes)
+ * ins-only read and insert own rows; no update, no delete
+ * rev      revoked from the app role entirely
+ * pub      readable by the app role, nothing else
+ */
+export type RlsMode = 'own' | 'own-r' | 'rev' | 'ins-only' | 'pub';
 
 export interface RlsTableSpec {
   /** Short label used in messages. */
@@ -29,10 +36,70 @@ export interface RlsTableSpec {
   cleanup?(admin: Client, userIds: string[]): Promise<void>;
   /** INSERT run as the app role; `$1` is the user id. Defaults to setting only the user column. */
   insertSql?: string;
+  /** UPDATE run as the app role; `$1` is the user id. Defaults to `SET col = col`. Needed when only some columns are grantable. */
+  updateSql?: string;
 }
 
 /** Real tables under test. Later milestones append here (users, profiles, resumes, picks, ...). */
-export const RLS_TABLES: RlsTableSpec[] = [];
+/** Creates a users row the only legal way (the age_18_plus consent in the same statement). Safe to repeat. */
+async function ensureUser(admin: Client, userId: string): Promise<void> {
+  await admin.query(
+    `WITH u AS (
+       INSERT INTO users (id, email, email_verified_at) VALUES ($1, $2, now()) ON CONFLICT (id) DO NOTHING RETURNING id
+     )
+     INSERT INTO consents (user_id, kind, granted, doc_version) SELECT id, 'age_18_plus', true, 'rls-fixture' FROM u`,
+    [userId, `rls-${userId}@example.test`],
+  );
+}
+const dropUsers = async (admin: Client, ids: string[]): Promise<void> => {
+  await admin.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [ids]);
+};
+const authSpec = (
+  name: string,
+  mode: RlsMode,
+  userColumn: string,
+  seedSql: string | null,
+  extra: Partial<RlsTableSpec> = {},
+): RlsTableSpec => ({
+  name,
+  table: `public.${name}`,
+  mode,
+  userColumn,
+  seed: async (admin, userId) => {
+    await ensureUser(admin, userId);
+    if (seedSql) await admin.query(seedSql, [userId]);
+  },
+  cleanup: dropUsers,
+  ...extra,
+});
+
+export const RLS_TABLES: RlsTableSpec[] = [
+  // 0008 auth. users is created and deleted by the owner role, so the app role gets read + update only.
+  authSpec('users', 'own-r', 'id', null, { updateSql: 'UPDATE users SET display_name = display_name WHERE id = $1' }),
+  authSpec('consents', 'ins-only', 'user_id', null, {
+    insertSql: "INSERT INTO consents (user_id, kind, granted, doc_version) VALUES ($1, 'analytics', true, 'rls')",
+  }),
+  authSpec('product_events', 'ins-only', 'user_id', "INSERT INTO product_events (user_id, event) VALUES ($1, 'rls_seed')", {
+    insertSql: "INSERT INTO product_events (user_id, event) VALUES ($1, 'rls_probe')",
+  }),
+  authSpec('idempotency_keys', 'own', 'user_id', "INSERT INTO idempotency_keys (user_id, key) VALUES ($1, 'rls-seed')", {
+    insertSql: "INSERT INTO idempotency_keys (user_id, key) VALUES ($1, 'rls-probe')",
+  }),
+  // Revoked from the app role: only the hirelane_auth role (withAuth in apps/web/lib/auth) reaches them.
+  authSpec(
+    'sessions',
+    'rev',
+    'user_id',
+    "INSERT INTO sessions (id_hash, user_id, client, expires_at, absolute_expires_at) VALUES ('rls-' || gen_random_uuid(), $1, 'web', now() + interval '1 day', now() + interval '1 day')",
+  ),
+  authSpec(
+    'otp_challenges',
+    'rev',
+    'user_id',
+    "INSERT INTO otp_challenges (channel, purpose, target_hmac, code_hash, expires_at, user_id) VALUES ('email', 'login', 'rls', 'rls', now() + interval '1 day', $1)",
+  ),
+  authSpec('auth_identities', 'rev', 'user_id', "INSERT INTO auth_identities (user_id, provider, subject) VALUES ($1::uuid, 'google', 'rls-' || gen_random_uuid())"),
+];
 
 /** Tables with a user_id column that are intentionally not row-isolated. */
 const USER_ID_EXEMPT = new Set(['feature_flags']);
@@ -141,7 +208,7 @@ async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: s
     probe(owner, as, `SELECT count(*)::int AS n FROM ${t} WHERE ${col} = $1`, [who]);
   const denied = async (as: string | null, sql: string, params: unknown[] = []) => (await probe(owner, as, sql, params)).code === DENIED;
   const ins = spec.insertSql ?? `INSERT INTO ${t} (${col}) VALUES ($1)`;
-  const upd = `UPDATE ${t} SET ${col} = ${col} WHERE ${col} = $1`;
+  const upd = spec.updateSql ?? `UPDATE ${t} SET ${col} = ${col} WHERE ${col} = $1`;
   const del = `DELETE FROM ${t} WHERE ${col} = $1`;
 
   // The seed is real, so a pass cannot be an artifact of empty tables.
@@ -153,21 +220,31 @@ async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: s
     [t],
   );
   const m = meta.rows[0];
-  if (spec.mode === 'own' || spec.mode === 'ins-only') {
+  if (spec.mode !== 'rev' && spec.mode !== 'pub') {
     ok(m?.rls === true, `${n}: row level security is not enabled`);
     ok(m?.force === false, `${n}: FORCE ROW LEVEL SECURITY is set (decision: ENABLE without FORCE)`);
   }
 
-  if (spec.mode === 'own' || spec.mode === 'ins-only') {
+  if (spec.mode === 'own' || spec.mode === 'ins-only' || spec.mode === 'own-r') {
     const own = await count(a, a);
     ok(own.code === undefined && own.rows[0]?.n === 1, `${n}: user A cannot read A's own row`);
     const other = await count(a, b);
     ok(other.code === undefined && other.rows[0]?.n === 0, `${n}: user A can read user B's rows`);
     const none = await probe(owner, null, `SELECT 1 FROM ${t}`);
     ok(none.code !== undefined || none.rows.length === 0, `${n}: rows are visible with no user context`);
+  }
+  if (spec.mode === 'own' || spec.mode === 'ins-only') {
     ok(await denied(a, ins, [b]), `${n}: user A can insert a row for user B`);
     const mine = await probe(owner, a, ins, [a]);
     ok(mine.code === undefined, `${n}: user A cannot insert their own row${mine.code ? ` (${mine.code})` : ''}`);
+  }
+  if (spec.mode === 'own-r') {
+    ok(await denied(a, ins, [a]), `${n}: the app role can insert (rows are created by the owner role only)`);
+    ok(await denied(a, del, [a]), `${n}: the app role can delete its own row (deletion is owner-only)`);
+    const ub = await probe(owner, a, upd, [b]);
+    ok(ub.code === undefined && ub.rowCount === 0, `${n}: user A can update user B's rows`);
+    const ua = await probe(owner, a, upd, [a]);
+    ok(ua.code === undefined && (ua.rowCount ?? 0) >= 1, `${n}: user A cannot update their own row${ua.code ? ` (${ua.code})` : ''}`);
   }
   if (spec.mode === 'own') {
     const ub = await probe(owner, a, upd, [b]);

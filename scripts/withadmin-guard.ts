@@ -10,7 +10,6 @@ export const ALLOWLIST: { pattern: string; why: string }[] = [
   { pattern: 'apps/web/app/api/public/**', why: 'public read API' },
   { pattern: 'apps/web/app/jobs/**', why: 'public board' },
   { pattern: 'apps/web/app/api/webhooks/**', why: 'verify, persist, enqueue' },
-  { pattern: 'apps/web/lib/auth/**', why: 'session and OTP lookups before a user context exists' },
   { pattern: 'apps/web/app/ops/**', why: 'operator pages' },
   { pattern: 'workers/**', why: 'job runner' },
   { pattern: 'packages/ingest/**', why: 'ingestion' },
