@@ -21,3 +21,4 @@ playwright-report/
 
 # Hallmark screenshots and logs
 .hallmark/
+docs/design/refs/
