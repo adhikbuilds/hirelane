@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { mkdir, open, readFile, realpath, rename, rm, stat } from 'node:fs/promises';
+import { lstat, mkdir, open, readFile, realpath, rename, rm, stat } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { BlobNotFoundError, VaultError } from './errors.js';
 
@@ -50,10 +50,19 @@ export class LocalBlobStore implements BlobStore {
     }
   }
 
+  /** A symlink as the final component would be followed by read/rename targets. */
+  private async assertNotSymlink(file: string): Promise<void> {
+    const st = await lstat(file).catch(() => null);
+    if (st?.isSymbolicLink()) throw new VaultError('invalid blob key');
+  }
+
   async put(key: string, data: Buffer): Promise<void> {
     const file = this.path(key);
+    // Check before creating anything: a symlinked parent must not make mkdir build dirs outside the root.
+    await this.assertInside(dirname(file));
     await mkdir(dirname(file), { recursive: true, mode: 0o700 });
     await this.assertInside(dirname(file));
+    await this.assertNotSymlink(file);
     const tmp = join(dirname(file), `.tmp-${randomBytes(8).toString('hex')}`);
     const fh = await open(tmp, 'wx', 0o600);
     try {
@@ -76,6 +85,7 @@ export class LocalBlobStore implements BlobStore {
   async get(key: string): Promise<Buffer> {
     const file = this.path(key);
     await this.assertInside(dirname(file));
+    await this.assertNotSymlink(file);
     try {
       return await readFile(file);
     } catch (e) {
@@ -87,6 +97,7 @@ export class LocalBlobStore implements BlobStore {
   async exists(key: string): Promise<boolean> {
     const file = this.path(key);
     await this.assertInside(dirname(file));
+    await this.assertNotSymlink(file);
     return stat(file).then(
       (s) => s.isFile(),
       () => false,
@@ -96,6 +107,7 @@ export class LocalBlobStore implements BlobStore {
   async delete(key: string): Promise<void> {
     const file = this.path(key);
     await this.assertInside(dirname(file));
+    await this.assertNotSymlink(file);
     await rm(file, { force: true });
   }
 }

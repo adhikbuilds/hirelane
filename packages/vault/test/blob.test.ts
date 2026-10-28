@@ -50,6 +50,21 @@ describe('LocalBlobStore', () => {
       await symlink(outside, join(root, 'link'));
       await expect(store.get('link/secret')).rejects.toBeInstanceOf(VaultError);
       await expect(store.put('link/new', Buffer.from('x'))).rejects.toBeInstanceOf(VaultError);
+      await expect(store.put('link/sub/new', Buffer.from('x'))).rejects.toBeInstanceOf(VaultError);
+      expect(await readdir(outside)).toEqual(['secret']); // nothing was created outside
+    } finally {
+      await rm(outside, { recursive: true, force: true });
+    }
+  });
+  it('does not follow a symlink as the final path component', async () => {
+    const outside = await mkdtemp(join(tmpdir(), 'hl-outside-'));
+    try {
+      await writeFile(join(outside, 'secret'), 'nope');
+      await symlink(join(outside, 'secret'), join(root, 'k'));
+      await expect(store.get('k')).rejects.toBeInstanceOf(VaultError);
+      await expect(store.exists('k')).rejects.toBeInstanceOf(VaultError);
+      await expect(store.put('k', Buffer.from('x'))).rejects.toBeInstanceOf(VaultError);
+      await expect(store.delete('k')).rejects.toBeInstanceOf(VaultError);
     } finally {
       await rm(outside, { recursive: true, force: true });
     }
