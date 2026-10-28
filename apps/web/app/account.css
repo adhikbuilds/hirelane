@@ -17,6 +17,7 @@
   --wr-lime-press: #b6ec2a;
   --wr-pink: #ff4fa3;
   --wr-blue: #3d5afe;
+  --wr-sun: #ffc83d;
   --wr-coral: #ff5a4e;
   --wr-danger-ink: #b42318;
   --wr-muted-on-night: #b9b6ad;
@@ -24,6 +25,8 @@
   --wr-ink-wash: color-mix(in srgb, var(--wr-ink) 8%, transparent);
   --wr-ink-wash-strong: color-mix(in srgb, var(--wr-ink) 16%, transparent);
   --wr-cream-wash: color-mix(in srgb, var(--wr-cream) 12%, transparent);
+  --wr-cream-wash-strong: color-mix(in srgb, var(--wr-cream) 28%, transparent);
+  --wr-ink-edge: color-mix(in srgb, var(--wr-cream) 10%, var(--wr-ink));
   --wr-coral-wash: color-mix(in srgb, var(--wr-coral) 18%, transparent);
   --wr-lime-wash: color-mix(in srgb, var(--wr-lime) 35%, var(--wr-cream));
   /* Google's own brand-mark colours, only for its logo on the sign-in button. */
@@ -263,6 +266,406 @@ body {
   width: 24px;
   height: 24px;
   color: var(--wr-danger-ink);
+}
+
+/* ---------- Student app: Home bento (mocks genz-a-app-v2 and genz-a-detail, campus edition) ---------- */
+.wr-app {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px 16px 112px;
+  display: grid;
+  gap: 16px;
+}
+
+.wr-sample {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px dashed var(--wr-muted-on-night);
+  color: var(--wr-muted-on-night);
+  font-size: 0.875rem;
+}
+
+.wr-home-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.wr-date,
+.wr-college {
+  margin: 0;
+  color: var(--wr-muted-on-night);
+  font-size: 0.9375rem;
+}
+
+.wr-college {
+  margin-top: 8px;
+}
+
+.acct-display.wr-hello {
+  margin-top: 4px;
+  font-size: clamp(2.4rem, 12vw, 3.6rem);
+  max-width: 8ch;
+}
+
+.wr-streak {
+  margin: 4px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--wr-sun);
+  color: var(--wr-ink);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wr-streak svg {
+  width: 16px;
+  height: 16px;
+}
+
+.wr-tile {
+  border-radius: var(--wr-radius-card);
+  padding: 20px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+
+.wr-tile-pink { background: var(--wr-pink); color: var(--wr-ink); }
+.wr-tile-sun { background: var(--wr-sun); color: var(--wr-ink); }
+.wr-tile-lime { background: var(--wr-lime); color: var(--wr-ink); }
+.wr-tile-blue { background: var(--wr-blue); color: var(--wr-cream); }
+.wr-tile-cream { background: var(--wr-cream); color: var(--wr-ink); }
+.wr-tile-ink { background: var(--wr-ink); color: var(--wr-cream); border: 2px solid var(--wr-ink-edge); }
+
+.wr-tile-label {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.wr-picks-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wr-big {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 6rem;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+}
+
+.wr-picks-facts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 800;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
+
+.wr-picks-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.wr-chips {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wr-chips li {
+  width: 36px;
+  height: 36px;
+  margin-left: -8px;
+  border-radius: 12px;
+  border: 2px solid var(--wr-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  background: var(--wr-cream);
+  color: var(--wr-ink);
+}
+
+.wr-chips li:first-child { margin-left: 0; }
+.wr-chips li[data-tone="lime"] { background: var(--wr-lime); }
+.wr-chips li[data-tone="blue"] { background: var(--wr-blue); color: var(--wr-cream); }
+.wr-chips li[data-tone="sun"] { background: var(--wr-sun); }
+
+.wr-bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.wr-mid {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 3.25rem;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+
+.wr-mid span {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.wr-tile-text {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.wr-tile-fix {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.wr-tile-link {
+  margin-top: 4px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  justify-self: start;
+}
+
+.wr-drives {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.wr-drives li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--wr-cream-wash);
+}
+
+.wr-drives li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.wr-drive-main {
+  min-width: 0;
+}
+
+.wr-drive-role {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.125rem;
+}
+
+.wr-drive-co,
+.wr-drive-reason {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+}
+
+.wr-drive-side {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  gap: 4px;
+  text-align: right;
+}
+
+.wr-countdown {
+  font-weight: 800;
+  font-size: 0.875rem;
+}
+
+.wr-pill {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  background: var(--wr-cream);
+  color: var(--wr-ink);
+}
+
+.wr-pill[data-status="eligible"],
+.wr-pill[data-tag="match"] { background: var(--wr-lime); }
+.wr-pill[data-status="check"],
+.wr-pill[data-tag="drive"] { background: var(--wr-sun); }
+.wr-pill[data-status="not_eligible"],
+.wr-pill[data-tag="reply"] { background: var(--wr-pink); }
+.wr-pill[data-tag="gone"] { background: var(--wr-muted-on-night); }
+
+.wr-paste-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+}
+
+.wr-feed {
+  display: grid;
+  gap: 8px;
+}
+
+.wr-feed-h {
+  margin: 8px 0 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.wr-feed ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wr-feed li {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--wr-cream-wash);
+}
+
+.wr-feed time {
+  color: var(--wr-muted-on-night);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+}
+
+.wr-feed-note {
+  margin: 0;
+  color: var(--wr-muted-on-night);
+  font-size: 0.875rem;
+}
+
+.wr-stats {
+  margin: 4px 0 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wr-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wr-stats dd {
+  order: -1;
+}
+
+.wr-stats dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 2.5rem;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--wr-lime);
+}
+
+.wr-stats dt {
+  font-size: 0.875rem;
+  line-height: 1.25;
+  color: var(--wr-muted-on-night);
+}
+
+.wr-pause {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: var(--wr-radius-card);
+  border: 2px dashed var(--wr-cream-wash-strong);
+}
+
+.wr-pause h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.wr-pause p {
+  margin: 0;
+  color: var(--wr-muted-on-night);
+}
+
+.wr-pause a {
+  justify-self: start;
+}
+
+.wr-tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: var(--wr-ink);
+  border-top: 2px solid var(--wr-ink-edge);
+  z-index: 10;
+}
+
+.wr-tabbar ul {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.wr-tabbar a {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  min-height: 44px;
+  color: var(--wr-muted-on-night);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.wr-tabbar a[data-active] {
+  color: var(--wr-lime);
+}
+
+.wr-tabbar a:active {
+  opacity: 0.7;
+}
+
+.wr-tabbar svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (min-width: 720px) {
+  .wr-tile {
+    padding: 24px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
