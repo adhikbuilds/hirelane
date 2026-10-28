@@ -1167,3 +1167,242 @@ body {
   gap: 12px;
   flex-wrap: wrap;
 }
+
+/* ---------- Public front page (both audiences) ---------- */
+.fr-hero {
+  min-height: 72dvh;
+}
+
+.fr-doors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.fr-door {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--cp-radius);
+  border: 1px solid var(--cp-line);
+  background: var(--cp-surface);
+  text-decoration: none;
+  transition: border-color 120ms ease-out, background-color 120ms ease-out;
+}
+
+.fr-door:hover {
+  border-color: var(--cp-navy);
+  background: var(--cp-navy-soft);
+}
+
+.fr-door:active {
+  transform: translateY(1px);
+}
+
+.fr-door b {
+  font-size: 1.0625rem;
+}
+
+.fr-door span {
+  font-size: 0.875rem;
+  color: var(--cp-muted);
+}
+
+.fr-device {
+  margin: 0;
+  justify-self: center;
+  width: min(320px, 100%);
+  border-radius: 32px;
+  border: 10px solid var(--cp-ink);
+  overflow: hidden;
+  background: var(--cp-ink);
+}
+
+.fr-device img {
+  width: 100%;
+  display: block;
+}
+
+.fr-try,
+.fr-how,
+.fr-colleges {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  border-top: 1px solid var(--cp-line);
+}
+
+.fr-try {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 24px 40px;
+  align-items: start;
+}
+
+.fr-try h2,
+.fr-how h2,
+.fr-colleges h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.fr-try-copy p,
+.fr-colleges p {
+  margin: 12px 0 0;
+  color: var(--cp-muted);
+  line-height: 1.6;
+}
+
+.fr-try-form {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: var(--cp-radius);
+  border: 1px solid var(--cp-line);
+  background: var(--cp-surface);
+}
+
+.fr-try-form > label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.fr-try-form textarea,
+.fr-mark input {
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: 8px 12px;
+  border: 1px solid var(--cp-line);
+  border-radius: 8px;
+  background: var(--cp-paper);
+  color: var(--cp-ink);
+  width: 100%;
+}
+
+.fr-marks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.fr-mark {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--cp-muted);
+  font-weight: 600;
+}
+
+.fr-check {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+.fr-result {
+  grid-column: 2;
+  padding: 20px;
+  border-radius: var(--cp-radius);
+  border: 1px solid var(--cp-line);
+  border-left: 4px solid var(--cp-warn);
+  background: var(--cp-surface);
+}
+
+.fr-result[data-overall="pass"] { border-left-color: var(--cp-good); }
+.fr-result[data-overall="fail"] { border-left-color: var(--cp-risk); }
+
+.fr-verdict {
+  margin: 0 0 12px;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.fr-result ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.fr-result li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.fr-dot {
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 3px;
+  background: var(--cp-warn);
+}
+
+.fr-result li[data-status="pass"] .fr-dot { background: var(--cp-good); }
+.fr-result li[data-status="fail"] .fr-dot { background: var(--cp-risk); }
+
+.fr-how ol {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  counter-reset: step;
+}
+
+.fr-how li {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 3px solid var(--cp-navy);
+  counter-increment: step;
+}
+
+.fr-how li::before {
+  content: counter(step);
+  font-weight: 700;
+  color: var(--cp-good);
+}
+
+.fr-how span {
+  color: var(--cp-muted);
+  line-height: 1.5;
+}
+
+.fr-colleges {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.fr-colleges .cp-btn {
+  margin-top: 16px;
+  color: var(--cp-on-navy);
+}
+
+@media (max-width: 900px) {
+  .fr-doors,
+  .fr-try,
+  .fr-how ol,
+  .fr-colleges {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fr-result {
+    grid-column: auto;
+  }
+
+  .fr-marks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
