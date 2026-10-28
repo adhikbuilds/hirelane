@@ -1,6 +1,6 @@
 # Hirelane campus PRD
 
-Version 1.0, 2026-10-29. The why is in [CAMPUS-FIRST.md](CAMPUS-FIRST.md); the how is in [../design/campus-hld.md](../design/campus-hld.md); binding scope changes are PLAN.md Amendment B. This PRD extends FINAL-PRD.md: the core loop (picks → fit → check → hand-off → tracker) stays, and the campus requirements below are added on top. Status per item: todo unless marked. Releases: **C1** (resume + accounts), **C2** (campus pilot), **C3** (after the pilot).
+Version 1.0, 2026-10-29. The why is in [CAMPUS-FIRST.md](CAMPUS-FIRST.md); the how is in [../design/campus-hld.md](../design/campus-hld.md); scope changes are PLAN.md Amendment B (proposed, pending owner approval). This PRD extends FINAL-PRD.md: the core loop (picks → fit → check → hand-off → tracker) stays, and the campus requirements below are added on top. Status per item: todo unless marked. Releases: **C1** (resume + accounts), **C2** (campus pilot), **C3** (after the pilot).
 
 ## 1. Goal
 For a student the on-campus drives didn't place, Hirelane offers:

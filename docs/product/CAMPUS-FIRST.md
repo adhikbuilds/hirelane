@@ -59,7 +59,7 @@ Most figures come from vendor blogs or listing sites; treat them as leads to che
 | Government | NAPS / NATS apprenticeships, National Career Service [assumption, verify] | apprenticeships with stipend support | free | a possible supply source if their data is public |
 
 **Is there no one in India? Not quite.** Superset is the Indian equivalent of Handshake (US: 1,600+ institutions, 25M users, students free, employers pay for premium from ~$10k a year [site, joinhandshake.com/about; relayed]). It already owns the placement cell's system of record at the top of the market. So:
-- **Don't compete on the TPO ERP.** Import from it: a CSV import of the cohort (roll number, programme, passout year, placed yes/no) is the integration, and placed students drop out of picks.
+- **Don't compete on the TPO ERP.** Import from it: a CSV import of the cohort (college email + placed yes/no, stored as an email HMAC and a flag; no names or roll numbers, which are guessable) is the integration, and placed students drop out of picks.
 - **Compete on the open market after the drive:** roles from thousands of employer career pages (not 100 partners), matched honestly against the student's academics, with a scam shield and an off-campus outcome export the college can file.
 - **Reverse-engineer two products, the way docs/recon did for Shortlist (public pages and our own free accounts only, no data copied):** Superset (Launchpad+ student console, TnpSuite public pages) for the Indian TPO workflow and vocabulary; Handshake for the three-sided network model (students free → career centers adopt → employers pay).
 

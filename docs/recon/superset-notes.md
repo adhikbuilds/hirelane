@@ -35,7 +35,7 @@ India's incumbent campus-hiring platform; formerly TnpSuite (Business Standard, 
 - Tier-2/3 affordability [relayed].
 
 ## Strategy implications
-- **Don't build a TPO ERP.** Import the cohort from it (CSV: roll number, programme, passout year, placed yes/no). Placed students drop out of picks.
+- **Don't build a TPO ERP.** Import the cohort from it (CSV: college email + placed yes/no, stored as an email HMAC and a flag; no names or roll numbers). Placed students drop out of picks.
 - **Position as the after-the-drive layer:**
   - open-market roles
   - honest academic eligibility

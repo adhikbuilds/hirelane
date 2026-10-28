@@ -608,7 +608,9 @@ Changes to the phases below:
   one by one) to the Phase 1 board list. Today only 1,178 of 16,320 open roles (7%, at 61 companies) are in India, yet
   pricing and positioning are India-first.
 
-### Amendment B (owner direction 2026-10-29): campus-first; resume hardened first
+### Amendment B (PROPOSED 2026-10-29, pending owner approval): campus-first; resume hardened first
+
+Status: campus-first is the owner's direction (2026-10-29). The detail below (migration numbers, columns, caps, libraries) is a proposal and becomes binding only when the owner approves it. Library choices are (verify) until the main session checks versions, licences and CVE fixes.
 
 Source: docs/product/CAMPUS-FIRST.md. Build plan: docs/design/campus-build-plan.md. Where this amendment and any earlier section of this file, docs/design/hld-lld-core-loop.md or docs/product/FINAL-PRD.md disagree, **this amendment wins**.
 **Build order:**
@@ -630,13 +632,13 @@ Campus Slice 4b is gated on G4.
      - only the document, header, footer and `docProps/core.xml` parts are inflated
      - streamed inflate with real byte caps (10 MB per entry, 25 MB total, ratio ≤ 200)
    - Reject `.docm`/`vbaProject.bin`, `altChunk`, nested archives, and any `<!DOCTYPE`/`<!ENTITY`. There is no XML parser. External relationships are flagged.
-   - **PDF:** pdf.js pinned past CVE-2024-4367, `isEvalSupported:false`, no remote font or cmap fetches. JavaScript, actions and embedded files are never executed or extracted. Encrypted PDFs are refused.
+   - **PDF:** pdf.js via unpdf (verify), pinned past CVE-2024-4367 (verify), `isEvalSupported:false`, no remote font or cmap fetches. JavaScript, actions and embedded files are never executed or extracted. Encrypted PDFs are refused.
    - **Image-only PDFs: detect first, OCR deferred.**
      - `text_layer = none` when there are fewer than about 30 non-space characters per page.
      - `text_layer = garbled` when more than 30% of the text is private-use characters or U+FFFD (Canva).
      - Either case is health issue #1, with two fixes: re-export as text, or use the builder.
      - OCR is a separate owner decision.
-   - Extraction lives in `workers/runner/src/resume/extract/`, in a fresh `worker_threads` Worker per job (`resourceLimits` 256 MB, 10 s, then terminate). The dep-cruiser rule `extractors-worker-only` bans unpdf, pdfjs-dist, fflate, pdfkit and fontkit outside `workers/runner`.
+   - Extraction lives in `workers/runner/src/resume/extract/`, in a fresh `worker_threads` Worker per job (`resourceLimits` 256 MB, 10 s, then terminate). The dep-cruiser rule `extractors-worker-only` bans unpdf, pdfjs-dist, fflate (verify), pdfkit and fontkit outside `workers/runner`.
    - Upload is a route handler (`POST /api/v1/resumes`), not a server action. The original file name lives only inside `parsed_enc`.
    - Graphile job payloads carry IDs only.
 3. **Parse.** This replaces PLAN 4.4 "Sonnet structured parse" and `agent:parse-resume`.
@@ -659,7 +661,7 @@ Campus Slice 4b is gated on G4.
    - Shown as "N of 9 checks pass", failing checks first. **No score out of 100.**
 6. **Guided builder.** This replaces `resume:render` "Playwright PDF".
    - 6–8 short questions produce a one-page, single-column PDF that an ATS can read.
-   - Rendered in the worker with **pdfkit** and one bundled OFL font (Noto Sans, so ₹ renders). pdf-lib with fontkit is the fallback.
+   - Rendered in the worker with **pdfkit** (verify) and one bundled OFL font (Noto Sans, so ₹ renders). pdf-lib with fontkit is the fallback.
    - A round-trip test is required: builder output must pass our own text-layer check.
    - No Playwright and no client-side PDF libraries.
 7. **Eligibility profile** (`eligibility_profiles`, 0009; RLS own; plain columns written only on confirm, because matching and k ≥ 10 SQL aggregates need them).
