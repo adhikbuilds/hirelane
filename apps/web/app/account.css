@@ -1,0 +1,414 @@
+/*
+ * Account screens (sign-in, code, welcome, You) in the locked "Wrapped stories" system (DESIGN.md).
+ * Scoped under .acct so the public board keeps its current look until the full Wrapped migration.
+ * No client JS: every control is a plain form posting to a server action.
+ */
+.acct {
+  --color-ink: #0b0b0f;
+  --color-night: #141418;
+  --color-cream: #fff6e8;
+  --color-lane: #0f5c45;
+  --color-lime: #c8ff3d;
+  --color-pink: #ff4fa3;
+  --color-blue: #3d5afe;
+  --color-sun: #ffc83d;
+  --color-coral: #ff5a4e;
+  --color-muted-on-night: #b9b6ad;
+  --color-muted-on-cream: #5a5650;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+
+  min-height: 100dvh;
+  background: var(--color-night);
+  color: var(--color-cream);
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  overflow-x: clip;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+:where(.acct) a {
+  color: inherit;
+}
+
+.acct :focus-visible {
+  outline: 3px solid var(--color-lime);
+  outline-offset: 2px;
+}
+
+.acct-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 0;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.acct-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.acct-brand span {
+  color: var(--color-lime);
+}
+
+.acct-main {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+  display: grid;
+  gap: 32px;
+  align-content: start;
+}
+
+@media (min-width: 900px) {
+  .acct-main {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+    align-content: center;
+    gap: 64px;
+    padding-top: 40px;
+  }
+}
+
+/* The one loud element: giant display type. */
+.acct-display {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 11vw, 5.4rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  max-width: 11ch;
+}
+
+.acct-lede {
+  margin: 18px 0 0;
+  font-size: 1.125rem;
+  line-height: 1.45;
+  color: var(--color-muted-on-night);
+  max-width: 36ch;
+}
+
+/* A tilted lime block behind a straight cream card: the Wrapped look, with inputs that stay easy to use. */
+.acct-stack {
+  position: relative;
+  isolation: isolate;
+}
+
+.acct-stack::before {
+  content: "";
+  position: absolute;
+  inset: 10px -6px -10px 6px;
+  background: var(--color-lime);
+  border-radius: var(--radius-card);
+  transform: rotate(-2.5deg);
+  z-index: -1;
+}
+
+.acct-stack[data-tone="pink"]::before {
+  background: var(--color-pink);
+}
+
+.acct-card {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  border-radius: var(--radius-card);
+  padding: 22px 20px 24px;
+}
+
+@media (min-width: 480px) {
+  .acct-card {
+    padding: 28px 28px 30px;
+  }
+}
+
+/* Story bars: only where the content really is a sequence (sign in → code → welcome). */
+.acct-bars {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 6px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.acct-bars li {
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+
+.acct-bars li[data-state="done"] {
+  background: var(--color-ink);
+}
+
+.acct-bars li[data-state="now"] {
+  background: linear-gradient(90deg, var(--color-ink) 50%, color-mix(in srgb, var(--color-ink) 14%, transparent) 50%);
+}
+
+.acct-card h2 {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.75rem;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.acct-card p {
+  margin: 10px 0 0;
+  line-height: 1.45;
+}
+
+.acct-hint {
+  color: var(--color-muted-on-cream);
+  font-size: 0.9375rem;
+}
+
+.acct-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.acct-label {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.acct-input {
+  font: inherit;
+  font-size: 1.0625rem;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 2px solid var(--color-ink);
+  background: #fffdf8;
+  color: var(--color-ink);
+  width: 100%;
+}
+
+.acct-input:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.acct-input[data-code] {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.acct-btn {
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.0625rem;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-cream);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: transform 120ms ease-out, background-color 120ms ease-out;
+}
+
+.acct-btn:active {
+  transform: scale(0.98);
+}
+
+.acct-btn[data-variant="lime"] {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+.acct-btn[data-variant="outline"] {
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.acct-btn[data-variant="danger"] {
+  background: var(--color-coral);
+  color: var(--color-ink);
+}
+
+.acct-btn:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.acct-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 2px;
+  color: var(--color-muted-on-cream);
+  font-size: 0.9375rem;
+}
+
+.acct-or::before,
+.acct-or::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+
+.acct-alert {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--color-pink);
+  color: var(--color-ink);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.acct-alert[data-tone="ok"] {
+  background: var(--color-lime);
+}
+
+.acct-check {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+  cursor: pointer;
+}
+
+.acct-check:has(input:checked) {
+  border-color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-lime) 35%, var(--color-cream));
+}
+
+.acct-check input {
+  width: 22px;
+  height: 22px;
+  margin: 2px 0 0;
+  accent-color: var(--color-ink);
+}
+
+.acct-check strong {
+  display: block;
+  font-weight: 800;
+}
+
+.acct-check span {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-muted-on-cream);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.acct-linkbtn {
+  font: inherit;
+  font-weight: 700;
+  background: none;
+  border: 0;
+  padding: 8px 0;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.acct-foot {
+  padding: 0 16px 24px;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.875rem;
+  color: var(--color-muted-on-night);
+}
+
+/* You page: a stack of story cards. */
+.acct-you {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: grid;
+  gap: 28px;
+}
+
+.acct-never {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.acct-never li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: start;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.acct-never svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-coral);
+}
+
+.acct-next {
+  display: grid;
+  gap: 6px;
+  background: var(--color-blue);
+  color: var(--color-cream);
+  border-radius: var(--radius-card);
+  padding: 22px 20px;
+}
+
+.acct-next h2 {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.acct-next p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.acct-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acct *,
+  .acct *::before {
+    transition: none !important;
+    animation: none !important;
+  }
+}

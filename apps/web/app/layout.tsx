@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
+import { ChromeGate } from "@/components/shell/ChromeGate";
 import { FooterGate } from "@/components/shell/FooterGate";
 import { SiteFooter } from "@/components/shell/SiteFooter";
 import { SiteHeader } from "@/components/shell/SiteHeader";
@@ -30,13 +31,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <SiteHeader />
+        <ChromeGate>
+          <SiteHeader />
+        </ChromeGate>
         <main id="main" className="flex-1">
           {children}
         </main>
-        <FooterGate>
-          <SiteFooter />
-        </FooterGate>
+        <ChromeGate>
+          <FooterGate>
+            <SiteFooter />
+          </FooterGate>
+        </ChromeGate>
       </body>
     </html>
   );
