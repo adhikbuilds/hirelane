@@ -87,6 +87,11 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | M2 | **Deliverability for our own mail** (sign-in codes, weekly digest): a dedicated sending subdomain with SPF, DKIM and DMARC, and a transactional provider (chosen at deploy, vendor-neutral `Mailer`). Codes and digests are separate streams. A warm-up ramp starts with the pilot cohort and grows weekly; every non-code email has an unsubscribe link; bounces and complaints suppress the address |
 | M3 | **College mail servers often filter new senders.** The pilot includes asking the placement cell's IT team to allowlist the sending domain, and the sign-in screen says to check Spam |
 
+### X2. Opt-in auto-submit (owner asked to plan it, 2026-10-29; NOT approved to build)
+| ID | Requirement | Gate |
+|---|---|---|
+| X2.1 | The student opts in, then approves each application; Hirelane submits only to official ATS endpoints, with a disclosure, receipts and undo. Plan: docs/design/auto-submit-opt-in.md | ATS terms per platform, India legal advice, employer signal (G2), G3 evidence that the copy step is too slow |
+
 ### S. Supply (runs in parallel with everything)
 | ID | Requirement | Gate |
 |---|---|---|
