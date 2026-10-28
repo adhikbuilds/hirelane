@@ -69,6 +69,24 @@ For the placement cell, it turns the unplaced tail into numbers it can act on an
 | C6 | Scam shield: flag fee requests, Telegram/WhatsApp-only HR and free-mail recruiters on drives and replies; a "Hirelane never charges you" card | — |
 | C7 | Cohort CSV import (from Superset or any ERP export): verify members and drop placed students from picks | G4 |
 
+### RP. Resume parsing hardening, no LLM (owner, 2026-10-29: LLM cost is not acceptable)
+| ID | Requirement | Acceptance |
+|---|---|---|
+| RP1 | **Layout-aware reading:** use the pdf.js text items' position, size and weight. Rebuild the reading order, detect two-column (Canva) layouts and education tables (row and column), and find headings by size and weight as well as by words | the two-column and table fixtures parse into the same fields as the single-column version |
+| RP2 | **Offline reference lists with fuzzy matching (trigram):** Indian colleges and universities (AISHE/UGC public lists; check the licence first), school boards, degrees, branches, and skills (an ESCO subset plus Indian tools such as Tally and GST) | college and university match ≥ 90% on the eval set |
+| RP3 | **Normalisers:** dates ("Jun'22", "2022–26", "Pursuing"), marks ("412/500" → 82.4%), CGPA ("8.1/10", SGPA vs CGPA), phone and email | unit tests per format |
+| RP4 | **Confidence per field.** Low-confidence fields are highlighted on the confirm screen, and the student fixes them in one tap | no low-confidence field reaches matching unconfirmed |
+| RP5 | **Real-world eval set:** 200 resumes from consenting pilot students, de-identified, plus the synthetic corpus. Field accuracy is gated in CI | ≥ 90% field accuracy on real resumes before the pilot widens |
+| RP6 | **Learn from fixes:** each confirm-screen edit logs only the field and the error type, never the value, to show which rule to improve | weekly top-10 error report |
+| RP7 | **Cost:** 0 LLM calls. A small local model is considered only if RP5 accuracy plateaus, and needs the owner's sign-off | `llm_calls` = 0 |
+
+### M. Email
+| ID | Requirement |
+|---|---|
+| M1 | **Warm intros are never sent by Hirelane.** We draft the referral ask; the student sends it from their own email, WhatsApp or LinkedIn (same rule as hand-off) |
+| M2 | **Deliverability for our own mail** (sign-in codes, weekly digest): a dedicated sending subdomain with SPF, DKIM and DMARC, and a transactional provider (chosen at deploy, vendor-neutral `Mailer`). Codes and digests are separate streams. A warm-up ramp starts with the pilot cohort and grows weekly; every non-code email has an unsubscribe link; bounces and complaints suppress the address |
+| M3 | **College mail servers often filter new senders.** The pilot includes asking the placement cell's IT team to allowlist the sending domain, and the sign-in screen says to check Spam |
+
 ### S. Supply (runs in parallel with everything)
 | ID | Requirement | Gate |
 |---|---|---|
