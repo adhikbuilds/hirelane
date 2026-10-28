@@ -128,35 +128,44 @@ export function CampusConsole({ data }: { data: CampusOverview }) {
           </div>
         </dl>
 
-        <div className="cp-grid">
-          <section className="cp-card" aria-labelledby="funnel-h">
-            <h2 id="funnel-h">Students not placed on campus</h2>
-            <p className="cp-card-sub">
-              {unplaced} students. The red figure between steps is how many stopped there; the table below says why.
-            </p>
-            <ol className="cp-stages">
-              {data.funnel.map((f, i) => {
-                const next = data.funnel[i + 1];
-                const drop = next ? f.count - next.count : 0;
-                return (
-                  <li key={f.label} className="cp-stage">
-                    <span className="cp-stage-n">{f.count}</span>
-                    <span className="cp-stage-l">{f.label}</span>
-                    <span className="cp-stage-p">{pct(f.count, top)}% of joined</span>
-                    <span className="cp-stage-track" aria-hidden="true">
-                      <i style={{ width: `${pct(f.count, top)}%` }} />
-                    </span>
-                    {next ? (
-                      <a className="cp-drop" href="#stuck-h" aria-label={`${drop} students stopped before ${next.label}; see blockers`}>
-                        <Icon d="M12 5v14m0 0l-5-5m5 5l5-5" />
-                        {drop}
-                      </a>
+        <section className="cp-card" aria-labelledby="funnel-h">
+          <h2 id="funnel-h">Students not placed on campus</h2>
+          <p className="cp-card-sub">
+            {unplaced} students. The hatched part of each column is how many stopped at that step; each column has the next thing to do.
+          </p>
+          <ol className="cp-funnel">
+            {data.funnel.map((f, i) => {
+              const prev = i > 0 ? data.funnel[i - 1] : undefined;
+              const here = pct(f.count, top);
+              const before = prev ? pct(prev.count, top) : here;
+              const drop = prev ? prev.count - f.count : 0;
+              return (
+                <li key={f.label} className="cp-col">
+                  <span className="cp-col-plot" aria-hidden="true" title={`${f.label}: ${f.count}${drop ? `, ${drop} dropped here` : ""}`}>
+                    {drop > 0 ? (
+                      <span className="cp-col-drop" style={{ bottom: `${here}%`, height: `${before - here}%` }}>
+                        <em>-{drop}</em>
+                      </span>
                     ) : null}
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
+                    <span className="cp-col-bar" style={{ height: `${here}%` }} />
+                  </span>
+                  <span className="cp-col-n">{f.count}</span>
+                  <span className="cp-col-l">{f.label}</span>
+                  <span className="cp-col-p">
+                    {here}% of joined{drop > 0 ? `, ${drop} stopped here` : ""}
+                  </span>
+                  <Link className="cp-col-btn" href="#">
+                    {f.action}
+                    <Icon d="M9 6l6 6-6 6" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        <div className="cp-grid">
+
 
           <section className="cp-card cp-naac" aria-labelledby="naac-h">
             <h2 id="naac-h">NAAC 5.2.1 readiness</h2>

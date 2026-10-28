@@ -12,7 +12,7 @@ export type CampusOverview = {
   joined: number;
   placedOnCampus: number;
   offCampusOffers: { total: number; verified: number };
-  funnel: { label: string; count: number }[];
+  funnel: { label: string; count: number; action: string }[];
   stuck: { blocker: string; students: number; action: string }[];
   hiddenGroups: number;
   drives: { company: string; role: string; rules: string; eligible: number; applied: number; deadline: string; status: "open" | "closing" | "closed" }[];
@@ -28,12 +28,12 @@ export const SAMPLE_CAMPUS: CampusOverview = {
   placedOnCampus: 96,
   offCampusOffers: { total: 31, verified: 22 },
   funnel: [
-    { label: "Joined Hirelane", count: 268 },
-    { label: "Resume ready", count: 201 },
-    { label: "Eligible for at least one role", count: 174 },
-    { label: "Applied", count: 118 },
-    { label: "Interview", count: 46 },
-    { label: "Offer", count: 31 },
+    { label: "Joined Hirelane", count: 268, action: "Invite the other 144" },
+    { label: "Resume ready", count: 201, action: "Run a resume clinic" },
+    { label: "Eligible for a role", count: 174, action: "See blocking cutoffs" },
+    { label: "Applied", count: 118, action: "Send a reminder" },
+    { label: "Interview", count: 46, action: "Book a prep session" },
+    { label: "Offer", count: 31, action: "Verify 9 offers" },
   ],
   stuck: [
     { blocker: "No project links on the resume", students: 71, action: "Ask project guides to have students add a GitHub or drive link" },
