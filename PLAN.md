@@ -608,9 +608,9 @@ Changes to the phases below:
   one by one) to the Phase 1 board list. Today only 1,178 of 16,320 open roles (7%, at 61 companies) are in India, yet
   pricing and positioning are India-first.
 
-### Amendment B (PROPOSED 2026-10-29, pending owner approval): campus-first; resume hardened first
+### Amendment B (owner-approved 2026-10-29): campus-first; resume hardened first
 
-Status: campus-first is the owner's direction (2026-10-29). The detail below (migration numbers, columns, caps, libraries) is a proposal and becomes binding only when the owner approves it. Library choices are (verify) until the main session checks versions, licences and CVE fixes.
+Status: approved by the owner 2026-10-29 (build Slices 1 and 2). Library check (main session, 2026-10-29, npm registry): unpdf 1.8.1 (MIT, released 2026-08-13, bundles pdfjs-dist ~6.1.200, so past the CVE-2024-4367 fix in 4.2.67) and fflate 0.8.3 (MIT, 2026-05-16), pinned exact in workers/runner. pdfkit 0.20.2 (MIT; deps include fontkit and fflate) is for Slice 3 and isn't installed yet.
 
 Source: docs/product/CAMPUS-FIRST.md. Build plan: docs/design/campus-build-plan.md. Where this amendment and any earlier section of this file, docs/design/hld-lld-core-loop.md or docs/product/FINAL-PRD.md disagree, **this amendment wins**.
 **Build order:**

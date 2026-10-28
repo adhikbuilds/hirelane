@@ -1,6 +1,6 @@
 # Hirelane campus HLD
 
-Version 1.0, 2026-10-29. This covers what we integrate and how, at the box-and-arrow level. Business: [../product/CAMPUS-FIRST.md](../product/CAMPUS-FIRST.md). Requirements: [../product/CAMPUS-PRD.md](../product/CAMPUS-PRD.md). Scope: PLAN.md Amendment B (proposed, pending owner approval). Table-level LLD comes later, from the planner and architect drafts summarised in [campus-build-plan.md](campus-build-plan.md).
+Version 1.0, 2026-10-29. This covers what we integrate and how, at the box-and-arrow level. Business: [../product/CAMPUS-FIRST.md](../product/CAMPUS-FIRST.md). Requirements: [../product/CAMPUS-PRD.md](../product/CAMPUS-PRD.md). Scope: PLAN.md Amendment B (owner-approved 2026-10-29). Table-level LLD comes later, from the planner and architect drafts summarised in [campus-build-plan.md](campus-build-plan.md).
 
 ## 1. System context
 ```

@@ -1,6 +1,6 @@
 # Campus build plan (LLD draft)
 
-2026-10-29. Merged from the ECC `planner` and `architect` drafts. The decisions are in PLAN.md Amendment B (proposed, pending owner approval). This file will be expanded into the full LLD before Slice 3. Owner key: **TDD** = tdd-guide, **UI** = main session (loads `frontend-design` first), **MAIN** = main session, non-UI (vendor and library checks), **SEC** = security-reviewer, **DOC** = doc-updater.
+2026-10-29. Merged from the ECC `planner` and `architect` drafts. The decisions are in PLAN.md Amendment B (owner-approved 2026-10-29). This file will be expanded into the full LLD before Slice 3. Owner key: **TDD** = tdd-guide, **UI** = main session (loads `frontend-design` first), **MAIN** = main session, non-UI (vendor and library checks), **SEC** = security-reviewer, **DOC** = doc-updater.
 
 ## Where the two drafts disagreed, and what we chose
 | Topic | planner | architect | Chosen | Why |
