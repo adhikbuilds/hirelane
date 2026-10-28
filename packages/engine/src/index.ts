@@ -1,4 +1,3 @@
-export const x=1
 
 // --- foundation, salary and requirements (task 2.2, 2.3, 2.5)
 export { ENGINE_VERSION, ENRICH_VERSION, DOC_FORMAT_VERSION } from './version';
@@ -78,3 +77,18 @@ export { assessFresher, FRESHER_MAX_LOWER_YEARS, FRESHER_MAX_UPPER_YEARS, SENIOR
 export type { FresherInput, FresherRequirement, FresherResult } from './fresher';
 export { isWorthwhile, WORTHWHILE_MIN_MUST_RATIO, WORTHWHILE_MAX_CHECK_AGE_DAYS } from './worthwhile';
 export type { WorthwhileInput, WorthwhileCondition, WorthwhileResult } from './worthwhile';
+
+// --- campus: resume parsing, sensitive-data detection, eligibility (Slices 1 and 2)
+export { detectSections, normalizeResumeText } from './resume/sections';
+export type { SectionKind as ResumeSectionKind } from './resume/sections';
+export { parseEducation, parseBacklogs, normalizeBranch } from './resume/education';
+export type { EducationParse } from './resume/education';
+export { verhoeffValid, verhoeffCheckDigit } from './resume/verhoeff';
+export { detectSensitive, maskSensitive } from './resume/sensitive';
+export { assessTextLayer } from './resume/text-layer';
+export { parseCriteria, evaluateEligibility, applyCgpaRule, invertCgpaRule, canonDegree, canonBranch } from './eligibility';
+export type { EvaluateOptions } from './eligibility';
+export type { Criterion, CriterionLevel, EligibilityProfileInput, CgpaRule, VerdictStatus, CriterionVerdict, EligibilityResult } from './eligibility/types';
+export type { ExtractMeta } from './resume/types';
+export { assessHealth, checkFileName } from './resume/health';
+export type { HealthInput, HealthReport, FileNameProblem, FileNameResult } from './resume/health';

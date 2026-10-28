@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "note": "School-level qualifications. Aliases of 2 letters or fewer or a lone 'x' match upper-case only. Compiled by education.ts.",
+  "qualifications": [
+    {
+      "id": "10th",
+      "label": "Class X (SSLC, Matriculation, SSC)",
+      "aliases": [
+        "10th", "10th std", "10th standard", "tenth", "xth", "class 10", "class x", "std 10", "std x", "grade 10", "grade x",
+        "standard x", "x standard", "x std", "sslc", "ssc", "secondary school certificate", "secondary school examination",
+        "matriculation", "matric", "high school", "secondary", "icse", "x"
+      ]
+    },
+    {
+      "id": "12th",
+      "label": "Class XII (HSC, PUC, Intermediate)",
+      "aliases": [
+        "12th", "12th std", "12th standard", "twelfth", "xiith", "class 12", "class xii", "std 12", "std xii", "grade 12", "grade xii",
+        "standard xii", "xii standard", "xii std", "xii", "hsc", "higher secondary", "senior secondary", "senior school certificate",
+        "puc", "ii puc", "2nd puc", "pre university", "pre-university", "pu", "intermediate", "plus two", "+2", "10+2", "isc"
+      ]
+    }
+  ]
+}

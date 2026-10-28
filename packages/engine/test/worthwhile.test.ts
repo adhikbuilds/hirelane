@@ -99,3 +99,34 @@ describe('isWorthwhile', () => {
     }
   });
 });
+
+describe('isWorthwhile with the optional eligibility input (S1.10)', () => {
+  const NAMES = ['fresher_eligible', 'must_haves_met', 'job_open', 'recently_checked'];
+  it('without the input the four conditions and the verdict are unchanged', () => {
+    const r = isWorthwhile(base());
+    expect(r.conditions.map((c) => c.name)).toEqual(NAMES);
+    expect(r.worthwhile).toBe(true);
+  });
+  it('appends academic_eligible last, only when given', () => {
+    const r = isWorthwhile({ ...base(), eligibility: { overall: 'pass' } });
+    expect(r.conditions.map((c) => c.name)).toEqual([...NAMES, 'academic_eligible']);
+    expect(cond(r, 'academic_eligible').pass).toBe(true);
+  });
+  it('fails only on overall fail', () => {
+    const f = isWorthwhile({ ...base(), eligibility: { overall: 'fail' } });
+    expect(f.worthwhile).toBe(false);
+    expect(cond(f, 'academic_eligible').pass).toBe(false);
+    for (const overall of ['pass', 'unknown'] as const) {
+      const r = isWorthwhile({ ...base(), eligibility: { overall } });
+      expect(r.worthwhile).toBe(true);
+      expect(cond(r, 'academic_eligible').pass).toBe(true);
+    }
+    expect(cond(isWorthwhile({ ...base(), eligibility: { overall: 'unknown' } }), 'academic_eligible').detail).toMatch(/unknown/i);
+  });
+  it('an eligibility pass cannot rescue a failing gate', () => {
+    expect(isWorthwhile({ ...base({ job: { open: false } }), eligibility: { overall: 'pass' } }).worthwhile).toBe(false);
+  });
+  it('accepts a full EligibilityResult', () => {
+    expect(isWorthwhile({ ...base(), eligibility: { overall: 'unknown', verdicts: [] } }).worthwhile).toBe(true);
+  });
+});

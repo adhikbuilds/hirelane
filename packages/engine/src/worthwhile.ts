@@ -5,6 +5,7 @@
  */
 import { EngineInvariantError } from './errors';
 import { normPlace } from './places';
+import type { EligibilityResult } from './eligibility/types';
 
 export const WORTHWHILE_MIN_MUST_RATIO = 0.6;
 export const WORTHWHILE_MAX_CHECK_AGE_DAYS = 14;
@@ -24,10 +25,12 @@ export interface WorthwhileInput {
   evidence: { mustMet: number; mustTotal: number };
   user: { cities: readonly string[]; remote: boolean };
   now: TimeLike;
+  /** Optional academic eligibility (S1.9). Only an overall `fail` blocks; `unknown` never does. */
+  eligibility?: Pick<EligibilityResult, 'overall'> & Partial<EligibilityResult>;
 }
 
 export interface WorthwhileCondition {
-  name: 'fresher_eligible' | 'must_haves_met' | 'job_open' | 'recently_checked';
+  name: 'fresher_eligible' | 'must_haves_met' | 'job_open' | 'recently_checked' | 'academic_eligible';
   pass: boolean;
   detail: string;
 }
@@ -84,6 +87,19 @@ export function isWorthwhile(input: WorthwhileInput): WorthwhileResult {
           : `checked ${Math.floor(ageDays)} day${Math.floor(ageDays) === 1 ? '' : 's'} ago (limit ${WORTHWHILE_MAX_CHECK_AGE_DAYS})`,
     },
   ];
+  if (input.eligibility) {
+    const overall = input.eligibility.overall;
+    conditions.push({
+      name: 'academic_eligible',
+      pass: overall !== 'fail',
+      detail:
+        overall === 'fail'
+          ? 'a stated academic criterion is not met'
+          : overall === 'unknown'
+            ? 'academic eligibility unknown (not blocking)'
+            : 'academic criteria met',
+    });
+  }
   return {
     worthwhile: conditions.every((c) => c.pass),
     conditions,
