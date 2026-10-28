@@ -4,13 +4,16 @@ import "../../app/site.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
 
-export type SiteCounts = { openJobs: number; companies: number; withSalary: number; readAgo: string | null } | null;
+export type SiteCounts = { openJobs: number; companies: number; withSalary: number; indiaRoles: number | null; readAgo: string | null } | null;
+
+/** Employers with the most open India roles in our index (public career pages), shown as plain text, never logos. */
+export type Employers = string[];
 
 const fmt = (n: number) => n.toLocaleString("en-IN");
 
 const STEPS = [
   { k: "Swipe", title: "Swipe roles you qualify for", text: "Every pick is checked against your marks: percentage, backlogs, batch, branch." },
-  { k: "Check", title: "Check your answers", text: "We fill the employer's questions from your resume. Anything we can't know, we ask." },
+  { k: "Check", title: "Check your answers", text: "We will fill the employer's questions from your resume. Anything we can't know, we ask." },
   { k: "Open", title: "Open the employer's form", text: "Answers ready to copy, resume ready to attach, on the company's own site." },
   { k: "Submit", title: "You press submit", text: "Hirelane never applies for you. Replies land in your tracker." },
 ];
@@ -24,7 +27,7 @@ const FAQ = [
 ];
 
 /** Public landing: one claim, real product, live counts, the apply flow, then each audience. Server component. */
-export function MainLanding({ counts }: { counts: SiteCounts }) {
+export function MainLanding({ counts, employers }: { counts: SiteCounts; employers: Employers }) {
   return (
     <div className={`site ${geist.variable}`}>
       <p className="site-bar">
@@ -67,27 +70,38 @@ export function MainLanding({ counts }: { counts: SiteCounts }) {
         {counts ? (
           <p className="site-live">
             <span className="site-dot" aria-hidden="true" />
-            {fmt(counts.openJobs)} open roles from {fmt(counts.companies)} companies{counts.readAgo ? `, read ${counts.readAgo}` : ""}
+            {counts.indiaRoles ? `${fmt(counts.indiaRoles)} open roles in India` : `${fmt(counts.openJobs)} open roles`}, read from {fmt(counts.companies)} companies&apos; own career pages{counts.readAgo ? `, ${counts.readAgo}` : ""}
           </p>
         ) : null}
 
         <div className="site-shot">
           <figure className="site-browser">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/previews/console-overview.png" alt="The Hirelane placement console: 31 off-campus offers, applications per day, and where students stop" />
+            <img src="/marketing/console.png" alt="The Hirelane placement console: 31 off-campus offers, applications per day, and where students stop" />
           </figure>
           <figure className="site-phone">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/previews/student-pick.png" alt="The student app on a phone: three new roles you qualify for, and a role card you can swipe" />
+            <img src="/marketing/student-phone.png" alt="The student app on a phone: three new roles you qualify for, and a role card you can swipe" />
           </figure>
         </div>
       </section>
 
+      {employers.length > 0 ? (
+        <section className="site-logos" aria-label="Employers in our index">
+          <p>Roles in India from companies like</p>
+          <ul>
+            {employers.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {counts ? (
         <section className="site-stats" aria-label="Live from our index">
           <div>
-            <b>{fmt(counts.openJobs)}</b>
-            <span>open roles</span>
+            <b>{fmt(counts.indiaRoles ?? counts.openJobs)}</b>
+            <span>{counts.indiaRoles ? "open roles in India" : "open roles"}</span>
           </div>
           <div>
             <b>{fmt(counts.companies)}</b>
@@ -146,45 +160,69 @@ export function MainLanding({ counts }: { counts: SiteCounts }) {
 
       <section className="site-section" aria-labelledby="feat-h">
         <h2 id="feat-h">Everything a fresher needs to get a reply.</h2>
-        <div className="site-bento">
-          <article className="site-tile">
-            <div className="ui-verdict" aria-hidden="true">
-              <span data-s="pass">55% in 10th, 12th, graduation</span>
-              <span data-s="pass">No active backlogs</span>
-              <span data-s="unknown">6.0 CGPA: add your scale</span>
+        <div className="site-rows">
+          <article className="site-row">
+            <div>
+              <h3>Know before you apply</h3>
+              <p>Paste any drive notice or job post. We read every rule (percentage throughout, backlogs, batch, degree) and check it against your marks. This is real output from our engine.</p>
+              <Link href="/students#try" className="site-text-link">
+                Try it without signing in
+              </Link>
             </div>
-            <h3>Know before you apply</h3>
-            <p>Every drive and job is checked against your own marks, rule by rule.</p>
+            <figure className="site-frame">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/marketing/verdict.png" alt="Eligibility result: you qualify, with each rule checked against your marks" loading="lazy" />
+            </figure>
           </article>
-          <article className="site-tile">
-            <div className="ui-meter" aria-hidden="true">
-              <b>3 of 9</b>
-              <i>
-                <s style={{ width: "33%" }} />
-              </i>
-              <span>Fix next: trim to one page</span>
+          <article className="site-row" data-flip>
+            <div>
+              <h3>Swipe roles picked for your marks</h3>
+              <p>Every card shows pay in rupees, the rules you meet, the must-haves you match, and who you already know at the company.</p>
             </div>
-            <h3>A resume software can read</h3>
-            <p>See what hiring software sees, and fix it in minutes. Or build one from 8 questions.</p>
+            <figure className="site-frame site-frame-narrow">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/marketing/card.png" alt="A role card: Customer Support Associate at Zenoti, 3.6 LPA, you qualify on 3 of 3 rules, 4 of 5 must-haves, Aman K. works here" loading="lazy" />
+            </figure>
           </article>
-          <article className="site-tile">
-            <div className="ui-scam" aria-hidden="true">
-              <b>Looks like a scam</b>
-              <span>Asks for a ₹1,500 fee</span>
-              <span>HR only on Telegram</span>
+          <article className="site-row">
+            <div>
+              <h3>A resume hiring software can read</h3>
+              <p>Nine plain checks, failing ones first, each with the fix. Made in Canva or scanned? We tell you before an employer&apos;s software throws it out.</p>
             </div>
-            <h3>Scam check on anything you paste</h3>
-            <p>Got a job on WhatsApp? Paste it. We flag fees, Telegram-only HR and pay too good to be true.</p>
-          </article>
-          <article className="site-tile">
-            <div className="ui-warm" aria-hidden="true">
-              <i>AK</i>
-              <span>Aman K. works at Zenoti</span>
-            </div>
-            <h3>See who you know there</h3>
-            <p>Add your LinkedIn connections and every role shows who can refer you. Only you can see them.</p>
+            <figure className="site-frame site-frame-narrow">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/marketing/resume-health.png" alt="Resume check: 3 of 9 checks pass, with fixes for each failing check" loading="lazy" />
+            </figure>
           </article>
         </div>
+      </section>
+
+      <section className="site-section" aria-labelledby="cmp-h">
+        <h2 id="cmp-h">Not another job board.</h2>
+        <table className="site-cmp">
+          <thead>
+            <tr>
+              <th scope="col" />
+              <th scope="col">Mass job boards</th>
+              <th scope="col">Hirelane</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Checks your marks against every rule before you apply", false, true],
+              ["Jobs read from the company's own career page", false, true],
+              ["Flags fees, Telegram-only HR and fake offers", false, true],
+              ["Your college can see off-campus outcomes, only if you share", false, true],
+              ["Applies or messages anyone in your name", "Often", "Never"],
+            ].map(([label, a, b]) => (
+              <tr key={String(label)}>
+                <th scope="row">{label}</th>
+                <td>{a === false ? <span className="site-no">No</span> : a}</td>
+                <td>{b === true ? <span className="site-yes">Yes</span> : <b>{b}</b>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       <section className="site-uni" aria-labelledby="uni-h">
@@ -201,7 +239,7 @@ export function MainLanding({ counts }: { counts: SiteCounts }) {
         </div>
         <figure className="site-browser">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/previews/console-drives.png" alt="Adding a drive: the notice is read into rules and the console shows how many students qualify" loading="lazy" />
+          <img src="/marketing/chart.png" alt="Placement console: 31 off-campus offers by programme, and applications per day" loading="lazy" />
         </figure>
       </section>
 

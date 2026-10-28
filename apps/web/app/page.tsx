@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { MainLanding, type SiteCounts } from "@/components/landing/Main";
-import { getLandingSnapshot } from "@/lib/queries/landing";
+import { getLandingSnapshot, indiaRoles, loadEmployers } from "@/lib/queries/landing";
 
 export const metadata: Metadata = {
   title: { absolute: "Hirelane: off-campus jobs, matched to your marks" },
@@ -20,12 +20,13 @@ async function loadCounts(): Promise<SiteCounts> {
   try {
     const snap = await getLandingSnapshot();
     const c = snap.counts;
-    return { openJobs: c.openJobs, companies: c.companies, withSalary: c.withSalary, readAgo: ago(c.asOf) };
+    return { openJobs: c.openJobs, companies: c.companies, withSalary: c.withSalary, indiaRoles: await indiaRoles(), readAgo: ago(c.asOf) };
   } catch {
     return null;
   }
 }
 
 export default async function Home() {
-  return <MainLanding counts={await loadCounts()} />;
+  const [counts, employers] = await Promise.all([loadCounts(), loadEmployers()]);
+  return <MainLanding counts={counts} employers={employers} />;
 }

@@ -51,8 +51,15 @@ plus a 390px-wide mobile shot. 5. `security-reviewer` when applicable. 6. `doc-u
   5. Add each host to the allowlist by hand, with a dated note recording that robots.txt and the site terms were read.
   6. Stop within 24 h when an employer asks.
   7. Every card links back to the source with "read Nh ago".
-- No auto-submission in MVP: draft → user approves → 4s undo → hand off to the employer's own form. Headless submission is a later,
-  feature-flagged phase with per-application approval.
+- **Owner decision 2026-10-29 (docs/product/DECISIONS-2026-10-29-night.md): right swipe = applied.** Hirelane may submit on the
+  company's own form, but only:
+  - with the student's one-time `auto_apply` consent, which they can switch off at any time
+  - never bypassing CAPTCHAs, bot checks or logins; a blocked submission falls back to "finish on their site"
+  - never inventing answers
+  - with receipts, a per-platform kill switch and a daily cap
+  - against recorded fixtures only, until the owner runs a supervised live pilot
+- **Applications use the student's Hirelane apply address**, so replies are tracked. Every employer message is forwarded to the
+  student.
 - Resumes are PII: encrypt at rest, never log contents, never send to an LLM without the user's consent toggle.
 
 ## When PLAN.md and this file disagree
