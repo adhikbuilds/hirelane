@@ -19,6 +19,7 @@ import {
   extractRequirements,
   extractSkills,
   hamming,
+  isSalaryStated,
   isTrace,
   normalizeSalary,
   parseSalary,
@@ -137,8 +138,7 @@ export function enrichPosting(input: EnrichInput, deps: { fx: FxSnapshot }) {
   }
   if (requirements.lowConfidence) llm.reasons.push('requirements.low_confidence');
 
-  const structuredStated = !!input.compensation && ((input.compensation.min ?? 0) > 0 || (input.compensation.max ?? 0) > 0);
-  const salaryStated = salaryParse !== null || structuredStated || cues.length > 0;
+  const salaryStated = isSalaryStated(salaryParse, input.compensation);
   return { doc, title, workplace, countries, salaryParse, salary, skills, requirements, level, employment, roleFamily, visa, simhash, tokenCount, llm, salaryStated };
 }
 export type Enrichment = ReturnType<typeof enrichPosting>;

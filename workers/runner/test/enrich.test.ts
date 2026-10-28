@@ -294,3 +294,32 @@ describe('enrichCompany (database)', () => {
     expect(ENRICH_VERSION).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe('salaryStated (A3: only when an amount was parsed)', () => {
+  const base = {
+    title: 'Backend Engineer',
+    locationsRaw: ['Bengaluru, India'],
+    department: null,
+    team: null,
+    employmentRaw: null,
+    workplaceRaw: null,
+    isRemoteHint: null,
+    compensation: null,
+  };
+  it('is false for cue words with no amount', () => {
+    const e = enrichPosting({ ...base, descriptionHtml: '<p>We offer competitive compensation and great benefits.</p>' }, { fx });
+    expect(e.salaryParse).toBeNull();
+    expect(e.salaryStated).toBe(false);
+  });
+  it('is true when an amount is parsed from the text', () => {
+    const e = enrichPosting({ ...base, descriptionHtml: '<p>Salary range: $120,000 - $150,000 per year.</p>' }, { fx });
+    expect(e.salaryStated).toBe(true);
+  });
+  it('is true for a structured block with a positive amount, false for an empty one', () => {
+    const d = '<p>Build services.</p>';
+    const pos = enrichPosting({ ...base, descriptionHtml: d, compensation: { min: 50000, max: null, currency: 'USD', interval: 'year', kind: 'salary', summaryText: null, source: 'ashby.compensation' } }, { fx });
+    expect(pos.salaryStated).toBe(true);
+    const zero = enrichPosting({ ...base, descriptionHtml: d, compensation: { min: 0, max: 0, currency: 'USD', interval: 'year', kind: 'salary', summaryText: null, source: 'ashby.compensation' } }, { fx });
+    expect(zero.salaryStated).toBe(false);
+  });
+});
