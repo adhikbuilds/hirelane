@@ -19,6 +19,7 @@ export {
   parseSalaryTraced,
   normalizeSalary,
   salaryCues,
+  isSalaryStated,
   formatSalary,
   formatMoney,
 } from './salary';
@@ -71,3 +72,9 @@ export {
   simhashTokens,
 } from './dedup';
 export type { CanonicalTitle, ClusterMember, DedupDecision, DedupKey, DedupPair, DedupPairSide, DedupScore, Simhash } from './dedup';
+
+// --- A4 fresher flag and A8 worthwhile gate
+export { assessFresher, FRESHER_MAX_LOWER_YEARS, FRESHER_MAX_UPPER_YEARS, SENIOR_MIN_YEARS } from './fresher';
+export type { FresherInput, FresherRequirement, FresherResult } from './fresher';
+export { isWorthwhile, WORTHWHILE_MIN_MUST_RATIO, WORTHWHILE_MAX_CHECK_AGE_DAYS } from './worthwhile';
+export type { WorthwhileInput, WorthwhileCondition, WorthwhileResult } from './worthwhile';
