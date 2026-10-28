@@ -4,61 +4,58 @@ import { CampusShell, Icon, pct, Privacy, SampleNote } from "./Console";
 
 export type DashBy = "programme" | "blocker" | "drive";
 
-/** Deterministic sample series: applications per day for 90 days (Aug 1 to Oct 29). Real data: product_events. */
-function series(): number[] {
-  return Array.from({ length: 90 }, (_, i) => {
-    const wave = Math.sin(i / 4.2) * 6 + Math.sin(i / 11) * 4;
-    const trend = i * 0.18;
-    const weekday = i % 7 === 5 || i % 7 === 6 ? -5 : 0;
-    return Math.max(0, Math.round(8 + wave + trend + weekday));
-  });
-}
+/** Sample weekly series for 12 weeks: applications and employer replies, plus weeks a drive closed. Real data: applications + inbound_messages. */
+const WEEKS = ["Aug 4", "Aug 11", "Aug 18", "Aug 25", "Sep 1", "Sep 8", "Sep 15", "Sep 22", "Sep 29", "Oct 6", "Oct 13", "Oct 20"];
+const APPS = [41, 52, 38, 61, 73, 66, 58, 84, 97, 88, 112, 126];
+const REPLIES = [3, 5, 4, 8, 9, 11, 7, 13, 16, 14, 19, 23];
+const DRIVE_WEEKS: Record<number, string> = { 4: "Bank drive closed", 8: "Mass recruiter drive closed", 11: "Process Associate drive closed" };
 
-const W = 640;
-const H = 220;
-const PAD = { l: 36, r: 8, t: 8, b: 24 };
-
-function AreaChart({ data }: { data: number[] }) {
-  const max = Math.ceil(Math.max(...data) / 10) * 10 || 10;
-  const x = (i: number) => PAD.l + (i / (data.length - 1)) * (W - PAD.l - PAD.r);
-  const y = (v: number) => PAD.t + (1 - v / max) * (H - PAD.t - PAD.b);
-  const line = data.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  const area = `${line} L${x(data.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
-  const ticks = [0, max / 2, max];
-  const labels = [
-    { i: 0, t: "Aug 1" },
-    { i: 45, t: "Sep 15" },
-    { i: 89, t: "Oct 29" },
-  ];
-  const day = (i: number) => {
-    const d = new Date(Date.UTC(2026, 7, 1 + i));
-    return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
-  };
+function WeeklyBars() {
+  const W = 640;
+  const H = 240;
+  const P = { l: 36, r: 8, t: 24, b: 28 };
+  const max = 140;
+  const slot = (W - P.l - P.r) / WEEKS.length;
+  const bw = slot * 0.32;
+  const y = (v: number) => P.t + (1 - v / max) * (H - P.t - P.b);
   return (
-    <svg className="dk-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Applications per day, Aug 1 to Oct 29. Peak ${Math.max(...data)} in a day.`}>
-      {ticks.map((t) => (
+    <svg className="dk-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Applications and replies per week for 12 weeks. Latest week: ${APPS[11]} applications, ${REPLIES[11]} replies.`}>
+      {[0, 70, 140].map((t) => (
         <g key={t}>
-          <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} className="dk-grid" />
-          <text x={PAD.l - 8} y={y(t) + 4} className="dk-axis" textAnchor="end">
+          <line x1={P.l} x2={W - P.r} y1={y(t)} y2={y(t)} className="dk-grid" />
+          <text x={P.l - 8} y={y(t) + 4} className="dk-axis" textAnchor="end">
             {t}
           </text>
         </g>
       ))}
-      <path d={area} className="dk-area" />
-      <path d={line} className="dk-line" />
-      {labels.map((l) => (
-        <text key={l.t} x={x(l.i)} y={H - 6} className="dk-axis" textAnchor={l.i === 0 ? "start" : l.i === 89 ? "end" : "middle"}>
-          {l.t}
-        </text>
-      ))}
-      {data.map((v, i) => (
-        <rect key={i} className="dk-hit" x={x(i) - 3.5} y={PAD.t} width={7} height={H - PAD.t - PAD.b}>
-          <title>{`${day(i)}: ${v} applications`}</title>
-        </rect>
-      ))}
+      {WEEKS.map((w, i) => {
+        const x0 = P.l + i * slot + slot * 0.16;
+        return (
+          <g key={w}>
+            <rect x={x0} y={y(APPS[i]!)} width={bw} height={y(0) - y(APPS[i]!)} rx="3" className="dk-bar-a" />
+            <rect x={x0 + bw + 2} y={y(REPLIES[i]!)} width={bw} height={y(0) - y(REPLIES[i]!)} rx="3" className="dk-bar-b" />
+            {DRIVE_WEEKS[i] ? <circle cx={x0 + bw} cy={P.t - 10} r="4" className="dk-marker" /> : null}
+            {i % 3 === 0 || i === WEEKS.length - 1 ? (
+              <text x={x0 + bw} y={H - 8} className="dk-axis" textAnchor="middle">
+                {w}
+              </text>
+            ) : null}
+            <rect x={P.l + i * slot} y={P.t - 18} width={slot} height={H - P.t - P.b + 18} className="dk-hit">
+              <title>{`Week of ${w}: ${APPS[i]} applications, ${REPLIES[i]} replies (${Math.round((REPLIES[i]! / APPS[i]!) * 100)}%)${DRIVE_WEEKS[i] ? `. ${DRIVE_WEEKS[i]}` : ""}`}</title>
+            </rect>
+          </g>
+        );
+      })}
     </svg>
   );
 }
+
+const ACT = [
+  { n: 82, text: "eligible students haven't applied to Process Associate, closing Saturday", cta: "Remind them", href: "/campus/drives" },
+  { n: 46, text: "students haven't opened Hirelane in 7 days", cta: "Send a nudge", href: "#" },
+  { n: 27, text: "students can't be checked for CGPA drives", cta: "Set the CGPA rule", href: "/campus/settings" },
+  { n: 9, text: "offer letters are waiting for you", cta: "Verify offers", href: "/campus/outcomes" },
+];
 
 const PROGRAMME_ROWS = [
   { name: "B.Com (General)", count: 56, offers: 14, dot: "a" },
@@ -69,8 +66,6 @@ const PROGRAMME_ROWS = [
 
 /** Placement console overview in the dark analytics register the owner picked (2026-10-29). No client JS. */
 export function CampusDash({ data, by }: { data: CampusOverview; by: DashBy }) {
-  const s = series();
-  const total = s.reduce((a, b) => a + b, 0);
   const joined = data.funnel[0]?.count ?? 0;
   const stops = data.funnel.slice(0, -1).map((f, i) => ({ label: `Stopped before ${data.funnel[i + 1]!.label.toLowerCase()}`, n: f.count - data.funnel[i + 1]!.count }));
   const stopTotal = stops.reduce((a, b) => a + b.n, 0);
@@ -122,10 +117,38 @@ export function CampusDash({ data, by }: { data: CampusOverview; by: DashBy }) {
             ))}
           </ul>
         </div>
-        <div>
-          <h2 className="dk-h">Applications per day</h2>
-          <p className="dk-sub">{total.toLocaleString("en-IN")} in the last 90 days. Hover a day for its count.</p>
-          <AreaChart data={s} />
+        <div className="dk-right">
+          <div className="dk-row-head">
+            <h2 className="dk-h">Applications and replies per week</h2>
+            <ul className="dk-key" aria-hidden="true">
+              <li>
+                <span className="dk-sq" data-c="0" />
+                Applications
+              </li>
+              <li>
+                <span className="dk-sq" data-c="1" />
+                Replies
+              </li>
+              <li>
+                <span className="dk-mk" />
+                Drive closed
+              </li>
+            </ul>
+          </div>
+          <p className="dk-sub">
+            Replies are {Math.round((REPLIES[11]! / APPS[11]!) * 100)}% of applications this week, up from {Math.round((REPLIES[0]! / APPS[0]!) * 100)}% in August. Hover a week for counts.
+          </p>
+          <WeeklyBars />
+          <h2 className="dk-h dk-act-h">Act this week</h2>
+          <ul className="dk-act">
+            {ACT.map((a) => (
+              <li key={a.cta}>
+                <b>{a.n}</b>
+                <span>{a.text}</span>
+                <Link href={a.href}>{a.cta}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
