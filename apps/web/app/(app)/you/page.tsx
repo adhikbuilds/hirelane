@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AccountShell } from "@/components/account/AccountShell";
+import { Alert } from "@/components/shadcn/alert";
+import { Button } from "@/components/shadcn/button";
+import { Card, CardDescription, CardStack, CardTitle } from "@/components/shadcn/card";
+import { CheckboxField } from "@/components/shadcn/checkbox-field";
 import { getSession } from "@/lib/session";
 import { deleteMyAccount, logout } from "./actions";
 
@@ -43,23 +47,26 @@ export default async function YouPage({ searchParams }: { searchParams: Promise<
     <AccountShell
       right={
         <form action={signOut}>
-          <button type="submit" className="acct-btn" data-variant="lime" style={{ minHeight: 44 }}>
+          <Button type="submit" variant="on-night" size="pill-sm">
             Sign out
-          </button>
+          </Button>
         </form>
       }
     >
       <div className="acct-you">
         <h1 className="acct-display">You&apos;re in.</h1>
 
-        <section className="acct-next" aria-labelledby="next-h">
-          <h2 id="next-h">Next: your resume</h2>
-          <p>Soon you&apos;ll upload your resume here and see what a company&apos;s hiring software sees: what&apos;s missing, what to fix, and which roles you qualify for.</p>
-        </section>
+        <Card tone="blue" aria-labelledby="next-h">
+          <CardTitle id="next-h">Next: your resume</CardTitle>
+          <p className="mt-2 leading-snug">
+            Soon you&apos;ll upload your resume here and see what a company&apos;s hiring software sees: what&apos;s missing, what to fix, and which roles you
+            qualify for.
+          </p>
+        </Card>
 
-        <div className="acct-stack" data-tone="pink">
-          <section className="acct-card" aria-labelledby="never-h">
-            <h2 id="never-h">What Hirelane never does</h2>
+        <CardStack tone="pink">
+          <Card aria-labelledby="never-h">
+            <CardTitle id="never-h">What Hirelane never does</CardTitle>
             <ul className="acct-never">
               {NEVER.map((line) => (
                 <li key={line}>
@@ -68,30 +75,20 @@ export default async function YouPage({ searchParams }: { searchParams: Promise<
                 </li>
               ))}
             </ul>
-          </section>
-        </div>
+          </Card>
+        </CardStack>
 
-        <section className="acct-card" aria-labelledby="delete-h">
-          <h2 id="delete-h">Delete your account</h2>
-          <p className="acct-hint">This signs you out everywhere and deletes your account and everything in it. It can&apos;t be undone.</p>
-          {e === "not_confirmed" ? (
-            <p className="acct-alert" role="alert">
-              Tick the box to confirm, then press Delete my account.
-            </p>
-          ) : null}
-          <form action={deleteAccount} className="acct-form">
-            <label className="acct-check">
-              <input type="checkbox" name="confirm" />
-              <div>
-                <strong>Yes, delete my account</strong>
-                <span>I understand this can&apos;t be undone.</span>
-              </div>
-            </label>
-            <button type="submit" className="acct-btn" data-variant="danger">
+        <Card aria-labelledby="delete-h">
+          <CardTitle id="delete-h">Delete your account</CardTitle>
+          <CardDescription>This signs you out everywhere and deletes your account and everything in it. It can&apos;t be undone.</CardDescription>
+          {e === "not_confirmed" ? <Alert>Tick the box to confirm, then press Delete my account.</Alert> : null}
+          <form action={deleteAccount} className="acct-stack-y">
+            <CheckboxField name="confirm" title="Yes, delete my account" description="I understand this can't be undone." />
+            <Button type="submit" variant="danger" size="pill">
               Delete my account
-            </button>
+            </Button>
           </form>
-        </section>
+        </Card>
       </div>
     </AccountShell>
   );

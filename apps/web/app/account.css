@@ -1,30 +1,49 @@
-/*
- * Account screens (sign-in, code, welcome, You) in the locked "Wrapped stories" system (DESIGN.md).
- * Scoped under .acct so the public board keeps its current look until the full Wrapped migration.
- * No client JS: every control is a plain form posting to a server action.
- */
-.acct {
-  --color-ink: #0b0b0f;
-  --color-night: #141418;
-  --color-cream: #fff6e8;
-  --color-lane: #0f5c45;
-  --color-lime: #c8ff3d;
-  --color-pink: #ff4fa3;
-  --color-blue: #3d5afe;
-  --color-sun: #ffc83d;
-  --color-coral: #ff5a4e;
-  --color-muted-on-night: #b9b6ad;
-  --color-muted-on-cream: #5a5650;
-  --radius-card: 18px;
-  --radius-pill: 999px;
-  --font-display: var(--font-bricolage), system-ui, sans-serif;
+/* Hallmark · shape: app screen · genre: playful · theme: custom (DESIGN.md, Wrapped stories, locked 2026-10-28)
+ * nav: wordmark left, one action right on You · signature: the giant 800-weight headline beside a straight card on a tilted colour block · states: default, hover, active, focus-visible, disabled, error, success, checked
+ * axes: dark night ground, cream cards, one lime fill per screen · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S4 R4 V4 · weakest: P, sign-in is a familiar two-column form; kept it plain on purpose because tier-3 students on low-end phones need the fastest path, and spent the boldness on the headline and the tilted block */
 
-  min-height: 100dvh;
-  background: var(--color-night);
-  color: var(--color-cream);
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
+/*
+ * Account screens (sign-in, code, welcome, You). Tokens are --wr-* so they never collide with the public board's
+ * v3 tokens in globals.css. Controls are the shadcn parts in components/shadcn (button lime/outline/on-night/danger,
+ * input, card, alert, checkbox-field). No client JS: every control is a plain form posting to a server action.
+ */
+:root {
+  --wr-ink: #0b0b0f;
+  --wr-night: #141418;
+  --wr-cream: #fff6e8;
+  --wr-paper: #fffdf8;
+  --wr-lime: #c8ff3d;
+  --wr-lime-press: #b6ec2a;
+  --wr-pink: #ff4fa3;
+  --wr-blue: #3d5afe;
+  --wr-coral: #ff5a4e;
+  --wr-danger-ink: #b42318;
+  --wr-muted-on-night: #b9b6ad;
+  --wr-muted-on-cream: #5a5650;
+  --wr-ink-wash: color-mix(in srgb, var(--wr-ink) 8%, transparent);
+  --wr-ink-wash-strong: color-mix(in srgb, var(--wr-ink) 16%, transparent);
+  --wr-cream-wash: color-mix(in srgb, var(--wr-cream) 12%, transparent);
+  --wr-coral-wash: color-mix(in srgb, var(--wr-coral) 18%, transparent);
+  --wr-lime-wash: color-mix(in srgb, var(--wr-lime) 35%, var(--wr-cream));
+  /* Google's own brand-mark colours, only for its logo on the sign-in button. */
+  --wr-g-yellow: #ffc107;
+  --wr-g-red: #ff3d00;
+  --wr-g-green: #4caf50;
+  --wr-g-blue: #1976d2;
+  --wr-radius-card: 18px;
+}
+
+html,
+body {
   overflow-x: clip;
+}
+
+.acct {
+  min-height: 100dvh;
+  background: var(--wr-night);
+  color: var(--wr-cream);
+  font-optical-sizing: auto;
   display: grid;
   grid-template-rows: auto 1fr auto;
 }
@@ -34,7 +53,7 @@
 }
 
 .acct :focus-visible {
-  outline: 3px solid var(--color-lime);
+  outline: 3px solid var(--wr-lime);
   outline-offset: 2px;
 }
 
@@ -42,6 +61,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 20px 16px 0;
   max-width: 1080px;
   width: 100%;
@@ -56,7 +76,7 @@
 }
 
 .acct-brand span {
-  color: var(--color-lime);
+  color: var(--wr-lime);
 }
 
 .acct-main {
@@ -71,7 +91,7 @@
 
 @media (min-width: 900px) {
   .acct-main {
-    grid-template-columns: 1.1fr 1fr;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-items: center;
     align-content: center;
     gap: 64px;
@@ -87,176 +107,75 @@
   line-height: 0.92;
   letter-spacing: -0.045em;
   max-width: 11ch;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .acct-lede {
-  margin: 18px 0 0;
+  margin: 20px 0 0;
   font-size: 1.125rem;
   line-height: 1.45;
-  color: var(--color-muted-on-night);
+  color: var(--wr-muted-on-night);
   max-width: 36ch;
 }
 
-/* A tilted lime block behind a straight cream card: the Wrapped look, with inputs that stay easy to use. */
-.acct-stack {
+/* A tilted colour block behind a straight card. */
+.wr-stack {
   position: relative;
   isolation: isolate;
 }
 
-.acct-stack::before {
+.wr-stack::before {
   content: "";
   position: absolute;
-  inset: 10px -6px -10px 6px;
-  background: var(--color-lime);
-  border-radius: var(--radius-card);
+  inset: 12px -8px -12px 8px;
+  background: var(--wr-lime);
+  border-radius: var(--wr-radius-card);
   transform: rotate(-2.5deg);
   z-index: -1;
 }
 
-.acct-stack[data-tone="pink"]::before {
-  background: var(--color-pink);
+.wr-stack[data-tone="pink"]::before {
+  background: var(--wr-pink);
 }
 
-.acct-card {
-  background: var(--color-cream);
-  color: var(--color-ink);
-  border-radius: var(--radius-card);
-  padding: 22px 20px 24px;
-}
-
-@media (min-width: 480px) {
-  .acct-card {
-    padding: 28px 28px 30px;
-  }
-}
-
-/* Story bars: only where the content really is a sequence (sign in → code → welcome). */
+/* Story bars: only where the content really is a sequence (sign in, code, welcome). */
 .acct-bars {
   display: grid;
   grid-auto-flow: column;
-  gap: 6px;
+  gap: 8px;
   margin: 0 0 20px;
   padding: 0;
   list-style: none;
 }
 
 .acct-bars li {
-  height: 5px;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  height: 4px;
+  border-radius: 999px;
+  background: var(--wr-ink-wash-strong);
 }
 
 .acct-bars li[data-state="done"] {
-  background: var(--color-ink);
+  background: var(--wr-ink);
 }
 
 .acct-bars li[data-state="now"] {
-  background: linear-gradient(90deg, var(--color-ink) 50%, color-mix(in srgb, var(--color-ink) 14%, transparent) 50%);
+  background: linear-gradient(90deg, var(--wr-ink) 50%, var(--wr-ink-wash-strong) 50%);
 }
 
-.acct-card h2 {
-  margin: 0;
-  font-weight: 800;
-  font-size: 1.75rem;
-  line-height: 1;
-  letter-spacing: -0.035em;
-}
-
-.acct-card p {
-  margin: 10px 0 0;
-  line-height: 1.45;
-}
-
-.acct-hint {
-  color: var(--color-muted-on-cream);
-  font-size: 0.9375rem;
-}
-
-.acct-form {
+.acct-stack-y {
   display: grid;
   gap: 12px;
   margin-top: 20px;
-}
-
-.acct-label {
-  font-weight: 700;
-  font-size: 0.9375rem;
-}
-
-.acct-input {
-  font: inherit;
-  font-size: 1.0625rem;
-  min-height: 52px;
-  padding: 0 16px;
-  border-radius: 14px;
-  border: 2px solid var(--color-ink);
-  background: #fffdf8;
-  color: var(--color-ink);
-  width: 100%;
-}
-
-.acct-input:focus-visible {
-  outline: 3px solid var(--color-ink);
-  outline-offset: 2px;
-}
-
-.acct-input[data-code] {
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: 0.35em;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.acct-btn {
-  font: inherit;
-  font-weight: 800;
-  font-size: 1.0625rem;
-  min-height: 52px;
-  padding: 0 22px;
-  border-radius: var(--radius-pill);
-  border: 2px solid var(--color-ink);
-  background: var(--color-ink);
-  color: var(--color-cream);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-decoration: none;
-  transition: transform 120ms ease-out, background-color 120ms ease-out;
-}
-
-.acct-btn:active {
-  transform: scale(0.98);
-}
-
-.acct-btn[data-variant="lime"] {
-  background: var(--color-lime);
-  color: var(--color-ink);
-}
-
-.acct-btn[data-variant="outline"] {
-  background: transparent;
-  color: var(--color-ink);
-}
-
-.acct-btn[data-variant="danger"] {
-  background: var(--color-coral);
-  color: var(--color-ink);
-}
-
-.acct-btn:focus-visible {
-  outline: 3px solid var(--color-ink);
-  outline-offset: 3px;
 }
 
 .acct-or {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 18px 0 2px;
-  color: var(--color-muted-on-cream);
+  margin: 20px 0 0;
+  color: var(--wr-muted-on-cream);
   font-size: 0.9375rem;
 }
 
@@ -265,57 +184,14 @@
   content: "";
   flex: 1;
   height: 2px;
-  background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  background: var(--wr-ink-wash-strong);
 }
 
-.acct-alert {
+.acct-note {
   margin: 16px 0 0;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--color-pink);
-  color: var(--color-ink);
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.acct-alert[data-tone="ok"] {
-  background: var(--color-lime);
-}
-
-.acct-check {
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 12px;
-  align-items: start;
-  padding: 14px;
-  border-radius: 14px;
-  border: 2px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
-  cursor: pointer;
-}
-
-.acct-check:has(input:checked) {
-  border-color: var(--color-ink);
-  background: color-mix(in srgb, var(--color-lime) 35%, var(--color-cream));
-}
-
-.acct-check input {
-  width: 22px;
-  height: 22px;
-  margin: 2px 0 0;
-  accent-color: var(--color-ink);
-}
-
-.acct-check strong {
-  display: block;
-  font-weight: 800;
-}
-
-.acct-check span {
-  display: block;
-  margin-top: 2px;
-  color: var(--color-muted-on-cream);
+  color: var(--wr-muted-on-cream);
   font-size: 0.9375rem;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .acct-linkbtn {
@@ -324,11 +200,24 @@
   background: none;
   border: 0;
   padding: 8px 0;
-  color: var(--color-ink);
+  color: var(--wr-ink);
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
   cursor: pointer;
   justify-self: start;
+}
+
+.acct-linkbtn:hover {
+  text-decoration-thickness: 2px;
+}
+
+.acct-linkbtn:active {
+  opacity: 0.7;
+}
+
+.acct-linkbtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .acct-foot {
@@ -340,10 +229,10 @@
   flex-wrap: wrap;
   gap: 8px 20px;
   font-size: 0.875rem;
-  color: var(--color-muted-on-night);
+  color: var(--wr-muted-on-night);
 }
 
-/* You page: a stack of story cards. */
+/* You page: a column of story cards. */
 .acct-you {
   width: 100%;
   max-width: 720px;
@@ -354,17 +243,17 @@
 }
 
 .acct-never {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .acct-never li {
   display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 10px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
   align-items: start;
   font-weight: 700;
   line-height: 1.35;
@@ -373,36 +262,7 @@
 .acct-never svg {
   width: 24px;
   height: 24px;
-  color: var(--color-coral);
-}
-
-.acct-next {
-  display: grid;
-  gap: 6px;
-  background: var(--color-blue);
-  color: var(--color-cream);
-  border-radius: var(--radius-card);
-  padding: 22px 20px;
-}
-
-.acct-next h2 {
-  margin: 0;
-  font-weight: 800;
-  font-size: 1.5rem;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-}
-
-.acct-next p {
-  margin: 0;
-  line-height: 1.45;
-}
-
-.acct-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 18px;
+  color: var(--wr-danger-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

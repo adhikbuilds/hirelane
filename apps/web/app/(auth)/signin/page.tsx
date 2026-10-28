@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountShell, GoogleMark, StepBars } from "@/components/account/AccountShell";
+import { Alert } from "@/components/shadcn/alert";
+import { Button } from "@/components/shadcn/button";
+import { Card, CardDescription, CardStack, CardTitle } from "@/components/shadcn/card";
+import { Input, Label } from "@/components/shadcn/input";
 import { accountsEnabled } from "@/lib/auth/flags";
 import { getSession } from "@/lib/session";
 import { sendEmailCode } from "./actions";
@@ -14,6 +18,7 @@ const ERRORS: Record<string, string> = {
   rate_limited: "Too many codes asked for. Wait a few minutes, then try again.",
   unavailable: "We can't send codes right now. Try again in a few minutes, or continue with Google.",
   bad_origin: "This form expired. Reload the page and try again.",
+  expired: "Your sign-up timed out. Sign in again to start over.",
   google: "Google sign-in didn't finish. Try again, or use your email instead.",
 };
 
@@ -35,66 +40,51 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       <div className="acct-main">
         <section>
           <h1 className="acct-display">Find jobs you can actually get.</h1>
-          <p className="acct-lede">
-            Check your resume, see which roles you qualify for and why, and apply on the company&apos;s own site.
-          </p>
+          <p className="acct-lede">Check your resume, see which roles you qualify for and why, and apply on the company&apos;s own site.</p>
         </section>
 
-        <div className="acct-stack">
-          <div className="acct-card">
+        <CardStack>
+          <Card aria-labelledby="signin-h">
             {open ? (
               <>
                 <StepBars step={1} label="Sign-in progress" />
-                <h2>Sign in</h2>
-                <p className="acct-hint">New here? Signing in creates your account.</p>
-                {e && ERRORS[e] ? (
-                  <p className="acct-alert" role="alert">
-                    {ERRORS[e]}
-                  </p>
-                ) : null}
-                <div className="acct-form">
-                  <a className="acct-btn" href="/auth/google/start">
-                    <GoogleMark />
-                    Continue with Google
-                  </a>
-                </div>
-                <p className="acct-or">or use your email</p>
-                <form action={requestCode} className="acct-form">
-                  <label className="acct-label" htmlFor="email">
-                    Email address
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    required
-                    className="acct-input"
-                    placeholder="you@gmail.com"
-                  />
-                  <button type="submit" className="acct-btn" data-variant="lime">
+                <CardTitle id="signin-h">Sign in</CardTitle>
+                <CardDescription>New here? Signing in creates your account.</CardDescription>
+                {e && ERRORS[e] ? <Alert>{ERRORS[e]}</Alert> : null}
+                <form action={requestCode} className="acct-stack-y">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input id="email" name="email" type="email" inputMode="email" autoComplete="email" required placeholder="you@gmail.com" />
+                  <Button type="submit" variant="lime" size="pill">
                     Send me a code
-                  </button>
+                  </Button>
                 </form>
-                <p className="acct-hint">Opened this from Instagram or WhatsApp? Use your email. Google sign-in doesn&apos;t work inside those apps.</p>
+                <p className="acct-or">or</p>
+                <div className="acct-stack-y">
+                  <Button asChild variant="outline" size="pill">
+                    <a href="/auth/google/start">
+                      <GoogleMark />
+                      Continue with Google
+                    </a>
+                  </Button>
+                </div>
+                <p className="acct-note">Opened this from Instagram or WhatsApp? Use your email. Google sign-in doesn&apos;t work inside those apps.</p>
               </>
             ) : (
               <>
-                <h2>Accounts open soon</h2>
-                <p>We&apos;re finishing the last checks before anyone can sign up. Join the waitlist and we&apos;ll email you once.</p>
-                <div className="acct-row">
-                  <Link className="acct-btn" data-variant="lime" href="/#waitlist">
-                    Join the waitlist
-                  </Link>
-                  <Link className="acct-btn" data-variant="outline" href="/jobs">
-                    Browse open roles
-                  </Link>
+                <CardTitle id="signin-h">Accounts open soon</CardTitle>
+                <CardDescription>We&apos;re finishing the last checks before anyone can sign up. Join the waitlist and we&apos;ll email you once.</CardDescription>
+                <div className="acct-stack-y">
+                  <Button asChild variant="lime" size="pill">
+                    <Link href="/#waitlist">Join the waitlist</Link>
+                  </Button>
+                  <Button asChild variant="outline" size="pill">
+                    <Link href="/jobs">Browse open roles</Link>
+                  </Button>
                 </div>
               </>
             )}
-          </div>
-        </div>
+          </Card>
+        </CardStack>
       </div>
     </AccountShell>
   );

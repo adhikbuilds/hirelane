@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountShell, StepBars } from "@/components/account/AccountShell";
+import { Alert } from "@/components/shadcn/alert";
+import { Button } from "@/components/shadcn/button";
+import { Card, CardDescription, CardStack, CardTitle } from "@/components/shadcn/card";
+import { Input, Label } from "@/components/shadcn/input";
 import { sendEmailCode } from "../actions";
 import { verifyCode } from "./actions";
 
@@ -42,55 +46,45 @@ export default async function CodePage({ searchParams }: { searchParams: Promise
           <p className="acct-lede">The code works for 10 minutes. Can&apos;t see it? Look in Spam or Promotions.</p>
         </section>
 
-        <div className="acct-stack">
-          <div className="acct-card">
+        <CardStack>
+          <Card aria-labelledby="code-h">
             <StepBars step={2} label="Sign-in progress" />
-            <h2>Enter the 6-digit code</h2>
-            <p className="acct-hint">
+            <CardTitle id="code-h">Enter the 6-digit code</CardTitle>
+            <CardDescription>
               Sent to <strong>{email}</strong>
-            </p>
-            {e && ERRORS[e] ? (
-              <p className="acct-alert" role="alert">
-                {ERRORS[e]}
-              </p>
-            ) : null}
-            {sent ? (
-              <p className="acct-alert" data-tone="ok" role="status">
-                New code sent. Use the latest one.
-              </p>
-            ) : null}
-            <form action={checkCode} className="acct-form">
+            </CardDescription>
+            {e && ERRORS[e] ? <Alert>{ERRORS[e]}</Alert> : null}
+            {sent ? <Alert tone="ok">New code sent. Use the latest one.</Alert> : null}
+            <form action={checkCode} className="acct-stack-y">
               <input type="hidden" name="email" value={email} />
-              <label className="acct-label" htmlFor="code">
-                Code
-              </label>
-              <input
+              <Label htmlFor="code">Code</Label>
+              <Input
                 id="code"
                 name="code"
-                className="acct-input"
-                data-code=""
+                variant="code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9 ]{6,7}"
                 maxLength={7}
                 required
                 placeholder="000000"
+                aria-invalid={e === "invalid_code" ? true : undefined}
               />
-              <button type="submit" className="acct-btn" data-variant="lime">
+              <Button type="submit" variant="lime" size="pill">
                 Sign in
-              </button>
+              </Button>
             </form>
-            <form action={resend} className="acct-form">
+            <form action={resend} className="acct-stack-y">
               <input type="hidden" name="email" value={email} />
               <button type="submit" className="acct-linkbtn">
                 Send a new code
               </button>
             </form>
-            <p className="acct-hint">
+            <p className="acct-note">
               Wrong address? <Link href="/signin">Use a different email</Link>
             </p>
-          </div>
-        </div>
+          </Card>
+        </CardStack>
       </div>
     </AccountShell>
   );
