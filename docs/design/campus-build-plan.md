@@ -35,14 +35,15 @@ Both agreed on: migrations renumbered (0007 is taken), `dek_wrapped` dropped, th
 | S1.14 | Review: parsers, ReDoS, no values in findings or errors | SEC |
 | S1.15 | `docs/resume.md`, `docs/eligibility.md`, codemap | DOC |
 
-**Acceptance:**
-- `pnpm verify` green; engine has zero runtime deps.
-- Education field accuracy ≥ 0.90.
-- Aadhaar and PAN recall 1.0, with 0 false positives on ≥ 40 negatives.
-- Eligibility accuracy ≥ 0.90, with 0 wrong "fail" verdicts.
-- Unknown never makes a role non-worthwhile (property test).
-- Zip bomb rejected under the byte cap.
-- Image-only PDF: `ats_readable` fails and the other 8 checks are unknown.
+**Acceptance** (status 2026-10-29, from the integrate report: `pnpm verify` exit 0, `engine:eval PASS`. Named tests are cited where they back a tick. The corpora were labelled by the agents who wrote the parsers, so the eval numbers are regression guards, not measured accuracy):
+- [x] `pnpm verify` green (report: exit 0).
+- [x] Engine has zero runtime deps (`packages/engine/package.json` has no `dependencies`, checked 2026-10-29).
+- [x] Education field accuracy ≥ 0.90 (`engine:eval` education gate).
+- [x] Aadhaar and PAN recall 1.0, with 0 false positives on ≥ 40 negatives (`engine:eval` sensitive gate).
+- [ ] Eligibility accuracy ≥ 0.90, with 0 wrong "fail" verdicts. **Not shown in full:** the accuracy gate passes, but the eval only gates unknown→fail = 0. Pass→fail errors are counted and not gated. See `docs/eligibility.md` §7.
+- [x] Unknown never makes a role non-worthwhile (`packages/engine/test/eligibility.property.test.ts`, `worthwhile.test.ts`; both run in `pnpm verify`).
+- [x] Zip bomb rejected under the byte cap (`workers/runner/test/resume-extract.test.ts`, "rejects a zip bomb and stays under the byte cap").
+- [x] Image-only PDF: `ats_readable` fails and the other 8 checks are unknown (`packages/engine/test/resume-health.test.ts`).
 
 ## Slice 2: accounts (runs in parallel with Slice 1)
 - 0008 auth migration.
@@ -56,11 +57,13 @@ Both agreed on: migrations renumbered (0007 is taken), `dek_wrapped` dropped, th
 - SEC deep review; `docs/auth.md`.
 - Optional 2b: phone OTP after the vendor decision.
 
-**Acceptance:**
-- 0 users without an `age_18_plus` consent.
-- Identical responses for unknown and known emails.
-- Logout revokes server-side.
-- Flag off → 404.
+**Acceptance** (status 2026-10-29: the named web tests run in `pnpm verify`, which the integrate report shows green):
+- [x] 0 users without an `age_18_plus` consent (`apps/web/tests/auth-flows.test.ts`, "0 users rows without an age_18_plus consent").
+- [x] Identical responses for unknown and known emails (`auth-flows.test.ts`, "answers byte-identically for a known and an unknown address").
+- [x] Logout revokes server-side (`auth-flows.test.ts`, "logout revokes the session server-side"; `packages/db/test/auth-sessions.test.ts`, "revoke is server-side").
+- [x] Flag off → 404 (`auth-flows.test.ts`, "flag off: both routes are 404"; `apps/web/tests/auth-actions.test.ts`, "flag off: every action is a 404").
+
+**Not built yet (not in the acceptance list):** the UI pages `/signin`, `/signin/code`, `/welcome` and `/you` (server actions only), and optional 2b phone OTP. See `docs/auth.md`.
 
 ## Slice 3: upload → confirm → builder → /api/v1
 - **Data:** 0009 migration.
