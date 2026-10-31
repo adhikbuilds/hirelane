@@ -1,0 +1,16 @@
+From: Tamarind Cloud Recruiting <jobs@tamarindcloud.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=tamarindcloud.example.test; dmarc=pass header.from=tamarindcloud.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Tue, 27 Oct 2026 10:45:00 GMT
+Message-ID: <corpus-16@tamarindcloud.example.test>
+MIME-Version: 1.0
+Subject: Next step: online assessment
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><p>Hi Vikram,</p><br>
+<p>As the next step in your application for QA Engineer, please complete ou=
+r online assessment on HackerRank. The link is valid for 72 hours: https://=
+assess.example.test/tamarindcloud/t/9f2a</p><br>
+<p>Good luck!<br>
+Team Tamarind Cloud</p></body></html>

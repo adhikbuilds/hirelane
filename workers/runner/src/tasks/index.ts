@@ -7,6 +7,13 @@ import { createResumeExtractTasks } from './resume-extract.js';
 import { createResumeRenderTasks } from './resume-render.js';
 import { createResumePurgeTasks } from './resume-purge.js';
 import { createResumeStuckTasks } from './resume-stuck.js';
+import { createCampusStatsTasks } from './campus-stats.js';
+import { createApplyTasks } from './apply-submit.js';
+import { createInboundTasks } from './inbound-scan.js';
+import { applyMode, assertApplyDomain } from '../../../../packages/agent/src/apply-mode';
+
+// Startup guard: with auto-apply on, a production worker without a real apply domain must not start (addresses are permanent).
+if (applyMode() !== 'off') assertApplyDomain();
 
 export const taskList: TaskList = {
   heartbeat,
@@ -17,4 +24,7 @@ export const taskList: TaskList = {
   ...createResumeRenderTasks(),
   ...createResumePurgeTasks(),
   ...createResumeStuckTasks(),
+  ...createCampusStatsTasks(),
+  ...createApplyTasks(),
+  ...createInboundTasks(),
 };

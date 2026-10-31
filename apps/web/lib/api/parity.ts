@@ -1,3 +1,5 @@
+import { APPLY_ROUTE_ONLY } from "../openapi-apply";
+import { CAMPUS_ROUTE_ONLY } from "../openapi-campus";
 /**
  * Every resume and eligibility server action and the /api/v1 operation (operationId in lib/openapi-v1.ts) that does
  * the same thing. The parity test fails when an exported action is missing here or its twin is not in the v1 document.
@@ -31,4 +33,4 @@ export const ACTION_EXEMPT: Record<string, Record<string, string>> = {
   "app/jobs/actions.ts": { loadMoreJobs: "public board reads for the web UI; the public API covers the same data", loadJobPreview: "public board read", suggestJobs: "public board read" },
 };
 /** Routes with no action twin by design (uploads are a route handler, PLAN Amendment B section 2; reads go through lib/api/page.ts). */
-export const ROUTE_ONLY = ["uploadResume", "downloadResume", "listResumes", "getResume", "getEligibility", "getMe", "exportMe"];
+export const ROUTE_ONLY = ["uploadResume", "downloadResume", "listResumes", "getResume", "getEligibility", "getMe", "exportMe", ...CAMPUS_ROUTE_ONLY, ...APPLY_ROUTE_ONLY];

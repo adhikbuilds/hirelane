@@ -20,6 +20,7 @@ import { execFile, fork, type ChildProcess } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { applyLayout } from './layout';
 import { MAX_BYTES, hasKnownMagic } from './limits';
 import type { ExtractResult, RejectCode } from './types';
 
@@ -150,7 +151,7 @@ export function extractInThread(bytes: Uint8Array, opts: ThreadOptions = {}): Pr
       return;
     }
     const c = child;
-    c.once('message', (m: unknown) => settle(isResult(m) ? m : { rejected: 'parse_error' }));
+    c.once('message', (m: unknown) => settle(isResult(m) ? applyLayout(m) : { rejected: 'parse_error' }));
     // Out-of-memory, crashes and early exits all land here; no message text is forwarded.
     c.once('error', () => settle({ rejected: 'parse_error' }));
     c.once('exit', () => settle({ rejected: 'parse_error' }));

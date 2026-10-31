@@ -64,6 +64,7 @@ export function mapPgError(e: unknown): unknown {
   switch (code) {
     case '23514':
       // The root-cap trigger raises check_violation with no constraint name; real CHECKs carry one.
+      if (c === 'drives_per_cohort_limit') return new ServiceError('drive_limit', 429);
       return c ? new ServiceError('invalid_input', 400) : new ServiceError('too_many_resumes', 409);
     case '23505':
       if (c === 'resumes_root_file_uq') return new ServiceError('duplicate_resume', 409);

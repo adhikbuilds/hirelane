@@ -63,7 +63,7 @@ Both agreed on: migrations renumbered (0007 is taken), `dek_wrapped` dropped, th
 - [x] Logout revokes server-side (`auth-flows.test.ts`, "logout revokes the session server-side"; `packages/db/test/auth-sessions.test.ts`, "revoke is server-side").
 - [x] Flag off → 404 (`auth-flows.test.ts`, "flag off: both routes are 404"; `apps/web/tests/auth-actions.test.ts`, "flag off: every action is a 404").
 
-**Not built yet (not in the acceptance list):** the UI pages `/signin`, `/signin/code`, `/welcome` and `/you` (server actions only), and optional 2b phone OTP. See `docs/auth.md`.
+**Not built yet (not in the acceptance list):** optional 2b phone OTP. The UI pages `/signin`, `/signin/code`, `/welcome` and `/you` now have `page.tsx` files (checked 2026-10-29). The LinkedIn sign-in path (`docs/auth.md` §4d) was added in Slice 3 and is not live-verified. See `docs/auth.md`.
 
 ## Slice 3: upload → confirm → builder → /api/v1
 - **Data:** 0009 migration.
@@ -78,13 +78,17 @@ Both agreed on: migrations renumbered (0007 is taken), `dek_wrapped` dropped, th
 - **Retention:** audited download, purge within 24 h.
 - **Checks:** `pnpm budget` (≤ 100 KB per student route), e2e with 1440 and 390 screenshots, SEC deep review, docs.
 
-**Acceptance:**
-- An Aadhaar DOCX produces a masked parse and a warning.
-- An image-only PDF produces the builder offer.
-- A builder PDF round-trips through our extractor.
-- Every action has a v1 twin.
-- Cross-user requests get 404.
-- 0 LLM calls.
+**Status (2026-10-29, from the integrate report): STATUS RED.** `pnpm db:migrate` is green (0010, 0010a and 0010b applied, 14 migrations). `pnpm verify` is green and exits 0, with typecheck inside it. `engine:eval` is green. **`pnpm budget` is RED (exit 1)**: every student route is over 100 kB gzip, and the limit cannot pass for any route with Next 15 and React 19 alone (about 106.6 kB shared). This is an owner decision, see `docs/architecture.md` §7 items 22 and 23. Do not read this slice as green.
+
+Not shown as passing in the report, so not ticked: `/you/eligibility` (not built), the 1440 and 390 e2e screenshots, and the SEC deep review. The Data line above says "0009 migration". That label is stale. Slice 3 uses 0010, 0010a and 0010b, and the Slice 4 "0010 campus tables" label is taken.
+
+**Acceptance** (each tick cites the test that backs it, not the report total):
+- [ ] An Aadhaar DOCX produces a masked parse and a warning. Covered only by DB-gated tests (`workers/runner/test/resume-pipeline-db.test.ts`, "Aadhaar DOCX: masked parse, kind flagged, no value anywhere in the row"; `resume-f1-integration.test.ts`). Those skip without a local test database, and the report does not show whether they ran. Tick once a local run shows them passing.
+- [ ] An image-only PDF produces the builder offer. The `needs_text` outcome is tested (`resume-f1-integration.test.ts`, "an image-only PDF stops at needs_text and cannot be confirmed"), but the builder offer screen is not covered by any test.
+- [x] A builder PDF round-trips through our extractor (`workers/runner/test/resume-render.test.ts`, "goes through the real pipeline as a parsed, readable, one page resume"; not DB-gated).
+- [x] Every action has a v1 twin (`apps/web/tests/api-v1-parity.test.ts`, "every server action has a v1 twin or a written exemption").
+- [x] Cross-user requests get 404 (`apps/web/tests/api-v1.test.ts`, "a forged user id in a body or a blob key cannot reach another user", and "only the owner's draft can be edited or finished").
+- [ ] 0 LLM calls. The pipeline and task files say "0 LLM calls" in their headers, but no test or dependency rule enforces it.
 
 ## Slice 4: campus
 - **4a**, can start before G4 if the owner says so:

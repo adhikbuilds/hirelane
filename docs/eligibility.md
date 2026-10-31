@@ -1,8 +1,29 @@
 # Eligibility (Slice 1)
 
-**Status:** built, uncommitted, 2026-10-29. Pure engine code in `packages/engine/src/eligibility.ts` and `packages/engine/src/eligibility/`. It is wired into the worthwhile gate as an optional condition. Nothing in the app calls it yet. The eligibility screen (`/you/eligibility`) is Slice 3.
+**Status:** built, uncommitted, 2026-10-29. Pure engine code in `packages/engine/src/eligibility.ts` and `packages/engine/src/eligibility/`. It is wired into the worthwhile gate as an optional condition, and into these callers:
 
-**Design rule:** a student is marked as failing a criterion only on a definite, contrary value. A missing value, an unrecognised value, an inferred value, or a CGPA-to-percentage conversion with no campus rule all give `unknown`. `unknown` never blocks anything.
+- `packages/services/src/eligibility.ts`: saves and reads the profile (`eligibility_profiles`).
+- `apps/web/app/api/v1/eligibility/route.ts` and `apps/web/app/(app)/you/eligibility/actions.ts`: the v1 route and the server actions.
+- `packages/services/src/campus/drives.ts`: the student's drive inbox and the TPO drive counts.
+- `workers/runner/src/tasks/campus-stats.ts`: the nightly drive snapshot.
+
+The eligibility **screen** is not built. `/you/eligibility` has an actions file and no page yet. `apps/web/app/students/page.tsx` calls the engine on sample data only.
+
+**Design rule:** a student is marked as failing a criterion only on a definite, contrary value. A missing value, an unrecognised value, an inferred value, or a CGPA-to-percentage conversion with no rule all give `unknown`. `unknown` never blocks anything.
+
+**Readable verdicts.** Every verdict has a `reason` that a student can read. It shows the maths: the student's value, the required value, and the gap when there is one. Reasons are built from numbers and labels only, never from the notice text. The comparison is made on the same rounded value that is printed, so a reason never reads "60.0%, short by 0.0%". The examples below are from `packages/engine/test/eligibility.verdicts.test.ts`:
+
+| Case | Reason |
+|---|---|
+| Short 12th | `Your 12th: 58%. Needs 60%. Short by 2%` |
+| Met 12th | `Your 12th: 75%. Needs 60%: you meet it` |
+| 10th | `Your 10th: 55.5%. Needs 60%. Short by 4.5%` |
+| Diploma | `Your diploma: 70%. Needs 60%: you meet it` |
+| CGPA through a confirmed university rule | `8.1 CGPA = 77.0% by RGPV's rule, needs 60%: you meet it` |
+| CGPA through the campus rule | `8.0 CGPA = 76.0% by your campus's rule, needs 60%: you meet it` |
+| Failing conversion | `7.0 CGPA = 66.5% by RGPV's rule, needs 70%. Short by 3.5%` |
+| CGPA notice on the same scale | `Your graduation CGPA: 6.2. Needs 6.5. Short by 0.3` |
+| No conversion rule | Unknown. The reason says which rule is missing and shows the CGPA (see §5) |
 
 ## 1. Two stages
 
@@ -65,13 +86,25 @@ The contract is `Criterion` in `eligibility/types.ts`. Every variant carries `ev
 
 ## 5. CGPA rule
 
-`campuses.cgpa_rule` holds `{ kind: 'linear', a, b }`, meaning `pct = a * cgpa + b`, clamped to 0 to 100. `null` means there is no rule.
+A rule is `{ kind: 'linear', a, b }`, meaning `pct = a * cgpa + b`, clamped to 0 to 100. `campuses.cgpa_rule` holds the campus rule, and `null` means there is none.
 
 - `applyCgpaRule(cgpa, rule)` returns the percent, or `null` if there is no rule or the input is not finite.
 - `invertCgpaRule(pct, rule)` returns the CGPA for a percentage student against a CGPA notice. It needs `a > 0`, otherwise `null`.
-- With no rule, a CGPA-to-percent comparison is `unknown`. This is deliberate: a CGPA-to-percent conversion is a campus policy, not a fact the engine can know.
-- `grad_conversion === 'direct'` means the student supplied their own percent equivalent in `grad_pct_equiv`, and that value is used directly. Any other conversion value (`campus:<id>`, `unknown`) falls through to the CGPA rule passed in the options. Nothing in the evaluator looks up a campus by id. The caller must pass the right rule.
+- With no rule, a CGPA-to-percent comparison is `unknown`. This is deliberate: a CGPA-to-percent conversion is a policy of the university or campus, not a fact the engine can know.
+- `grad_conversion === 'direct'` means the student supplied their own percent equivalent in `grad_pct_equiv`, and that value is used directly. Any other conversion value (`campus:<id>`, `unknown`) falls through to the rules passed in the options. The evaluator does not look up a campus by id. The caller must pass the right rule.
 - Scale 100 is taken as a percent. Scale 10 is taken as a CGPA. Scales 4 and 5 are stored, but the evaluator does not convert them, so they are `unknown` unless `grad_conversion` is `direct` (then `grad_pct_equiv` is used).
+
+**Precedence** (`resolveConversion` in `eligibility/evaluate.ts`):
+
+1. The **campus rule** (`cgpaRule`) always wins. The reason says "your campus's rule".
+2. Otherwise, the **university rule** (`universityRule`) is used when the row is `verified`, or when the student has confirmed it (`universityRuleConfirmed`). The reason says "RGPV's rule" (the row's short name).
+3. Otherwise the verdict is `unknown`. The reason names the missing rule: "We need your university's CGPA to % rule" when no university is picked, or "<rule> is not confirmed yet" when a row is picked but not confirmed.
+
+**University rules** (`data/cgpa-rules.json`, read by `eligibility/university.ts`). Each row names a university, its aliases, its formula, a `source_url`, a `checked_on` date, a `check_method`, and a worked example. `findUniversityRule(query)` matches an id, a name or an alias. It tries an exact match first, then a name or alias of 3 or more characters found as whole words inside a longer line. Ids match exactly only, so a place word inside a longer line cannot match a university by its id. It never guesses: no match returns `null`. A name with a place qualifier does not register its placeless form as a key ("Mahatma Gandhi University" alone is not a key for "Mahatma Gandhi University, Kerala"). School-board rows (CBSE and similar) are excluded from lookup, because they convert school scores, not degrees.
+
+**Current state:** all 28 rows are `verified: false`. Each was entered from memory and needs a fetched check before it can be `verified`. Until a student confirms a row, it is used 0 times.
+
+**Wiring (checked 2026-10-31): the university rule is not connected to any caller.** The engine accepts `universityRule` and the answer engine takes it as an option, but no production path passes it. The drive inbox (`listMyDrives`), the nightly drive counts (`campus:stats`) and the application answers (`answerPortFor`) all pass only the campus rule. So in production a CGPA-to-percent comparison is `unknown` unless the campus has a rule or the student gave a printed percentage, even when the student has confirmed a university row. The RGPV examples in the table above come from the engine tests, not from a live path. Wiring is owner item E5 (`docs/apply.md`, "Open before pilot"). `pnpm engine:eval` runs `scripts/evals/cgpa-rules.ts`, which gates on: at least 25 rows; every row has a formula, an `https` source, and a `checked_on` date; every row converts its own example; no row is verified without a `fetched` check; an unverified row is never used without confirmation; and no rule gives `unknown`.
 
 ## 6. Worthwhile integration
 
@@ -79,7 +112,7 @@ The contract is `Criterion` in `eligibility/types.ts`. Every variant carries `ev
 
 ## 7. Evaluation gates and corpora
 
-`pnpm engine:eval` runs `scripts/evals/eligibility.ts` against `test/corpus/drive-criteria.labelled.jsonl` (88 notices).
+`pnpm engine:eval` runs `scripts/evals/eligibility.ts` against `test/corpus/drive-criteria.labelled.jsonl`, and `scripts/evals/cgpa-rules.ts` against the university rule table (§5).
 
 | Gate | Value | Notes |
 |---|---|---|
@@ -87,7 +120,9 @@ The contract is `Criterion` in `eligibility/types.ts`. Every variant carries `ev
 | Unknown to fail | must be 0 | Counted and gated |
 | Wrong verdicts | counted, printed | **Not gated.** A pass-to-fail mismatch increments `wrong` but does not fail the eval |
 
-**Gap.** The Slice 1 acceptance line says "0 wrong 'fail' verdicts". The eval only enforces "unknown never becomes fail". A `pass` that the engine turns into a `fail` is counted but not gated, so that part of the acceptance is not shown by the eval. Closing it means gating on `wrong` or on a specific pass-to-fail count, with a labelled set that contains those cases. Until then, do not describe the verdict side as fully gated.
+**Last run (2026-10-31, `pnpm engine:eval`): PASS.** The `eligibility` gate reports 88 notices, criterion accuracy 100.00% (tp 85, spurious 0, missed 0), and 93 labelled verdicts with 0 wrong and unknown→fail 0. The `cgpa-rules` gate reports 28 universities, 0 verified, 0 used without confirmation, and 28 of 28 unknown without a rule.
+
+**Gap (still open, re-checked 2026-10-29).** The Slice 1 acceptance line says "0 wrong 'fail' verdicts". The eval `ok` condition is still only `accuracy >= 0.90` and `unknownToFail === 0`. The `wrong` count is printed and not gated, so a `pass` that the engine turns into a `fail` does not fail `engine:eval`. The readable-reason tests (§8) check the text of individual verdicts, but they do not gate pass-to-fail across the corpus. Closing the gap means gating on `wrong` or on a pass-to-fail count, with labelled cases that contain those mismatches. The matching box in `docs/design/campus-build-plan.md` stays unticked until then.
 
 The labelled corpora were written by the same agents who wrote the parsers. Treat the eval scores as regression guards, not measured accuracy.
 
@@ -97,18 +132,26 @@ The labelled corpora were written by the same agents who wrote the parsers. Trea
 |---|---|
 | `packages/engine/test/eligibility.parse.test.ts` | Each criterion type and its surface forms |
 | `packages/engine/test/eligibility.evaluate.test.ts` | Verdicts, roll-ups, overall, CGPA rule, unconfirmed profiles |
+| `packages/engine/test/eligibility.verdicts.test.ts` | Readable reasons with the maths; rounding; rule precedence (campus, then confirmed university, then unknown) |
+| `packages/engine/test/cgpa-rules.test.ts` | University rule lookup and aliases; rules are used only when verified or confirmed |
 | `packages/engine/test/eligibility.corpus.test.ts` | The drive-criteria corpus through the parser |
 | `packages/engine/test/eligibility.property.test.ts` | Unknown never blocks the worthwhile gate |
 | `packages/engine/test/worthwhile.test.ts` | The `academic_eligible` condition |
+| `packages/engine/test/audit-fixes.test.ts` | Regression tests from the 2026-10-29 audit: a school-board row never converts a degree, a place name is not a university, cutoffs compare before rounding, and the submitted percentage is the one used for eligibility |
 
 ## 9. Known limits
 
 - The parser is regex-based. It is written for Indian drive notices (CGPA, percent, batch and passout years, B.Tech and friends). Other phrasings fall through to `unknown` rather than being guessed.
 - Degree and branch aliases are local tables. They duplicate some of `data/degrees.json` and `data/branches.json`, and `criteria.ts` says so in its header.
 - The notice corpus (88 labelled rows) is written by hand from paraphrased, public-style notices, with no employer or person names. It is not a measured sample of real drive notices.
+- The university rule table has no verified rows yet (§5). Every CGPA-to-percent verdict for a university needs the student's confirmation until a row is fetched and checked.
+- The university rule is not passed by any production caller (§5, "Wiring"). Until it is, a university rule has no effect outside the engine tests and the eval.
 - Pass-to-fail verdict errors are not gated (see §7).
+- The eligibility screen is not built (§ Status).
 
 ## Related
 
 - `docs/resume.md` for the education rows that feed the profile.
+- `docs/campus.md` for the drive inbox and the nightly drive counts that use this engine.
+- `docs/answers.md` for application answers, which read the same profile and the same CGPA rules.
 - `docs/design/campus-build-plan.md` for the S1.9 and S1.10 tasks and the Slice 1 acceptance.

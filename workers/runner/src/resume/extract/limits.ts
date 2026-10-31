@@ -9,3 +9,6 @@ export const isPdfMagic = (b: Uint8Array) => startsWith(b, PDF_MAGIC);
 export const isZipMagic = (b: Uint8Array) => startsWith(b, ZIP_MAGIC);
 /** True when the bytes start with a PDF or ZIP signature. */
 export const hasKnownMagic = (b: Uint8Array) => isPdfMagic(b) || isZipMagic(b);
+
+/** Longest extracted text returned to callers (characters). Longer text is truncated. */
+export const MAX_TEXT_CHARS = 200_000;

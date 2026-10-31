@@ -1,0 +1,15 @@
+From: Kestrel Analytics Recruiting <jobs@kestrelanalytics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=kestrelanalytics.example.test; dmarc=pass header.from=kestrelanalytics.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 08:28:00 GMT
+Message-ID: <corpus-05@kestrelanalytics.example.test>
+MIME-Version: 1.0
+Subject: =?UTF-8?B?TW92aW5nIHlvdSB0byB0aGUgaW50ZXJ2aWV3IHN0YWdl?=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hi Divya,
+
+We reviewed your application and would like to take you forward to the interview stage. Our hiring manager is available on Tuesday 4 November. Reply with a time that works and we'll send a calendar invite.
+
+Thanks!

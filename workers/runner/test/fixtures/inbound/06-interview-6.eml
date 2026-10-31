@@ -1,0 +1,16 @@
+From: Tamarind Cloud Recruiting <jobs@tamarindcloud.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=tamarindcloud.example.test; dmarc=pass header.from=tamarindcloud.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Thu, 29 Oct 2026 09:35:00 GMT
+Message-ID: <corpus-06@tamarindcloud.example.test>
+MIME-Version: 1.0
+Subject: Your interview is scheduled - Software Developer
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><p>Dear Karthik,</p><br>
+<p>This is to inform you that your interview for Software Developer is sche=
+duled on Thursday 6 November. Mode: Zoom (link below). Please join ten minu=
+tes early and keep a government photo ID handy.</p><br>
+<p>All the best,<br>
+Campus Hiring</p></body></html>

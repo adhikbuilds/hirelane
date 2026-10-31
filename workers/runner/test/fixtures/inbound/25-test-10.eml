@@ -1,0 +1,16 @@
+From: Kestrel Analytics Recruiting <jobs@kestrelanalytics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=kestrelanalytics.example.test; dmarc=pass header.from=kestrelanalytics.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 10:48:00 GMT
+Message-ID: <corpus-25@kestrelanalytics.example.test>
+MIME-Version: 1.0
+Subject: =?UTF-8?B?Um91bmQgMTogb25saW5lIHRlc3Q=?=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hi Asha,
+
+Round 1 is an online test with 30 questions on data structures and problem solving, duration 60 minutes. Please log in with the credentials below on Tuesday 4 November.
+
+User: candidate-4471
+Password: sent separately

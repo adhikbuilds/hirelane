@@ -35,6 +35,7 @@
 | `packages/db` | `@hirelane/db` | `client.ts` (`withAdmin`, `withUser`, `getPool`, `close`), `migrate.ts`, `migrator.ts`, `reset.ts`, `seed.ts`, `verify-schema.ts`, `queue.ts` (`addJob`), Drizzle schema in `src/schema/*.ts`, and the persistence helpers in `src/enrich/` and `src/ingest/` | `pg`, `drizzle-orm`, `graphile-worker` (see §2.3) | Contain business logic | Built (P0 to P2). `verify-rls.ts`, `verify-auth.ts` and `auth.ts` are planned (P4) |
 | `packages/ingest` | `@hirelane/ingest` | Connectors (`greenhouse.ts`, `lever.ts`, `ashby.ts`) → `RawPosting`, recorder, `boards.json`, fixtures, persistence and diff, and company logo resolution in `src/company/` | `db` (and `sharp`, `zod`) | Enrichment or LLM calls | Built (P1, P3). Consumed by `workers/runner` only. **Gap:** no `src/index.ts` barrel. The runner deep-imports `src/run/index`, `src/connectors/index`, `src/contract`, `src/company/logo` and `src/company/transport` (see §6 and §7, item 13) |
 | `packages/agent` | `@hirelane/agent` | `llm/`, `embeddings/`, resume parsing, drafting, approval state machine, handoff payload and per-ATS capabilities, tailoring, `mail/`, `submit/` (P9, flagged) | `engine`, `db` | Any HTTP call to an ATS application endpoint outside `src/submit/` | Partly built (P2): only `src/llm/*` exists, exported as `.` and `./llm`. Everything else is planned (P2 onward). **Nothing imports `@hirelane/agent` yet**, and `workers/runner` does not depend on it |
+| `packages/services` | `@hirelane/services` | The service layer (Amendment B §11): one function per feature, called by server actions and `/api/v1`. Resumes (upload, confirm, download, delete), eligibility, the guided builder, `me`/export, idempotency, the sealing helpers (`seal.ts`, `aad.ts`), the error model and the view types. Built Slice 3, uncommitted. Barrel in `src/index.ts`. Tests in `packages/services/test/` | `db`, `engine`, `vault`, `agent` (rule `services-deps`) | Route handlers or server actions with business logic of their own | Built (Slice 3). The `apps/web` v1 routes and actions call it |
 | `workers/runner` | `@hirelane/runner` | graphile-worker bootstrap, tasks, crontab, and the in-process `enrich:run` CLI | all packages | Contain UI | Built, partially (P0 to P2). Registered tasks are listed in §4.3. `company:logo` is coded and tested but not registered |
 | `apps/web` | `@hirelane/web` | Pages, server actions, route handlers, `lib/{queries/,session,format}.ts` | `db`, `engine`, `agent` | Import `ingest` or `workers` | Built, P0 to P3, plus the landing v3 home page (`/`), the waitlist and the autopilot stats route. The public board, job, list and company pages, the public API route handlers, markdown negotiation, `llms.txt`, sitemaps and `robots.txt` are part of P3. It depends on `@hirelane/db` (`withAdmin`) and `@hirelane/engine` (role families, places). **Still stubs:** `lib/session.ts` (sessions arrive in P4), and `lib/queries.ts` (`getFreshestJobs`, unused). `lib/queries.ts` sits next to the real `lib/queries/` directory (`jobs.ts`, `landing.ts`), so both exist (§7, item 12) |
 
@@ -51,6 +52,12 @@ The rules that exist today, with their ids in the config:
 | `ingest-only-db` | `packages/ingest/src` | any `packages/*` except `ingest` and `db`, `apps/`, `workers/` | Ingest stores raw postings and never enriches. **Note:** it does not forbid `@anthropic-ai/*` from `node_modules`, so the no-LLM rule is only partly enforced |
 | `agent-engine-db` | `packages/agent/src` | any `packages/*` except `agent`, `engine` and `db`, `apps/`, `workers/` | Agent may import engine and db. This also keeps `agent` from importing `ingest`, so the one-way rule holds |
 | `web-boundaries` | `apps/web/` | `packages/ingest`, `workers/` | Web enqueues through `addJob` and never runs jobs inline. **Note:** graphile-worker is not forbidden directly, which is covered by `addJob` being the only path |
+| `services-deps` | `packages/services/src` | any `packages/*` except `services`, `db`, `engine`, `vault` and `agent`, `apps/`, `workers/` | The shared service layer is called by server actions and `/api/v1`. It may use db, engine, vault and agent, and nothing else. Added Slice 3 |
+| `api-v1-thin` | `apps/web/app/api/v1/` | `@hirelane/db`, any other workspace package except `services`, `workers/`, web modules other than `lib/auth` and `lib/http` | Route handlers parse, call `@hirelane/services`, and map results. Added Slice 3 |
+| `actions-thin` | `apps/web/app/(app)/**/actions.ts` | any `packages/*` except `services`, `workers/` | Signed-in server actions reach data through `@hirelane/services` or `apps/web/lib` only (Amendment B §11). Added Slice 3 |
+| `extractors-worker-only` | anything outside `workers/runner/` | `unpdf`, `pdfjs-dist`, `fflate`, `pdfkit`, `fontkit` | The heavy parsers and renderer stay in the runner, where the extraction sandbox is. Added Slice 3 |
+
+The four Slice 3 rules are checked by `pnpm lint:deps`. Their own tests are in `scripts/test/depcruise-rules.test.ts`.
 | `workers-not-imported` | anything outside `workers/` | `workers/` | Workers are leaves |
 | `no-circular` | `*` | circular | |
 
@@ -133,6 +140,8 @@ The options considered before the decision were:
 
 The "No user-owned table exists yet" point above still holds. Nothing is at risk today.
 
+**Slice 3 addition (2026-10-29).** `apps/web/lib/auth/erasure.ts` runs one `SELECT` of the deleting user's own `blob_keys` through `withAdmin`, so account erasure can delete the stored files before the cascade. It is one exact file on the `withadmin-guard` allowlist. **Owner sign-off is pending.** The alternative is a column grant on `resumes(user_id, blob_key)` plus an RLS policy for `hirelane_auth`, which adds schema surface. See `docs/auth.md` §7.
+
 ---
 
 ## 4. Queue decision
@@ -175,9 +184,12 @@ The intended schedule (PLAN §5.5) is:
 * * * * *     application:commit-expired
 * * * * *     heartbeat
 0 4 1 * *     company:logo          # monthly refresh; exact slot [assumption]
+13 * * * *    resume:purge-sweep    # Slice 3: hourly backstop for the 24 h resume purge
+43 * * * *    resume:stuck-sweep    # Slice 3: hourly; re-queues stuck uploads, revives stuck extracts
+27 * * * *    idempotency:sweep     # Slice 3: deletes idempotency keys older than 24 h
 ```
 
-**Built today** (`workers/runner/crontab`): `heartbeat` (`* * * * *`), `ingest:schedule` (`7 */6 * * *`, Phase 1) and `enrich:schedule` (`37 */6 * * *`, Phase 2, 30 minutes after ingest). The `company:logo` line above is not in the crontab yet, because the task is not registered (§4.3). The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
+**Built today** (`workers/runner/crontab`): `heartbeat` (`* * * * *`), `ingest:schedule` (`7 */6 * * *`, Phase 1) and `enrich:schedule` (`37 */6 * * *`, Phase 2, 30 minutes after ingest). The `company:logo` line above is not in the crontab yet, because the task is not registered (§4.3). The Slice 3 lines (`resume:purge-sweep`, `resume:stuck-sweep`, `idempotency:sweep`) are in the crontab, and `resume:purge-sweep`, `resume:stuck-sweep` and `idempotency:sweep` are registered in `tasks/resume-purge.ts`, `tasks/resume-stuck.ts`. The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
 
 ### 4.3 Task catalogue (PLAN §5.5, condensed)
 
@@ -195,10 +207,14 @@ The intended schedule (PLAN §5.5) is:
 | `embed:job` / `embed:resume` / `embed:reindex` | enrich, parse, provider change | per entity | admin / user | 2–4 | Planned |
 | `match:user-full` | resume or profile change | per user (replace) | user | 4 | Planned |
 | `match:user-delta` | ingest finalize | per user | user | 4 | Planned |
-| `resume:extract` | upload (Slice 3) | per upload | user | 3 | Planned. The extractor is built as a library in `workers/runner/src/resume/extract/` (`extractInThread`), but no task is registered yet. See `docs/resume.md` |
-| `agent:parse-resume` | upload | per resume | user | 4 | Planned |
+| `resume:extract` | upload, builder render, stuck sweep | `jobKey resume:extract:{id}`; id-only payload | user | 3 | Built (Slice 3, uncommitted). `tasks/resume-extract.ts` runs `resume/pipeline.ts`: the sandboxed extraction (`extractInThread`), masking, health, education. Writes the extractor-owned columns as the owner role. See `docs/resume.md` §0 |
+| `agent:parse-resume` | upload | per resume | user | 4 | Planned. **Superseded for the deterministic parse:** Slice 3 parses with the engine inside `resume:extract`. An LLM parse, if added, would be a separate task |
 | `agent:draft` | apply click, or autopilot | per application | user | 5 | Planned |
-| `resume:render` | tailoring accepted | per version (Playwright PDF) | user | 5 | Planned |
+| `resume:render` | `finishBuilder` (Slice 3 builder) | per draft; id-only payload; `jobKey` per resume | user | 3 | Built (Slice 3, uncommitted). `tasks/resume-render.ts`: pdfkit, one page, then queues `resume:extract`. The tailoring render for Phase 5 (Playwright PDF) is still planned |
+| `resume:purge` | delete; extract (replacing an Aadhaar or PAN original) | `jobKey resume:purge:{id}` | user | 3 | Built (Slice 3). Deletes every blob of the root and its versions first, then nulls `parsed_enc`, `label`, `skills`, `file_hmac`, `blob_key` and sets `purged_at` (0010b). Rows are kept, so the audit trail survives. `tasks/resume-purge.ts` |
+| `resume:purge-sweep` | cron `13 * * * *` | singleton | user (per resume) | 3 | Built (Slice 3). Purges rows with `purge_after` passed, and rows deleted 23 h ago or more, so the 24 h bound holds after an hourly gap. Soft-deletes superseded Aadhaar, VID or PAN originals |
+| `resume:stuck-sweep` | cron `43 * * * *` | singleton | admin | 3 | Built (Slice 3). Re-queues `resume:extract` for rows in `uploaded` for more than 10 minutes, and resets `extracting` rows older than 5 minutes. `tasks/resume-stuck.ts` |
+| `idempotency:sweep` | cron `27 * * * *` | singleton | admin | 3 | Built (Slice 3). Deletes `idempotency_keys` older than 24 h. `tasks/resume-stuck.ts` |
 | `application:commit-expired` | every minute | singleton | see §3.1 | 5 | Planned |
 | `mail:inbound` / `mail:forward` | webhook | per message id; forward p95 ≤ 60s | admin, then user | 6 | Planned |
 | `autopilot:run` | after match delta | per user; drafts only | user | 7 | Planned |
@@ -227,6 +243,9 @@ The intended schedule (PLAN §5.5) is:
 | `HIRELANE_GOOGLE_CLIENT_ID` | none | web auth (`lib/auth/google.ts`) | no | 2 | Google OIDC client id. Sign-in stays off unless the client id and secret are both set. Not in `.env.example` |
 | `HIRELANE_GOOGLE_CLIENT_SECRET` | none | web auth (`lib/auth/google.ts`) | **yes** | 2 | Google OIDC client secret. Not in `.env.example` |
 | `HIRELANE_OIDC_ISSUER` | `https://accounts.google.com` | web auth (`lib/auth/google.ts`) | no | 2 | Issuer override. In production it must be a public https URL |
+| `LINKEDIN_CLIENT_ID` | none | web auth (`lib/auth/linkedin.ts`) | no | 2 (Slice 3 docs) | Sign in with LinkedIn (OIDC). Both client values must be set, or the button is hidden and the routes answer 503. In `.env.example` |
+| `LINKEDIN_CLIENT_SECRET` | none | web auth (`lib/auth/linkedin.ts`) | **yes** | 2 (Slice 3 docs) | LinkedIn client secret. Same rule as the id. In `.env.example`, blank |
+| `HIRELANE_LINKEDIN_ISSUER` | `https://www.linkedin.com/oauth` | web auth (`lib/auth/linkedin.ts`) | no | 2 (Slice 3 docs) | Issuer override. In production it must be a public https URL, or LinkedIn sign-in is off. Not in `.env.example` |
 | `HIRELANE_INSECURE_DEV_COOKIE` | unset | web auth (`lib/auth/cookies.ts`) | no | 2 | `1` uses unprefixed, non-Secure cookie names for dev browsers that drop `__Host-` cookies. Ignored when `NODE_ENV` is `production` |
 | `HIRELANE_MAIL_OUTBOX` | `<repo>/.mail/outbox` | agent `mail/file-outbox.ts` | no | 2 | Directory for the file outbox (one `.eml` per message). The only mail transport so far. Not in `.env.example` |
 | `HIRELANE_OPS_TOKEN` | none | web `/ops/*` | **yes** | 1 | In `.env.example`, blank. Gates ops until admin roles land in Phase 4 |
@@ -278,7 +297,10 @@ hirelane/
 │  ├─ resume.md                   [built Slice 1, uncommitted] resume pipeline: extract, sensitive, sections, health
 │  ├─ eligibility.md              [built Slice 1, uncommitted] criterion grammar, unknown semantics, CGPA rule
 │  ├─ auth.md                     [built Slice 2, uncommitted] Google and email code, sessions, 18+ gate, accounts flag, delete. The UI pages are not built
-│  ├─ public-api.md               [built P3, uncommitted] public JSON API, markdown negotiation, llms.txt, sitemaps, CORS, ETag, rate limits
+│  ├─ public-api.md               [built P3, uncommitted] public JSON API, markdown negotiation, llms.txt, sitemaps, CORS, ETag, rate limits. §14: the signed-in v1 API (Slices 3 and 4)
+│  ├─ answers.md                 [built Slice 4, uncommitted, 2026-10-31] application answers without an LLM: classifier, the 23 keys, evidence rule, eval gate. See the engine line below
+│  ├─ apply.md                    [built Slice 4, uncommitted, 2026-10-31] right swipe = applied: fixture-only executor, undo window, states, cap, consent, receipts, employer mail, open-before-pilot list
+│  ├─ campus.md                   [built Slice 4, uncommitted, 2026-10-31] campus joins, share levels, k = 10 numbers, roster staging, drive caps and differencing, staff lifecycle
 │  ├─ recon/                      [built] Shortlist teardown notes and text (reference only; shots/ and *-text.md are gitignored)
 │  ├─ screens/                    [built] phase-0 to phase-3 screenshots (desktop and mobile), committed per phase
 │  └─ privacy-model.md            [planned P4]
@@ -301,14 +323,15 @@ hirelane/
 │  │  ├─ src/{salary,fx,currency,requirements,skills,places,text,trace,dedup,errors,types,version}.ts   [built P2, uncommitted]
 │  │  ├─ src/classify/            [built P2] level, workplace, employment, roleFamily, visa; index.ts re-exports
 │  │  ├─ src/internal/tracer.ts   [built P2] evidence helper shared by classifiers and dedup
+│  │  ├─ src/answers/             [built Slice 4, uncommitted, 2026-10-31] classify.ts (rules, traps first), answer.ts (`answerFrom`, `answerQuestion`), types.ts (23 keys). No LLM. See docs/answers.md
 │  │  ├─ src/{match,autopilot,replies,questions}/   [planned; not in Phase 2]
 │  │  ├─ data/                    [built P2] skills.json (1,182 skills), role-families.json, salary-bounds.json, fx_rates.json (illustrative, as of 2026-10-15), places.json
-│  │  ├─ scripts/{eval,score}.ts  [built P2] `pnpm engine:eval`; thresholds in score.ts. Corpora in test/corpus/. `scripts/evals/{education,eligibility,sensitive}.ts` are the Slice 1 gates
+│  │  ├─ scripts/{eval,score}.ts  [built P2] `pnpm engine:eval`; thresholds in score.ts. Corpora in test/corpus/. `scripts/evals/{education,eligibility,sensitive}.ts` are the Slice 1 gates, and `cgpa-rules`, `answers` and `layout` were added 2026-10-31
 │  │  └─ test/                    [built P2] one file per module plus corpus.test.ts and the three JSONL corpora
 │  ├─ db/
 │  │  ├─ package.json             [built P0] exports ".", "./env"; scripts migrate, seed, reset, verify-schema, test, typecheck
 │  │  ├─ migrations/NNNN_*.sql    [built P0 to P3] 0001_foundation, 0002_companies_boards_postings, 0003_ingest_runs, 0004_jobs_enrichment,
-│  │  │                         0004a_llm_calls, 0004b_posting_geo, 0005_public_board, 0006_waitlist, 0007_rls_posture, 0008_auth, 0009_auth_hardening (Slice 2 and the RLS posture, 2026-10-29)
+│  │  │                         0004a_llm_calls, 0004b_posting_geo, 0005_public_board, 0006_waitlist, 0007_rls_posture, 0008_auth, 0009_auth_hardening (Slice 2 and the RLS posture, 2026-10-29), 0010_resumes_profiles, 0010a_resumes_builder_drafts, 0010b_resumes_purge_retention (Slice 3), 0011_campus, 0011a_campus_functions, 0011b_campus_fixes, 0012_apply_pipeline, 0012a_apply_fixes, 0013_campus_audit, 0013a_apply_audit, 0013b_campus_rule_bounds (Slice 4 and apply, uncommitted, 2026-10-31)
 │  │  ├─ test/                    [built P0] migrator.test.ts, verify-schema.test.ts, queue.test.ts, helpers.ts
 │  │  └─ src/
 │  │     ├─ client.ts            [built P0] getPool, getDb, withAdmin, withUser, close
@@ -338,6 +361,10 @@ hirelane/
 │  │  ├─ src/record/              [built P1] recordBoards (1 req/s per host; writes fixtures, boards.json, manifest), limiter.ts, fetch.ts, mini.ts (deriveMini), trim.ts, cli.ts (pnpm ingest:record)
 │  │  ├─ src/cli.ts               [built P1] pnpm ingest:run (fixture or live)
 │  │  └─ test/                    [built P1] 12 files, 166 tests (passing 2026-10-16)
+│  │  ├─ src/jobtext.ts, jobtext/score.ts  [built Slice 3, uncommitted] `parsePastedJob`, `sourceHintFromUrl`, `scoreForProfile`; eval scoring. Engine-only: no route or action calls them yet. See docs/jobtext.md
+│  │  ├─ src/scam.ts              [built Slice 3, uncommitted] `detectScamSignals` (7 signal ids). See docs/jobtext.md
+│  │  ├─ src/resume/              [built Slice 1] sections, education, sensitive, verhoeff, text-layer, health. See docs/resume.md
+│  │  ├─ src/eligibility/         [built Slice 1] criteria parser, evaluate, CGPA rule. See docs/eligibility.md
 │  └─ agent/                      [partly built P2] @hirelane/agent. package.json exports "." and "./llm". Depends on @anthropic-ai/sdk, zod, @hirelane/db. 49 tests (verify, 2026-10-29). `src/llm/` and `src/mail/` exist
 │     ├─ src/index.ts             [built P2] re-exports llm/index.ts
 │     ├─ src/llm/                 [built P2, uncommitted] AnthropicProvider (anthropic.ts), FixtureProvider (fixture.ts), NullProvider (null.ts), factory.ts (HIRELANE_LLM_MODE: anthropic | fixture | off), prompt.ts, db-sink.ts (llm_calls metadata only), types.ts (DEFAULT_MODEL claude-opus-5-5). See docs/enrichment.md §5
@@ -345,14 +372,19 @@ hirelane/
 │     ├─ embeddings/              [planned P2] hash; local [P4]
 │     ├─ resume/                  [planned P4] LLM parse. The deterministic parser is in `packages/engine/src/resume/` (Slice 1)
 │     ├─ draft/, approval/, handoff/, tailor/   [planned P5]
-│     ├─ mail/                    [built Slice 2] mailer contract, file outbox, code template. Inbound adapter still planned (P6)
-│     └─ submit/                  [planned P9] flagged, isolated entry point
+│     ├─ mail/                    [built Slice 2] mailer contract, file outbox, code template. Inbound: the fixture-mailbox reader is in `workers/runner/src/tasks/inbound-*.ts` (Slice 4). No live mail transport yet (P6)
+│     └─ submit/                  [built, uncommitted, 2026-10-31] fixture-only executor: `execute.ts` (the gates and order), `transport.ts` (the host guard, fixture hosts only), `challenge.ts` (CAPTCHA, challenge and login markers), `forms.ts`, `payload.ts`, reached through `apply:submit`. No live transport. `src/apply-mode.ts` reads `HIRELANE_AUTO_APPLY`. See docs/apply.md
+├─ packages/services/            [built Slice 3, uncommitted] @hirelane/services: the shared service layer (Amendment B §11). Depends on db, engine, vault, agent only (rule `services-deps`). Files: `resumes.ts` (upload, list, get, confirm, download, delete), `eligibility.ts`, `builder.ts` and `builder-steps.ts`, `me.ts` (get, export), `idempotency.ts`, `seal.ts`, `aad.ts`, `parsed.ts`, `provenance.ts`, `errors.ts` (`ServiceError`, `toProblem`), `ctx.ts`, `db.ts`, `views.ts`. Slice 4 (uncommitted, 2026-10-31) adds `campus/` (membership and join codes, roster, drives, TPO staff, outcomes, NAAC; see docs/campus.md) and `apply/` (swipe, consent, apply address, tracker, inbox, answer bank; see docs/apply.md). Tests in `packages/services/test/`
 ├─ packages/vault/               [built Slice 2] @hirelane/vault: master key provider, HMAC subkeys (`hmac`), blob storage (`HIRELANE_STORAGE_DIR`), `setup-keys.ts`
 ├─ workers/runner/                [built, partial P0] package name @hirelane/runner
 │  ├─ src/index.ts                [built P0] graphile-worker bootstrap, concurrency 4, pollInterval 2000
 │  ├─ src/enrich-cli.ts           [built P2] `pnpm enrich:run`, in-process enrichment (no queue), uses the enrich-core functions
-│  ├─ src/resume/extract/        [built Slice 1, library] `extractInThread` (sandboxed child), `extractResume`, DOCX zip guard, PDF. Not registered as a task (Slice 3). See docs/resume.md
-│  ├─ src/tasks/index.ts          [built P0, extended P1 to P2] taskList = { heartbeat, ...createIngestTasks(), ...createEnrichTasks() }. `createCompanyTasks()` is not spread in yet
+│  ├─ src/resume/extract/        [built Slice 1, library] `extractInThread` (sandboxed child), `extractResume`, DOCX zip guard, PDF. Registered through `tasks/resume-extract.ts` (Slice 3). See docs/resume.md
+│  ├─ src/resume/pipeline.ts      [built Slice 3, uncommitted] the extraction pipeline: gate, extract, normalise, text layer, sections, mask, health, education. No DB, no network, 0 LLM calls
+│  ├─ src/resume/render/          [built Slice 3, uncommitted] pdfkit builder renderer (`answers.ts`, `index.ts`): one page, single column
+│  ├─ src/tasks/resume-common.ts, resume-extract.ts, resume-render.ts, resume-purge.ts, resume-stuck.ts   [built Slice 3, uncommitted] resume:extract, resume:render, resume:purge, resume:purge-sweep, resume:stuck-sweep, idempotency:sweep. All registered in `tasks/index.ts`
+│  ├─ src/tasks/campus-stats.ts, apply-common.ts, apply-submit.ts, inbound-scan.ts, inbound-classify.ts, inbound-mime.ts   [built Slice 4, uncommitted, 2026-10-31] `campus:stats` (nightly, drive verdicts and counts, roster apply), `apply:submit` and `apply:sweep` (the executor's repo and gates), `inbound:scan` (fixture mailbox; no schedule). Registered in `tasks/index.ts`. See docs/campus.md and docs/apply.md
+│  ├─ src/tasks/index.ts          [built P0, extended P1 to P2] taskList = { heartbeat, ...createIngestTasks(), ...createEnrichTasks(), ...resume tasks (Slice 3) }. `createCompanyTasks()` is not spread in yet
 │  ├─ src/tasks/ingest.ts         [built P1] ingest:schedule, ingest:source, ingest:finalize; deps injectable (IngestDeps)
 │  ├─ src/tasks/enrich.ts         [built P2] enrich:schedule, enrich:company, enrich:posting (registered, no caller), facets:refresh; deps injectable (EnrichDeps)
 │  ├─ src/tasks/enrich-core.ts    [built P2] enrichCompany, enrichPostingById, ensureReferenceData, syncJobLifecycle, loadEngineFx
@@ -363,7 +395,7 @@ hirelane/
 │  ├─ test/ingest.tasks.test.ts   [built P1]
 │  ├─ test/enrich.tasks.test.ts, test/enrich.test.ts   [built P2]
 │  ├─ test/company.tasks.test.ts  [built P3]
-│  └─ crontab                     [partial P0, extended P1 to P2] heartbeat, `7 */6 * * * ingest:schedule`, `37 */6 * * * enrich:schedule`; full schedule in §4.2
+│  └─ crontab                     [partial P0, extended P1 to P2, Slices 3 and 4 (resume, campus:stats, apply:sweep)] heartbeat, `7 */6 * * * ingest:schedule`, `37 */6 * * * enrich:schedule`; full schedule in §4.2
 ├─ apps/web/                      [built P0 to P3, landing v3 and waitlist] Next 15, React 19, Tailwind v4, :3001. Depends on @hirelane/db and @hirelane/engine
 │  ├─ middleware.ts               [built P3] markdown negotiation for /job/{slug} (lib/negotiate.ts). Rewrites to /md/job/{slug}, 404s direct /md/*, adds Vary and a Link alternate to HTML
 │  ├─ app/layout.tsx, wordmark.tsx, source-badge.tsx, globals.css, icon.svg, fonts/   [built P0] shell, wordmark, ATS source marks, Overpass
@@ -399,7 +431,11 @@ hirelane/
 │  ├─ lib/queries/jobs.ts         [built P3] the board query: filter, total, page and facets in one parameterised statement; appOrigin(); toPublicJob()
 │  ├─ lib/queries.ts              [stub P0, dead] getFreshestJobs has no callers. It sits beside lib/queries/ and should be deleted (§7, item 12)
 │  ├─ lib/session.ts              [stub P0] getSession is a placeholder until P4
-│  ├─ lib/auth/                   [built Slice 2, uncommitted] flags, origin, cookies, session, pending-signup, email-code, google, request, deps. See docs/auth.md
+│  ├─ lib/auth/                   [built Slice 2, uncommitted] flags, origin, cookies, session, pending-signup, email-code, google, linkedin, oidc-shared, erasure, request, deps. See docs/auth.md
+│  ├─ app/auth/linkedin/{start,callback}/route.ts   [built Slice 3, uncommitted] LinkedIn OIDC route handlers. See docs/auth.md §4d
+│  ├─ app/api/v1/                 [built Slices 3 and 4, uncommitted] 43 route files (base, campus, tpo, apply), thin adapters over @hirelane/services. `lib/http/v1.ts` is the wrapper (accounts flag, session, Origin, rate limit, Idempotency-Key). Operation lists: `lib/openapi-campus.ts`, `lib/openapi-apply.ts`, `lib/openapi-types.ts`. `lib/adapters/` maps service output to the campus and apply screens' view models. Operations, auth and errors in docs/public-api.md §14. OpenAPI at app/api/v1/openapi.json/route.ts
+│  ├─ app/campus/                 [built Slice 4, uncommitted] TPO console pages: overview, drives, outcomes, settings, students. The student's drive inbox is `app/(app)/drives/`. See docs/campus.md
+│  ├─ app/(app)/resume, you, paste, home, drives, tracker, ...   [built Slice 3 screens] server actions wrap the services. /you/eligibility is NOT built (folder holds actions.ts only)
 │  ├─ app/auth/google/{start,callback}/route.ts   [built Slice 2] Google OIDC route handlers
 │  ├─ app/(auth)/, app/(app)/     [built Slice 2] server actions only (signin, signin/code, welcome, you). No page.tsx yet, so the UI is not reachable
 │  ├─ lib/public-api-params.ts    [built P3] API_PARAM_ORDER, parseStrict (400 on bad values), serializeApi (canonical links)
@@ -442,8 +478,16 @@ hirelane/
 14. **`company:logo` is not registered.** Spread `createCompanyTasks()` into `taskList` in `workers/runner/src/tasks/index.ts`, and add the monthly crontab entry. **Open** (added 2026-10-28).
 15. **`enrich:posting` has no caller.** It is registered in `tasks/enrich.ts` but nothing enqueues it. Either wire it into the enrich flow or remove it. **Open** (added 2026-10-28).
 16. **Engine `src/index.ts` placeholder.** Delete the leftover `export const x=1` line. **Closed 2026-10-29:** the line is gone.
-17. **Resume extractor is not wired.** `workers/runner/src/resume/extract/` is a library. No task or route calls it, so nothing reads an upload yet. Wire it in Slice 3 as `resume:extract` (§4.3). **Open** (added 2026-10-29).
+17. **Resume extractor is not wired.** `workers/runner/src/resume/extract/` is a library. No task or route calls it, so nothing reads an upload yet. Wired in Slice 3 as `resume:extract` (§4.3). **Closed in code 2026-10-29**; it is not yet run against a live upload path.
 18. **Eligibility verdict gate is partial.** `engine:eval` gates criterion accuracy and unknown-to-fail, but not pass-to-fail verdict errors. See `docs/eligibility.md` §7. **Open** (added 2026-10-29).
-19. **Auth pages are missing.** `/signin`, `/signin/code`, `/welcome` and `/you` have server actions but no `page.tsx`. Logout and delete redirect to `/signin` and `/`. See `docs/auth.md`. **Open** (added 2026-10-29).
+19. **Auth pages now exist** (checked 2026-10-29): `page.tsx` for `/signin`, `/signin/code` and `/welcome`, and `/you` under `(app)`. Logout and delete redirect to `/signin` and `/`. See `docs/auth.md`. **Closed** for the missing-page gap; browser checks are in `docs/screens/auth-*.png`.
 20. **Mail has no real transport.** The file outbox is the only transport, so code mail is not delivered in production until an owner decision. **Open** (added 2026-10-29).
 21. **Two origin variables.** Public job URLs read `APP_ORIGIN`. Auth reads `HIRELANE_APP_ORIGIN`. Pick one name, or document both. **Open** (added 2026-10-29).
+22. **`pnpm budget` is RED (exit 1).** Limit 100 kB gzip first-load JS per student route. Measured 2026-10-29 in an isolated mirror: `/signin`, `/signin/code`, `/welcome` and `/you` at 190.9 kB; `/resume` at 106.9 kB; `/terms` (reference, no student UI) at 106.8 kB. Next 15 and React 19 alone are about 106.6 kB shared, so the limit as written cannot pass even for an empty page. **Owner decision:** a delta over the framework, or a higher absolute cap. **Open** (added 2026-10-29).
+23. **Radix chunks on the auth routes (lead, not verified).** The extra ~84 kB on `(auth)` routes is thought to come from `components/shadcn/button.tsx` importing `Slot` from the `radix-ui` barrel, and the `Label` primitive in `shadcn/input`. The fix may be a narrower import or a dependency change. Not verified end to end. **Open.**
+24. **`withAdmin` allowlist entry for `apps/web/lib/auth/erasure.ts`** needs owner sign-off (§3.1, `docs/auth.md` §7). **Open** (added 2026-10-29).
+25. **Child network isolation** for `resume:extract` is a deploy precondition, not code. Node's permission model does not restrict the network. **Open** (`docs/resume.md`, "Deploy preconditions").
+26. **`/you/eligibility` is not built.** The route folder holds only `actions.ts`, and `pnpm budget` lists it as "not built". **Open** (added 2026-10-29).
+27. **`@hirelane/jobtext` is engine-only.** `parsePastedJob`, `scoreForProfile` and `detectScamSignals` have no caller outside `packages/engine`. **Open** (added 2026-10-29). See `docs/jobtext.md`.
+28. **LinkedIn sign-in is not verified against live LinkedIn.** Tests use a mock issuer. Check the PKCE advertisement and the `iss` value on a live discovery document before the pilot. **Open** (added 2026-10-29). See `docs/auth.md` §4d.
+29. **Slice 3 migrations are 0010, 0010a and 0010b.** The build plan's "0009" label is stale, and Slice 4's "0010 campus tables" number is now taken. **Open** (added 2026-10-29), for the plan to renumber.

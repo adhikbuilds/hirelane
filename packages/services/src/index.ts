@@ -31,3 +31,5 @@ export { UploadInput, IdInput, ConfirmInput } from './resumes';
 export { SaveInput } from './eligibility';
 export { StepInput, FinishInput } from './builder';
 export * from './views';
+export * from './campus';
+export * from './apply';

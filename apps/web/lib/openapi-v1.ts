@@ -22,25 +22,15 @@ import {
 } from "@hirelane/services";
 import { z } from "zod";
 import { ConsentInput, ConsentResult, DeleteMeInput, DeleteMeResult } from "./http/me-inputs";
+import { APPLY_OPERATIONS } from "./openapi-apply";
+import { CAMPUS_OPERATIONS } from "./openapi-campus";
+import type { V1Operation } from "./openapi-types";
 
 type Json = Record<string, any>;
 
-export interface V1Operation {
-  operationId: string;
-  method: "get" | "post" | "put" | "delete";
-  path: string;
-  summary: string;
-  mutation: boolean;
-  /** False for a mutation that takes no Idempotency-Key (account delete). Default true. */
-  idempotent?: boolean;
-  /** JSON request body schema (the path id is supplied by the URL, not the body). */
-  request?: z.ZodType;
-  /** Keys removed from the request schema because the URL provides them. */
-  omit?: string[];
-  success: { status: number; schema?: z.ZodType; contentType?: string; description: string };
-}
+export type { V1Operation };
 
-export const V1_OPERATIONS: V1Operation[] = [
+const BASE_OPERATIONS: V1Operation[] = [
   { operationId: "listResumes", method: "get", path: "/api/v1/resumes", summary: "List my active resumes", mutation: false, success: { status: 200, schema: ResumeListSchema, description: "Resumes, newest first" } },
   {
     operationId: "uploadResume",
@@ -80,6 +70,9 @@ export const V1_OPERATIONS: V1Operation[] = [
   { operationId: "exportMe", method: "get", path: "/api/v1/me/export", summary: "Export everything held about me", mutation: false, success: { status: 200, schema: z.record(z.string(), z.unknown()), description: "JSON export" } },
 ];
 
+/** Resume, builder, eligibility and account operations first, then the campus back end (lib/openapi-campus.ts). */
+export const V1_OPERATIONS: V1Operation[] = [...BASE_OPERATIONS, ...CAMPUS_OPERATIONS, ...APPLY_OPERATIONS];
+
 const jsonSchema = (s: z.ZodType, io: "input" | "output", omit: string[] = []): Json => {
   const out = z.toJSONSchema(s, { io, unrepresentable: "any", target: "draft-2020-12" }) as Json;
   delete out["$schema"];
@@ -100,6 +93,7 @@ export function buildOpenApiV1(origin: string): Json {
     const parameters: Json[] = [];
     if (op.path.includes("{id}")) parameters.push(ID_PARAM);
     if (op.mutation && op.idempotent !== false) parameters.push(IDEMPOTENCY);
+    for (const q of op.query ?? []) parameters.push({ name: q.name, in: "query", required: false, description: q.description, schema: { type: q.type, ...(q.format ? { format: q.format } : {}) } });
     if (op.operationId === "uploadResume") {
       parameters.push({ name: "X-File-Name", in: "header", required: false, description: "URL-encoded original file name, at most 255 characters. Stored only inside the sealed parse.", schema: { type: "string", maxLength: 765 } });
       parameters.push({ name: "label", in: "query", required: false, schema: { type: "string", maxLength: 80 } });
@@ -123,6 +117,8 @@ export function buildOpenApiV1(origin: string): Json {
       },
     };
     if (op.mutation) o["responses"]["403"] = problem;
+    if (op.rawRequest) o["requestBody"] = { required: true, description: op.rawRequest.description, content: { [op.rawRequest.contentType]: { schema: { type: "string", format: "binary" } } } };
+    for (const status of op.errors ?? []) o["responses"][String(status)] = problem;
     if (op.request) o["requestBody"] = { required: true, content: { "application/json": { schema: jsonSchema(op.request, "input", op.omit) } } };
     if (op.operationId === "uploadResume") {
       o["requestBody"] = {
@@ -139,7 +135,7 @@ export function buildOpenApiV1(origin: string): Json {
   }
   return {
     openapi: "3.1.0",
-    info: { title: "Hirelane app API (v1)", version: "1.0.0", description: "Student account API: resumes, eligibility and the guided builder. Cookie session today; Bearer tokens are reserved for the Android client." },
+    info: { title: "Hirelane app API (v1)", version: "1.0.0", description: "Student account API: resumes, eligibility, the guided builder, campus membership and the TPO console API. Cookie session today; Bearer tokens are reserved for the Android client." },
     servers: [{ url: origin }],
     paths,
     components: {

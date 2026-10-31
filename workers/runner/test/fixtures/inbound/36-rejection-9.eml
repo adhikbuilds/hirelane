@@ -1,0 +1,20 @@
+From: Tamarind Cloud Recruiting <jobs@tamarindcloud.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=tamarindcloud.example.test; dmarc=pass header.from=tamarindcloud.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Thu, 29 Oct 2026 12:05:00 GMT
+Message-ID: <corpus-36@tamarindcloud.example.test>
+MIME-Version: 1.0
+Subject: Re: Interview invitation - Software Developer
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><p>Hi Imran,</p><br>
+<p>I'm sorry to say we have to withdraw the invitation below. We have decid=
+ed not to proceed with your candidature as the role has been put on hold.</=
+p><br>
+<p>Apologies for the inconvenience,<br>
+Priya</p><br>
+<p>On Mon, 27 Oct 2026 at 10:15, Tamarind Cloud Recruiting &lt;jobs@tamarin=
+dcloud.example.test> wrote:<br>
+> Hi Imran, we would like to invite you for an interview on Friday 14 Novem=
+ber at 11:00 AM. Please confirm your availability.</p></body></html>

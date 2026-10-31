@@ -92,9 +92,10 @@ module.exports = {
     },
     {
       name: 'submit-is-isolated',
-      comment: 'only packages/agent/src/submit/ may import the submit module (architecture.md 2.2)',
+      comment:
+        'only packages/agent/src/submit/ may import the submit module (architecture.md 2.2). One written exception: the worker tasks workers/runner/src/tasks/apply-*.ts, which run the executor (apply pipeline, owner decision 2026-10-29)',
       severity: 'error',
-      from: { pathNot: '^packages/agent/src/submit/' },
+      from: { pathNot: ['^packages/agent/src/submit/', '^workers/runner/src/tasks/apply-[^/]*\\.ts$'] },
       to: { path: '^packages/agent/src/submit/' },
     },
     {

@@ -94,6 +94,18 @@ Authorization code flow with PKCE (S256), state and nonce. No OIDC library: RS25
 
 **Deferred:** the OIDC state cookie is signed but not encrypted, and state is not single-use. Only the discovery document is cached.
 
+### 4d. LinkedIn OIDC (`lib/auth/linkedin.ts`, `lib/auth/oidc-shared.ts`, `app/auth/linkedin/{start,callback}/route.ts`)
+
+Sign in with LinkedIn, **OpenID Connect only**. Scopes are `openid profile email`. From the signed ID token we read three claims: `email`, `email_verified` and `name`. Nothing else on LinkedIn is called: no profile API, no member data beyond the ID token, no scraping (LinkedIn User Agreement s.8.2, as stated in the module header). The Google and LinkedIn flows share `oidc-shared.ts`, so the state, nonce, token and ID-token checks are the same code.
+
+- **Issuer and discovery.** `https://www.linkedin.com/oauth` by default. `HIRELANE_LINKEDIN_ISSUER` overrides it, and in production the override must be a public https URL. LinkedIn has been seen to mint tokens with `iss` set to the bare origin `https://www.linkedin.com`. That value is accepted **only** for LinkedIn's own issuer. The signature is still checked against the discovered JWKS.
+- **PKCE, deliberately conditional.** S256 is sent when the discovery document lists it in `code_challenge_methods_supported`. When it does not, the flow uses `state` (CSRF), `nonce` (ID-token replay) and the confidential client secret on the token request (`pkce: "if-advertised"`). Sending a challenge to an endpoint that ignores or rejects it would break sign-in.
+- **Start** (`GET /auth/linkedin/start`): the flag must be on (otherwise 404), and LinkedIn must be configured (otherwise 503). Rate limited per client, separately from Google (`LINKEDIN_START_LIMIT` = 20). The state is signed and bound to the provider, so a state cookie minted by the Google start cannot complete a LinkedIn callback (test "a state cookie minted by the Google start cannot complete a LinkedIn callback").
+- **Callback** (`GET /auth/linkedin/callback`): checks state, code, nonce and `iss`/`aud`/`exp`. A missing config sends the user to `/signin`. It then follows §4c for linking and §5 for new people. A verified email that matches an email-code account links to that account. An unverified email never links.
+- **Config.** `LINKEDIN_CLIENT_ID` and `LINKEDIN_CLIENT_SECRET` (the secret is a secret). Both must be set, or the sign-in button is hidden and the routes answer 503. `HIRELANE_APP_ORIGIN` must be a public https origin in production, or config is null and LinkedIn is off. The redirect URI to register is `<HIRELANE_APP_ORIGIN>/auth/linkedin/callback`. These are in `.env.example`.
+- **Tests.** `apps/web/tests/auth-linkedin.test.ts`: the fail-closed config cases, PKCE on and off, flag off, the rate limit, new and existing identities, linking, the replay and wrong-nonce cases, the claim sanitiser (control characters, name length cap), alg `none`, HS256 and a foreign key, and "only calls the OIDC endpoints: discovery, token and JWKS". The tests run against a mock issuer.
+- **Not verified live.** No run in this slice reached LinkedIn's real discovery document or token endpoint. Confirm the PKCE advertisement and the `iss` value against a live discovery document before the pilot. The module header says this was deliberate; the claim is not yet proven against LinkedIn.
+
 ### 4c. Linking
 
 `resolveIdentity` finds the account for a verified identity. It first looks up `(provider, subject)`. If that fails and the identity's email is verified, it looks up an existing user by email and **links** the new identity to that account, setting `email_verified_at`. This means a Google sign-in with an address that already has an email-code account is attached to that account. Both paths require a verified email, so an unverified address never links.
@@ -134,6 +146,9 @@ Consent rows are append-only. A withdrawal is a new row with `granted = false`. 
   The cookie is cleared and the action redirects to `/`. Tests: `packages/db/test/auth-delete.test.ts`, and "delete revokes every session, removes the account, and the address can start fresh".
 
   **Stale comment.** The header of `delete.ts` says to run it on `withAdmin`. That is out of date. The real path is `withAuth`, through `deleteAccountFor`. Fix the comment when the file is next edited.
+
+- **Stored files first (Slice 3).** Before the `users` DELETE, `apps/web/lib/auth/erasure.ts` deletes every stored blob of the user, including each version. If a file delete fails, the whole delete rolls back, so it can be retried. The account and its keys stay until every file is gone (`apps/web/tests/account-erasure.test.ts`: "leaves nothing under resumes/<userId>/ and no rows after delete"; "keeps the account (and its keys) when a file cannot be deleted").
+  - **Owner decision pending.** `erasure.ts` runs one `SELECT` of the deleting user's own `blob_keys` as the owner role, through `withAdmin`. It is on the `withadmin-guard` allowlist (`scripts/withadmin-guard.ts`), added on 2026-10-29. The allowlist entry **needs owner sign-off**. The alternative is a column grant on `resumes(user_id, blob_key)` plus an RLS policy for `hirelane_auth`, which adds schema surface. Until the owner decides, treat the entry as provisional.
 
 **Deferred:** re-authentication before delete, "sign out everywhere", and a consent-withdrawal ledger that survives hard delete (a DPDP design decision).
 

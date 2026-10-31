@@ -56,11 +56,25 @@ export type CgpaRule = { kind: 'linear'; a: number; b: number } | null;
 
 export type VerdictStatus = 'pass' | 'fail' | 'unknown';
 
+/** Where a minimum-score rule is checked: one entry per level, so a "throughout" notice gets one verdict each. */
+export type VerdictLevel = '10th' | '12th' | 'diploma' | 'graduation';
+
+export interface LevelVerdict {
+  level: VerdictLevel;
+  status: VerdictStatus;
+  /** Plain English with the maths shown. */
+  reason: string;
+  profileField?: keyof EligibilityProfileInput;
+}
+
 export interface CriterionVerdict {
   criterion: Criterion;
   status: VerdictStatus;
+  /** Plain English with the maths shown. */
   reason: string;
   profileField?: keyof EligibilityProfileInput;
+  /** Present on min_score criteria. */
+  levels?: LevelVerdict[];
 }
 
 export interface EligibilityResult {

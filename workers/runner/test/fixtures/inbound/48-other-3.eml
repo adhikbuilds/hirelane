@@ -1,0 +1,23 @@
+From: Brightpath Systems Recruiting <jobs@brightpathsystems.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=brightpathsystems.example.test; dmarc=pass header.from=brightpathsystems.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 06:29:00 GMT
+Subject: Thanks for applying [ref BRIGHTPATHSYSTEMS-2026-1047]
+ (candidate communication from the recruitment desk)
+Message-ID: <corpus-48@brightpathsystems.example.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mixed_47_boundary"
+
+--mixed_47_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hi Vikram, thanks for applying to Brightpath Systems! We got your application. Should we decide to schedule an interview or an assessment, you will hear from us. This inbox is not monitored.
+--mixed_47_boundary
+Content-Type: text/plain; name="notes.txt"
+Content-Disposition: attachment; filename="notes.txt"
+Content-Transfer-Encoding: base64
+
+QXR0YWNobWVudCB0ZXh0OiBpbnRlcnZpZXcgb2ZmZXIgcmVqZWN0ZWQgdGVzdCB1bmZvcnR1bmF0
+ZWx5
+--mixed_47_boundary--

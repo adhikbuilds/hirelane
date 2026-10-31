@@ -1,0 +1,20 @@
+From: Kestrel Analytics Recruiting <jobs@kestrelanalytics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=kestrelanalytics.example.test; dmarc=pass header.from=kestrelanalytics.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 11:58:00 GMT
+Message-ID: <corpus-35@kestrelanalytics.example.test>
+MIME-Version: 1.0
+Subject: =?UTF-8?B?RGVjaXNpb24gb24geW91ciBhcHBsaWNhdGlvbg==?=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Dear Meera,
+
+After reviewing your profile, we are unable to offer you a position at this time. This was a difficult decision given the number of strong applicants.
+
+Sincerely,
+Lata
+
+-- 
+Lata Iyer
+People Operations, Kestrel Analytics

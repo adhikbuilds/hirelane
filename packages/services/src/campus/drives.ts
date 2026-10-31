@@ -1,0 +1,111 @@
+import { detectScamSignals, evaluateEligibility, parseCriteria, type CgpaRule, type Criterion, type EligibilityProfileInput } from '@hirelane/engine';
+import type { ServiceCtx } from '../ctx';
+import { withUserTx } from '../db';
+import { mapPgError } from '../errors';
+import { parseInput } from '../schema';
+import { PublishDriveInput } from './inputs';
+import { membershipIn } from './membership';
+import { callIn } from './rpc';
+import { orNotFound, resolveCampus, staffTx } from './tpo';
+
+const num = (v: unknown): number | undefined => (v === null || v === undefined ? undefined : Number(v));
+
+/** eligibility_profiles row (snake_case, numerics as strings from pg) to the engine's input. Confirmed by construction. */
+export function profileFromRow(r: Record<string, unknown> | undefined): EligibilityProfileInput | null {
+  if (!r) return null;
+  const out: Record<string, unknown> = { confirmed: true };
+  const put = (k: string, v: unknown) => {
+    if (v !== null && v !== undefined) out[k] = v;
+  };
+  for (const k of ['pct_10', 'pct_secondary', 'grad_score', 'grad_pct_equiv']) put(k, num(r[k]));
+  for (const k of ['grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year']) put(k, num(r[k]));
+  for (const k of ['board_10', 'secondary_kind', 'board_secondary', 'degree', 'branch_code', 'branch_raw', 'grad_conversion']) put(k, r[k]);
+  for (const k of ['grad_is_final', 'lateral_entry']) put(k, r[k]);
+  return out as unknown as EligibilityProfileInput;
+}
+
+export const asCgpaRule = (v: unknown): CgpaRule =>
+  v && typeof v === 'object' && (v as { kind?: unknown }).kind === 'linear' && typeof (v as { a?: unknown }).a === 'number' && typeof (v as { b?: unknown }).b === 'number'
+    ? (v as CgpaRule)
+    : null;
+
+export interface StudentDrive {
+  id: string;
+  title: string;
+  link: string | null;
+  noticeText: string;
+  scamRisk: 'none' | 'low' | 'medium' | 'high';
+  scamFlags: unknown[];
+  publishedAt: string;
+  verdict: 'eligible' | 'unknown';
+  reasons: string[];
+}
+
+/**
+ * The student's drive inbox: published drives for their cohort, minus the ones their own confirmed profile fails. Eligible
+ * and unknown both arrive (unknown never blocks). A placed student gets none. The verdict is computed here, on the
+ * student's own request, from their own profile; a TPO never sees it per student.
+ */
+export async function listMyDrives(ctx: ServiceCtx): Promise<{ placed: boolean; drives: StudentDrive[] }> {
+  try {
+    return await withUserTx(ctx, async (c) => {
+      const m = await membershipIn(c, ctx.userId);
+      if (!m) return { placed: false, drives: [] };
+      if (m.placed) return { placed: true, drives: [] };
+      const rows = (await c.query('SELECT id, title, link, notice_text, criteria, scam_flags, scam_risk, published_at FROM drives ORDER BY published_at DESC, id LIMIT 100')).rows;
+      const profile = profileFromRow((await c.query('SELECT * FROM eligibility_profiles WHERE user_id = $1', [ctx.userId])).rows[0]);
+      const cgpaRule = asCgpaRule(m.campus.cgpaRule);
+      const drives: StudentDrive[] = [];
+      for (const r of rows) {
+        const criteria = (Array.isArray(r.criteria) ? r.criteria : []) as Criterion[];
+        const res = evaluateEligibility(criteria, profile, { cgpaRule });
+        if (res.overall === 'fail') continue;
+        drives.push({
+          id: r.id,
+          title: r.title,
+          link: r.link ?? null,
+          noticeText: r.notice_text,
+          scamRisk: r.scam_risk,
+          scamFlags: r.scam_flags,
+          publishedAt: (r.published_at as Date).toISOString(),
+          verdict: res.overall === 'pass' ? 'eligible' : 'unknown',
+          reasons: res.verdicts.map((v) => v.reason),
+        });
+      }
+      return { placed: false, drives };
+    });
+  } catch (e) {
+    throw mapPgError(e);
+  }
+}
+
+/**
+ * The drive inbox (C4). Parses the pasted notice with the engine (criteria and scam signals; rules only, 0 LLM calls) and
+ * publishes it to one cohort. The link is stored as text and is never fetched. A flagged drive is still published: the
+ * flags travel with it and show to students and staff.
+ */
+export async function publishDrive(ctx: ServiceCtx, input: unknown) {
+  const i = parseInput(PublishDriveInput, input);
+  const criteria = parseCriteria(i.noticeText);
+  const scam = detectScamSignals(i.noticeText, { url: i.link ?? null });
+  const flags = scam.signals.map((s) => ({ id: s.id, severity: s.severity, quote: s.quote.slice(0, 200), source: s.source }));
+  const id = await staffTx(ctx, async (c) =>
+    orNotFound(await callIn<string | null>(c, 'tpo_publish_drive', [i.cohortId, i.title, i.link ?? null, i.noticeText, JSON.stringify(criteria), JSON.stringify(flags), scam.risk])),
+  );
+  return { id, criteria, scamRisk: scam.risk, scamFlags: flags };
+}
+
+export async function listDrives(ctx: ServiceCtx, input: unknown = {}) {
+  const campusId = (input as { campusId?: string } | null)?.campusId;
+  return staffTx(ctx, async (c) => {
+    const id = await resolveCampus(c, campusId);
+    return { drives: orNotFound(await callIn<unknown[] | null>(c, 'tpo_list_drives', [id])) };
+  });
+}
+
+/** Eligible / unknown / ineligible counts for a drive from the nightly snapshot, with the same suppression as cohort stats. */
+export async function driveCounts(ctx: ServiceCtx, input: unknown) {
+  const { id } = parseInput(IdOnly, input);
+  return staffTx(ctx, async (c) => orNotFound(await callIn<{ day: string | null; metrics: { metric: string; value: number | null; suppressed: boolean }[] } | null>(c, 'tpo_drive_counts', [id])));
+}
+import { CampusIdInput as IdOnly } from './inputs';

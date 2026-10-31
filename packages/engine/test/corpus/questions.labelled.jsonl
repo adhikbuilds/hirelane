@@ -1,0 +1,221 @@
+{"_header": {"corpus": "questions.labelled", "labelledBy": "Claude (Sonnet 5.5, tdd-guide agent) for the Hirelane engine hardening lane", "labelledAt": "2026-10-29", "method": "Synthetic application-form question labels written by hand from common Indian fresher forms, BEFORE classifyQuestion existed. key is the single correct key. unknown means the engine must NOT force a known key (traps: company/reference names, 12th year, bare CTC, current employer). sensitive_id is family and ID fields, never filled. Options are given where the label alone is vague. Rows q-211 onward are trap labels added after review: leave/switch/gap 'why' questions, relocation assistance, and 'when did you start' must stay unknown.", "count": 220}}
+{"label": "Name", "key": "name", "id": "q-1"}
+{"label": "Full name", "key": "name", "id": "q-2"}
+{"label": "Full Name*", "key": "name", "id": "q-3"}
+{"label": "First name", "key": "name", "id": "q-4"}
+{"label": "Last name", "key": "name", "id": "q-5"}
+{"label": "Surname", "key": "name", "id": "q-6"}
+{"label": "Legal name", "key": "name", "id": "q-7"}
+{"label": "Preferred name", "key": "name", "id": "q-8"}
+{"label": "Your name", "key": "name", "id": "q-9"}
+{"label": "Candidate name", "key": "name", "id": "q-10"}
+{"label": "Applicant Name (required)", "key": "name", "id": "q-11"}
+{"label": "Given name", "key": "name", "id": "q-12"}
+{"label": "Family name", "key": "name", "id": "q-13"}
+{"label": "Name as per college records", "key": "name", "id": "q-14"}
+{"label": "Email", "key": "email", "id": "q-15"}
+{"label": "E-mail address", "key": "email", "id": "q-16"}
+{"label": "Email Address*", "key": "email", "id": "q-17"}
+{"label": "Your email id", "key": "email", "id": "q-18"}
+{"label": "Primary email", "key": "email", "id": "q-19"}
+{"label": "Confirm email address", "key": "email", "id": "q-20"}
+{"label": "Official email ID", "key": "email", "id": "q-21"}
+{"label": "Phone", "key": "phone", "id": "q-22"}
+{"label": "Phone number", "key": "phone", "id": "q-23"}
+{"label": "Mobile number", "key": "phone", "id": "q-24"}
+{"label": "Contact number", "key": "phone", "id": "q-25"}
+{"label": "Mobile No.", "key": "phone", "id": "q-26"}
+{"label": "WhatsApp number", "key": "phone", "id": "q-27"}
+{"label": "Cell phone", "key": "phone", "id": "q-28"}
+{"label": "Contact no", "key": "phone", "id": "q-29"}
+{"label": "Graduation year", "key": "grad_year", "id": "q-30"}
+{"label": "Year of graduation", "key": "grad_year", "id": "q-31"}
+{"label": "Year of passing", "key": "grad_year", "id": "q-32"}
+{"label": "Passout year", "key": "grad_year", "id": "q-33"}
+{"label": "Expected graduation year", "key": "grad_year", "id": "q-34"}
+{"label": "Batch", "key": "grad_year", "id": "q-35"}
+{"label": "Graduation date", "key": "grad_year", "id": "q-36"}
+{"label": "What year will you graduate?", "key": "grad_year", "id": "q-37"}
+{"label": "Degree completion year", "key": "grad_year", "id": "q-38"}
+{"label": "Degree", "key": "degree", "id": "q-39"}
+{"label": "Highest qualification", "key": "degree", "id": "q-40"}
+{"label": "Highest level of education", "key": "degree", "id": "q-41"}
+{"label": "Qualification", "key": "degree", "id": "q-42"}
+{"label": "Education level", "key": "degree", "id": "q-43"}
+{"label": "What degree are you pursuing?", "key": "degree", "id": "q-44"}
+{"label": "Highest degree obtained", "key": "degree", "id": "q-45"}
+{"label": "CGPA", "key": "cgpa", "id": "q-46"}
+{"label": "Graduation CGPA", "key": "cgpa", "id": "q-47"}
+{"label": "Current CGPA", "key": "cgpa", "id": "q-48"}
+{"label": "What is your CGPA?", "key": "cgpa", "id": "q-49"}
+{"label": "GPA", "key": "cgpa", "id": "q-50"}
+{"label": "CGPA (out of 10)", "key": "cgpa", "id": "q-51"}
+{"label": "UG CGPA", "key": "cgpa", "id": "q-52"}
+{"label": "Percentage in graduation", "key": "percentage", "id": "q-53"}
+{"label": "Graduation percentage", "key": "percentage", "id": "q-54"}
+{"label": "Aggregate percentage", "key": "percentage", "id": "q-55"}
+{"label": "UG percentage", "key": "percentage", "id": "q-56"}
+{"label": "B.Tech % marks", "key": "percentage", "id": "q-57"}
+{"label": "Degree percentage", "key": "percentage", "id": "q-58"}
+{"label": "Overall percentage in UG", "key": "percentage", "id": "q-59"}
+{"label": "CGPA / Percentage", "key": "cgpa_pct", "id": "q-60"}
+{"label": "CGPA or percentage in graduation", "key": "cgpa_pct", "id": "q-61"}
+{"label": "Graduation score (CGPA/%)", "key": "cgpa_pct", "id": "q-62"}
+{"label": "Academic score in UG (CGPA/Percentage)", "key": "cgpa_pct", "id": "q-63"}
+{"label": "10th percentage", "key": "pct_10", "id": "q-64"}
+{"label": "Class X marks (%)", "key": "pct_10", "id": "q-65"}
+{"label": "SSC percentage", "key": "pct_10", "id": "q-66"}
+{"label": "Tenth grade percentage", "key": "pct_10", "id": "q-67"}
+{"label": "10th Standard Percentage", "key": "pct_10", "id": "q-68"}
+{"label": "12th percentage", "key": "pct_12", "id": "q-69"}
+{"label": "Class XII percentage", "key": "pct_12", "id": "q-70"}
+{"label": "HSC marks %", "key": "pct_12", "id": "q-71"}
+{"label": "Intermediate percentage", "key": "pct_12", "id": "q-72"}
+{"label": "12th Grade Score (%)", "key": "pct_12", "id": "q-73"}
+{"label": "PUC percentage", "key": "pct_12", "id": "q-74"}
+{"label": "Notice period", "key": "notice_period", "id": "q-75"}
+{"label": "What is your notice period?", "key": "notice_period", "id": "q-76"}
+{"label": "How soon can you join?", "key": "notice_period", "id": "q-77"}
+{"label": "When can you join?", "key": "notice_period", "id": "q-78"}
+{"label": "Earliest start date", "key": "notice_period", "id": "q-79"}
+{"label": "Joining time", "key": "notice_period", "id": "q-80"}
+{"label": "Availability to join (in days)", "key": "notice_period", "id": "q-81"}
+{"label": "Expected date of joining", "key": "notice_period", "id": "q-82"}
+{"label": "Please select", "options": ["Immediate", "15 days", "30 days", "60 days"], "key": "notice_period", "id": "q-83"}
+{"label": "Are you willing to relocate?", "key": "relocation", "id": "q-84"}
+{"label": "Open to relocation?", "key": "relocation", "id": "q-85"}
+{"label": "Relocation", "key": "relocation", "id": "q-86"}
+{"label": "Willing to relocate to Bengaluru?", "key": "relocation", "id": "q-87"}
+{"label": "Can you relocate to Pune?", "key": "relocation", "id": "q-88"}
+{"label": "Would you be willing to move to another city?", "key": "relocation", "id": "q-89"}
+{"label": "Are you open to relocating for this role?", "key": "relocation", "id": "q-90"}
+{"label": "Expected CTC", "key": "expected_ctc", "id": "q-91"}
+{"label": "Expected salary", "key": "expected_ctc", "id": "q-92"}
+{"label": "Expected compensation (LPA)", "key": "expected_ctc", "id": "q-93"}
+{"label": "Desired salary", "key": "expected_ctc", "id": "q-94"}
+{"label": "Salary expectation", "key": "expected_ctc", "id": "q-95"}
+{"label": "What is your expected annual CTC?", "key": "expected_ctc", "id": "q-96"}
+{"label": "Expected package", "key": "expected_ctc", "id": "q-97"}
+{"label": "Target compensation", "key": "expected_ctc", "id": "q-98"}
+{"label": "ECTC", "key": "expected_ctc", "id": "q-99"}
+{"label": "Current CTC", "key": "current_ctc", "id": "q-100"}
+{"label": "Current salary", "key": "current_ctc", "id": "q-101"}
+{"label": "Present CTC (LPA)", "key": "current_ctc", "id": "q-102"}
+{"label": "Current compensation", "key": "current_ctc", "id": "q-103"}
+{"label": "Last drawn salary", "key": "current_ctc", "id": "q-104"}
+{"label": "What is your current annual package?", "key": "current_ctc", "id": "q-105"}
+{"label": "Existing CTC", "key": "current_ctc", "id": "q-106"}
+{"label": "Current fixed salary", "key": "current_ctc", "id": "q-107"}
+{"label": "LinkedIn", "key": "linkedin", "id": "q-108"}
+{"label": "LinkedIn profile", "key": "linkedin", "id": "q-109"}
+{"label": "LinkedIn URL", "key": "linkedin", "id": "q-110"}
+{"label": "Link to your LinkedIn profile", "key": "linkedin", "id": "q-111"}
+{"label": "Linkedin Profile URL*", "key": "linkedin", "id": "q-112"}
+{"label": "GitHub", "key": "github", "id": "q-113"}
+{"label": "GitHub profile", "key": "github", "id": "q-114"}
+{"label": "GitHub URL", "key": "github", "id": "q-115"}
+{"label": "Link to your GitHub", "key": "github", "id": "q-116"}
+{"label": "Github username or profile link", "key": "github", "id": "q-117"}
+{"label": "Are you legally authorized to work in India?", "key": "work_authorization", "id": "q-118"}
+{"label": "Work authorization", "key": "work_authorization", "id": "q-119"}
+{"label": "Are you authorised to work in the United States?", "key": "work_authorization", "id": "q-120"}
+{"label": "Do you have the right to work in this country?", "key": "work_authorization", "id": "q-121"}
+{"label": "Work permit status", "key": "work_authorization", "id": "q-122"}
+{"label": "Are you eligible to work in the UK?", "key": "work_authorization", "id": "q-123"}
+{"label": "Do you require visa sponsorship?", "key": "visa_sponsorship", "id": "q-124"}
+{"label": "Will you now or in the future require sponsorship for employment visa status?", "key": "visa_sponsorship", "id": "q-125"}
+{"label": "Will you need sponsorship to work in this country?", "key": "visa_sponsorship", "id": "q-126"}
+{"label": "Visa sponsorship required?", "key": "visa_sponsorship", "id": "q-127"}
+{"label": "Do you need work visa sponsorship?", "key": "visa_sponsorship", "id": "q-128"}
+{"label": "Gender", "key": "gender_eeo", "id": "q-129"}
+{"label": "Gender identity", "key": "gender_eeo", "id": "q-130"}
+{"label": "What is your gender?", "key": "gender_eeo", "id": "q-131"}
+{"label": "Sex", "key": "gender_eeo", "id": "q-132"}
+{"label": "Race / Ethnicity", "key": "gender_eeo", "id": "q-133"}
+{"label": "Do you have a disability?", "key": "gender_eeo", "id": "q-134"}
+{"label": "Disability status", "key": "gender_eeo", "id": "q-135"}
+{"label": "Veteran status", "key": "gender_eeo", "id": "q-136"}
+{"label": "Are you a protected veteran?", "key": "gender_eeo", "id": "q-137"}
+{"label": "Pronouns", "key": "gender_eeo", "id": "q-138"}
+{"label": "Sexual orientation", "key": "gender_eeo", "id": "q-139"}
+{"label": "Are you transgender?", "key": "gender_eeo", "id": "q-140"}
+{"label": "Religion", "key": "gender_eeo", "id": "q-141"}
+{"label": "Marital status", "key": "gender_eeo", "id": "q-142"}
+{"label": "Date of birth", "key": "gender_eeo", "id": "q-143"}
+{"label": "DOB", "key": "gender_eeo", "id": "q-144"}
+{"label": "Social category (General/OBC/SC/ST)", "key": "gender_eeo", "id": "q-145"}
+{"label": "Caste", "key": "gender_eeo", "id": "q-146"}
+{"label": "Nationality and ethnicity", "key": "gender_eeo", "id": "q-147"}
+{"label": "How do you identify?", "options": ["Male", "Female", "Non-binary", "Decline to self identify"], "key": "gender_eeo", "id": "q-148"}
+{"label": "Please choose", "options": ["Prefer not to say", "Yes", "No"], "key": "gender_eeo", "id": "q-149"}
+{"label": "Why do you want to work at our company?", "key": "why_company", "id": "q-150"}
+{"label": "Why do you want to join us?", "key": "why_company", "id": "q-151"}
+{"label": "Why are you interested in this company?", "key": "why_company", "id": "q-152"}
+{"label": "What attracts you to our company?", "key": "why_company", "id": "q-153"}
+{"label": "Why us?", "key": "why_company", "id": "q-154"}
+{"label": "Why do you want to work for Acme?", "key": "why_company", "id": "q-155"}
+{"label": "What interests you about working here?", "key": "why_company", "id": "q-156"}
+{"label": "Why this company?", "key": "why_company", "id": "q-157"}
+{"label": "Why would you like to join our team?", "key": "why_company", "id": "q-158"}
+{"label": "Why are you interested in this role?", "key": "why_role", "id": "q-159"}
+{"label": "Why do you want this position?", "key": "why_role", "id": "q-160"}
+{"label": "Why are you applying for this job?", "key": "why_role", "id": "q-161"}
+{"label": "What interests you about this role?", "key": "why_role", "id": "q-162"}
+{"label": "Why this role?", "key": "why_role", "id": "q-163"}
+{"label": "Why do you think you are a good fit for this position?", "key": "why_role", "id": "q-164"}
+{"label": "Why are you a good fit for the role?", "key": "why_role", "id": "q-165"}
+{"label": "Tell us about yourself", "key": "about_yourself", "id": "q-166"}
+{"label": "Tell me about yourself", "key": "about_yourself", "id": "q-167"}
+{"label": "About yourself", "key": "about_yourself", "id": "q-168"}
+{"label": "Introduce yourself", "key": "about_yourself", "id": "q-169"}
+{"label": "Brief introduction", "key": "about_yourself", "id": "q-170"}
+{"label": "Describe yourself", "key": "about_yourself", "id": "q-171"}
+{"label": "Short bio", "key": "about_yourself", "id": "q-172"}
+{"label": "Tell us a little about you", "key": "about_yourself", "id": "q-173"}
+{"label": "Company name", "key": "unknown", "id": "q-174"}
+{"label": "Reference name", "key": "unknown", "id": "q-175"}
+{"label": "Name of your referrer", "key": "unknown", "id": "q-176"}
+{"label": "Current company", "key": "unknown", "id": "q-177"}
+{"label": "Current employer", "key": "unknown", "id": "q-178"}
+{"label": "Referral email", "key": "unknown", "id": "q-179"}
+{"label": "12th passing year", "key": "unknown", "id": "q-180"}
+{"label": "10th year of passing", "key": "unknown", "id": "q-181"}
+{"label": "Name of your college", "key": "unknown", "id": "q-182"}
+{"label": "College name", "key": "unknown", "id": "q-183"}
+{"label": "University", "key": "unknown", "id": "q-184"}
+{"label": "Branch / Specialization", "key": "unknown", "id": "q-185"}
+{"label": "Portfolio website", "key": "unknown", "id": "q-186"}
+{"label": "Cover letter", "key": "unknown", "id": "q-187"}
+{"label": "What is your CTC?", "key": "unknown", "id": "q-188"}
+{"label": "Salary", "key": "unknown", "id": "q-189"}
+{"label": "Do you have any backlogs?", "key": "unknown", "id": "q-190"}
+{"label": "Years of experience", "key": "unknown", "id": "q-191"}
+{"label": "Preferred work location", "key": "unknown", "id": "q-192"}
+{"label": "Describe a challenge you overcame", "key": "unknown", "id": "q-193"}
+{"label": "How did you hear about us?", "key": "unknown", "id": "q-194"}
+{"label": "Are you at least 18 years of age?", "key": "unknown", "id": "q-195"}
+{"label": "Skills", "key": "unknown", "id": "q-196"}
+{"label": "Expected stipend", "key": "unknown", "id": "q-197"}
+{"label": "Alternate phone number", "key": "unknown", "id": "q-198"}
+{"label": "Notice", "key": "unknown", "id": "q-199"}
+{"label": "Phone model", "key": "unknown", "id": "q-200"}
+{"label": "Which city do you live in?", "key": "unknown", "id": "q-201"}
+{"label": "Father's name", "key": "sensitive_id", "id": "q-202"}
+{"label": "Mother's name", "key": "sensitive_id", "id": "q-203"}
+{"label": "Parent or guardian name", "key": "sensitive_id", "id": "q-204"}
+{"label": "Aadhaar number", "key": "sensitive_id", "id": "q-205"}
+{"label": "PAN number", "key": "sensitive_id", "id": "q-206"}
+{"label": "Passport number", "key": "sensitive_id", "id": "q-207"}
+{"label": "Spouse name", "key": "sensitive_id", "id": "q-208"}
+{"label": "Emergency contact name", "key": "sensitive_id", "id": "q-209"}
+{"label": "Guardian's phone number", "key": "sensitive_id", "id": "q-210"}
+{"label": "Why did you leave your last job?", "key": "unknown", "id": "q-211"}
+{"label": "Why do you want to leave your current company?", "key": "unknown", "id": "q-212"}
+{"label": "Why are you switching careers?", "key": "unknown", "id": "q-213"}
+{"label": "Why is there a gap in your education?", "key": "unknown", "id": "q-214"}
+{"label": "Why did you change your branch?", "key": "unknown", "id": "q-215"}
+{"label": "Do you require relocation assistance?", "key": "unknown", "id": "q-216"}
+{"label": "Is a relocation bonus important to you?", "key": "unknown", "id": "q-217"}
+{"label": "When did you start your degree?", "key": "unknown", "id": "q-218"}
+{"label": "When did you complete your 12th?", "key": "unknown", "id": "q-219"}
+{"label": "When will your results be declared?", "key": "unknown", "id": "q-220"}

@@ -4,15 +4,12 @@
  */
 import { extractDocx } from './docx';
 import { extractPdf } from './pdf';
-import { MAX_BYTES, hasKnownMagic, isPdfMagic, isZipMagic } from './limits';
+import { MAX_BYTES, MAX_TEXT_CHARS, hasKnownMagic, isPdfMagic, isZipMagic } from './limits';
 import type { ExtractResult } from './types';
 
 export type { ExtractResult, RejectCode } from './types';
 
-export { MAX_BYTES, hasKnownMagic };
-
-/** Longest extracted text returned to callers (characters). Longer text is truncated. */
-export const MAX_TEXT_CHARS = 200_000;
+export { MAX_BYTES, MAX_TEXT_CHARS, hasKnownMagic };
 
 export async function extractResume(bytes: Uint8Array): Promise<ExtractResult> {
   if (!(bytes instanceof Uint8Array)) return { rejected: 'bad_magic' };

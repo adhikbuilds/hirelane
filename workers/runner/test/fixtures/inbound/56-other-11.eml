@@ -1,0 +1,16 @@
+From: Tamarind Cloud Recruiting <jobs@tamarindcloud.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=tamarindcloud.example.test; dmarc=pass header.from=tamarindcloud.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Wed, 28 Oct 2026 05:25:00 GMT
+Message-ID: <corpus-56@tamarindcloud.example.test>
+MIME-Version: 1.0
+Subject: A note from our CEO
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><p>Dear friends,</p><br>
+<p>It has been a big year for Tamarind Cloud. We opened two new offices and=
+ launched our first mobile app. Read the full story on our blog. Unfortunat=
+ely we couldn't fit every highlight into this email!</p><br>
+<p>Warmly,<br>
+The founders</p></body></html>

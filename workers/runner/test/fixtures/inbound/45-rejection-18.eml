@@ -1,0 +1,13 @@
+From: Kestrel Analytics Recruiting <jobs@kestrelanalytics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=kestrelanalytics.example.test; dmarc=pass header.from=kestrelanalytics.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 12:08:00 GMT
+Message-ID: <corpus-45@kestrelanalytics.example.test>
+MIME-Version: 1.0
+Subject: =?UTF-8?B?VGhhbmsgeW91IGZvciBhcHBseWluZyB0byBLZXN0cmVsIEFuYWx5dGljcw==?=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hi Divya, we have reviewed your application carefully. Your qualifications are impressive but we have chosen to proceed with other applicants for this opening. We wish you well.
+
+PS: Divya — salary details (₹ figures) are shared with shortlisted candidates only.

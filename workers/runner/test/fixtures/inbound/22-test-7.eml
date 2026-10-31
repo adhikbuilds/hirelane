@@ -1,0 +1,25 @@
+From: Lumen Robotics Recruiting <jobs@lumenrobotics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=lumenrobotics.example.test; dmarc=pass header.from=lumenrobotics.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 07:27:00 GMT
+Message-ID: <corpus-22@lumenrobotics.example.test>
+MIME-Version: 1.0
+Subject: =?ISO-8859-1?Q?Assessment_invite_from_Lumen_Robotics?=
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi Karthik,
+
+Thank you for applying. Please take the 45 minute skills assessment linked =
+below. It covers SQL and basic Python; you can't pause it once you start.
+
+https://skills.example.test/lumenrobotics/a/310
+
+Thanks,
+Priya
+
+--=20
+Priya Nair
+Talent Acquisition | Lumen Robotics
+"Unfortunately, we cannot guarantee replies to every email, so please be ki=
+nd to the planet and think before you print."

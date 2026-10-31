@@ -86,8 +86,11 @@ export type { EducationParse } from './resume/education';
 export { verhoeffValid, verhoeffCheckDigit } from './resume/verhoeff';
 export { detectSensitive, maskSensitive } from './resume/sensitive';
 export { assessTextLayer } from './resume/text-layer';
-export { parseCriteria, evaluateEligibility, applyCgpaRule, invertCgpaRule, canonDegree, canonBranch } from './eligibility';
-export type { EvaluateOptions } from './eligibility';
+export { parseCriteria, evaluateEligibility, applyCgpaRule, invertCgpaRule, canonDegree, canonBranch, universityRules, findUniversityRule, toCgpaRule } from './eligibility';
+export type { EvaluateOptions, UniversityRule } from './eligibility';
+export type { LevelVerdict, VerdictLevel } from './eligibility/types';
+export { normalizeDate, normalizeDateRange, normalizeMarks, parseScoreText, validateScore, PCT_MISMATCH_TOLERANCE } from './resume/normalize';
+export type { YearMonth, DateRange, Marks, ParsedScore, ScoreKind, ScoreFlag, ScoreFlagCode, ScoreValidation, ValidateContext } from './resume/normalize';
 export type { Criterion, CriterionLevel, EligibilityProfileInput, CgpaRule, VerdictStatus, CriterionVerdict, EligibilityResult } from './eligibility/types';
 export type { ExtractMeta } from './resume/types';
 export { assessHealth, checkFileName } from './resume/health';
@@ -98,3 +101,13 @@ export { parsePastedJob, scoreForProfile, sourceHintFromUrl } from './jobtext';
 export type { ParsedJob, ParseOptions, SourceHint, JobField, FieldEvidence, ProfileFit, ScoreOptions, JobScore } from './jobtext';
 export { detectScamSignals, FREE_MAIL_DOMAINS, URL_SHORTENER_HOSTS, FRESHER_UNREALISTIC_ANNUAL_INR, LOW_SKILL_UNREALISTIC_ANNUAL_INR } from './scam';
 export type { ScamSignalId, ScamSeverity, ScamRisk, ScamSignal, ScamResult, ScamOptions } from './scam';
+
+// --- application answers without an LLM (decision 1, 2026-10-29)
+export { classifyQuestion, answerFrom, answerQuestion, ANSWER_KEYS } from './answers';
+export type { Answer, AnswerBankEntry, AnswerEvidence, AnswerInputs, AnswerKey, AnswerOptions, AnswerProfile, AnswerSet, Classification, CompanyFacts, AnswerEvidenceSource, QuestionKey, ResumeFacts } from './answers';
+
+// --- layout-aware PDF text (RP1)
+export { reconstructText, legacyText, MAX_PAGE_WIDTH, MAX_ITEMS_PER_PAGE } from './resume/layout';
+export type { TextItem, PageItems, LayoutResult, Heading } from './resume/layout';
+export { findMarks } from './resume/normalize';
+export type { MarksHit } from './resume/normalize';

@@ -638,7 +638,7 @@ Campus Slice 4b is gated on G4.
      - `text_layer = garbled` when more than 30% of the text is private-use characters or U+FFFD (Canva).
      - Either case is health issue #1, with two fixes: re-export as text, or use the builder.
      - OCR is a separate owner decision.
-   - Extraction lives in `workers/runner/src/resume/extract/`, in a fresh `worker_threads` Worker per job (`resourceLimits` 256 MB, 10 s, then terminate). The dep-cruiser rule `extractors-worker-only` bans unpdf, pdfjs-dist, fflate (verify), pdfkit and fontkit outside `workers/runner`.
+   - Extraction lives in `workers/runner/src/resume/extract/`, in a forked child process per job (256 MB old-gen, 640 MB RSS watchdog, 10 s then SIGKILL, Node permission model; see docs/resume.md, "Extraction sandbox"). The dep-cruiser rule `extractors-worker-only` bans unpdf, pdfjs-dist, fflate (verify), pdfkit and fontkit outside `workers/runner`.
    - Upload is a route handler (`POST /api/v1/resumes`), not a server action. The original file name lives only inside `parsed_enc`.
    - Graphile job payloads carry IDs only.
 3. **Parse.** This replaces PLAN 4.4 "Sonnet structured parse" and `agent:parse-resume`.

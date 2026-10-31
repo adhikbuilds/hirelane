@@ -1,0 +1,18 @@
+From: Saffron Retail Recruiting <jobs@saffronretail.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=saffronretail.example.test; dmarc=pass header.from=saffronretail.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 10:51:00 GMT
+Message-ID: <corpus-34@saffronretail.example.test>
+MIME-Version: 1.0
+Subject: Assessment results
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Rohan,
+
+Thanks for taking the time to complete our assessment. Unfortunately your s=
+core did not meet the threshold for the next round, so we won't be proceedi=
+ng with your application.
+
+Regards,
+Saffron Retail Hiring

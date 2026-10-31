@@ -1,0 +1,15 @@
+From: Orchid Payments Recruiting <jobs@orchidpayments.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=orchidpayments.example.test; dmarc=pass header.from=orchidpayments.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 08:46:00 GMT
+Message-ID: <corpus-59@orchidpayments.example.test>
+MIME-Version: 1.0
+Subject: Referral programme update
+Content-Type: text/plain; charset=us-ascii
+
+Hi Meera,
+
+Our employee referral programme now pays out within 30 days. Share the openings page with friends and classmates: https://careers.example.test/orchidpayments/jobs
+
+Thanks,
+People Team

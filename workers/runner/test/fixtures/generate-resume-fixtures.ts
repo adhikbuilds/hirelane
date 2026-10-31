@@ -9,7 +9,7 @@ import { zipSync, strToU8 } from 'fflate';
 // ---------------------------------------------------------------- PDF
 
 /** Escape a string for a PDF literal string. */
-function pdfEsc(s: string): string {
+export function pdfEsc(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 }
 
@@ -21,7 +21,7 @@ interface PdfBuild {
 }
 
 /** Serialise objects into a PDF with a correct xref table. ASCII only (latin1 bytes). */
-function buildPdf({ objects, root, trailerExtra = '' }: PdfBuild): Uint8Array {
+export function buildPdf({ objects, root, trailerExtra = '' }: PdfBuild): Uint8Array {
   let out = '%PDF-1.4\n';
   const offsets: number[] = [];
   objects.forEach((body, i) => {
@@ -37,7 +37,7 @@ function buildPdf({ objects, root, trailerExtra = '' }: PdfBuild): Uint8Array {
   return bytes;
 }
 
-function stream(dict: string, data: string): string {
+export function stream(dict: string, data: string): string {
   return `<< ${dict} /Length ${data.length} >>\nstream\n${data}\nendstream`;
 }
 

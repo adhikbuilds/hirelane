@@ -1,0 +1,89 @@
+{
+  "_note": "SYNTHETIC fixture. Shape modelled on a public application form definition; NOT recorded from a live service and unverified against it. This variant carries a CAPTCHA field.",
+  "formDefinition": {
+    "sections": [
+      {
+        "fields": [
+          {
+            "isRequired": true,
+            "field": {
+              "path": "_systemfield_name",
+              "title": "Name",
+              "type": "String"
+            }
+          },
+          {
+            "isRequired": true,
+            "field": {
+              "path": "_systemfield_email",
+              "title": "Email",
+              "type": "Email"
+            }
+          },
+          {
+            "isRequired": true,
+            "field": {
+              "path": "_systemfield_resume",
+              "title": "Resume",
+              "type": "File"
+            }
+          },
+          {
+            "isRequired": false,
+            "field": {
+              "path": "phone_field",
+              "title": "Phone number",
+              "type": "Phone"
+            }
+          },
+          {
+            "isRequired": true,
+            "field": {
+              "path": "graduation_year",
+              "title": "Graduation year",
+              "type": "Number"
+            }
+          },
+          {
+            "isRequired": true,
+            "field": {
+              "path": "notice_field",
+              "title": "Notice period",
+              "type": "ValueSelect",
+              "selectableValues": [
+                {
+                  "label": "Immediately",
+                  "value": "imm"
+                },
+                {
+                  "label": "15 days",
+                  "value": "15d"
+                },
+                {
+                  "label": "30 days",
+                  "value": "30d"
+                }
+              ]
+            }
+          },
+          {
+            "isRequired": false,
+            "field": {
+              "path": "relocate_field",
+              "title": "Are you willing to relocate?",
+              "type": "Boolean"
+            }
+          },
+          {
+            "isRequired": true,
+            "field": {
+              "path": "captcha_token",
+              "title": "Captcha",
+              "type": "Captcha"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

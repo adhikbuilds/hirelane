@@ -195,3 +195,102 @@ describe('verifyRls on the 0008 auth tables', () => {
     expect(n.rows[0].n).toBe(0);
   });
 });
+
+describe('verifyRls on the 0011 campus tables (modes own-r and ten, definer registry)', () => {
+  const campusTables = [
+    'campuses', 'campus_domains', 'cohorts', 'cohort_members', 'cohort_roster', 'cohort_imports', 'tpo_members', 'tpo_access_log',
+    'join_attempts', 'campus_otp_bindings', 'drives', 'drive_checks', 'outcomes', 'cohort_stats_daily',
+  ];
+
+  it('registers every campus table and passes, with real tenant checks', async () => {
+    const names = RLS_TABLES.map((t) => t.name);
+    for (const n of campusTables) expect(names, n).toContain(n);
+    expect(RLS_TABLES.filter((t) => t.mode === 'ten').length).toBeGreaterThanOrEqual(6);
+    const r = await run({ fixture: false });
+    expect(r.failures).toEqual([]);
+    expect(r.checks).toBeGreaterThan(150);
+  });
+
+  it('the ten mode catches a tenant leak (a SELECT policy that does not scope to the tenant)', async () => {
+    const r = await run({ fixtureFaults: ['open-tenant'] });
+    expect(r.failures.some((f) => /fx_ten.*another tenant/.test(f))).toBe(true);
+  });
+
+  it('the ten mode catches a writable tenant table', async () => {
+    const r = await run({ fixtureFaults: ['ten-writable'] });
+    expect(r.failures.some((f) => /fx_ten.*inserts/.test(f))).toBe(true);
+  });
+
+  it('fails when a campus table is opened to the app role', async () => {
+    await admin.query('GRANT SELECT ON cohort_roster TO hirelane_app');
+    try {
+      const r = await run({ fixture: false });
+      expect(r.failures.some((f) => /cohort_roster.*readable/.test(f))).toBe(true);
+    } finally {
+      await admin.query('REVOKE ALL ON cohort_roster FROM hirelane_app');
+    }
+  });
+
+  it('fails when a student could update their own verification (cohort_members column grant widened)', async () => {
+    await admin.query('GRANT UPDATE (verified_at) ON cohort_members TO hirelane_app');
+    try {
+      // The own-r check alone does not see column grants, so assert the grant list directly: only share_level and updated_at.
+      const cols = await admin.query(
+        "SELECT column_name FROM information_schema.column_privileges WHERE table_name = 'cohort_members' AND grantee = 'hirelane_app' AND privilege_type = 'UPDATE' ORDER BY 1",
+      );
+      expect(cols.rows.map((r) => r.column_name)).toContain('verified_at');
+    } finally {
+      await admin.query('REVOKE UPDATE (verified_at) ON cohort_members FROM hirelane_app');
+    }
+    const clean = await admin.query(
+      "SELECT column_name FROM information_schema.column_privileges WHERE table_name = 'cohort_members' AND grantee = 'hirelane_app' AND privilege_type = 'UPDATE' ORDER BY 1",
+    );
+    expect(clean.rows.map((r) => r.column_name)).toEqual(['share_level', 'updated_at']);
+  });
+
+  describe('definer registry', () => {
+    const bad = (extra: string) => `CREATE FUNCTION public.zz_bad_definer() RETURNS int LANGUAGE sql SECURITY DEFINER ${extra} AS 'SELECT 1'`;
+    const drop = () => admin.query('DROP FUNCTION IF EXISTS public.zz_bad_definer()');
+
+    it('fails for an unregistered SECURITY DEFINER function', async () => {
+      await admin.query(bad("SET search_path = public, pg_temp"));
+      await admin.query('REVOKE ALL ON FUNCTION public.zz_bad_definer() FROM PUBLIC');
+      try {
+        const r = await run({ fixture: false });
+        expect(r.failures.some((f) => /zz_bad_definer.*not in DEFINER_REGISTRY/.test(f))).toBe(true);
+      } finally {
+        await drop();
+      }
+    });
+
+    it('fails for a definer function without a pinned search_path that PUBLIC can execute', async () => {
+      await admin.query(bad(''));
+      try {
+        const r = await run({ fixture: false });
+        expect(r.failures.some((f) => /zz_bad_definer.*no pinned search_path/.test(f))).toBe(true);
+        expect(r.failures.some((f) => /zz_bad_definer.*PUBLIC can execute/.test(f))).toBe(true);
+      } finally {
+        await drop();
+      }
+    });
+
+    it('fails when the app role loses or gains EXECUTE against the registry', async () => {
+      await admin.query('REVOKE EXECUTE ON FUNCTION public.campus_leave() FROM hirelane_app');
+      await admin.query('GRANT EXECUTE ON FUNCTION public.tpo_role(uuid) TO hirelane_app');
+      try {
+        const r = await run({ fixture: false });
+        expect(r.failures.some((f) => /campus_leave.*differs from the registry/.test(f))).toBe(true);
+        expect(r.failures.some((f) => /tpo_role.*differs from the registry/.test(f))).toBe(true);
+      } finally {
+        await admin.query('GRANT EXECUTE ON FUNCTION public.campus_leave() TO hirelane_app');
+        await admin.query('REVOKE EXECUTE ON FUNCTION public.tpo_role(uuid) FROM hirelane_app');
+      }
+    });
+
+    it('leaves no campus fixture rows behind', async () => {
+      await run({ fixture: false });
+      const n = await admin.query("SELECT count(*)::int AS n FROM campuses WHERE name LIKE 'rls-fixture %'");
+      expect(n.rows[0].n).toBe(0);
+    });
+  });
+});

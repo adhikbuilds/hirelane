@@ -18,6 +18,7 @@ import { extractRequirements, classifyHeading, type Requirement } from './requir
 import { parseSalary, type SalaryParse } from './salary';
 import { detectScamSignals, type ScamResult } from './scam';
 import { toDoc } from './text';
+import type { UniversityRule } from './eligibility/university';
 import { isWorthwhile, type WorthwhileResult } from './worthwhile';
 
 export type SourceHint = 'naukri' | 'linkedin' | 'whatsapp' | 'other';
@@ -497,6 +498,9 @@ export interface ScoreOptions {
   /** Injected clock. A pasted job is treated as open and checked at `now`. */
   now: string | number | Date;
   cgpaRule?: CgpaRule;
+  /** The student's university rule (data/cgpa-rules.json) and whether they confirmed it. */
+  universityRule?: UniversityRule | null;
+  universityRuleConfirmed?: boolean;
 }
 
 export interface JobScore {
@@ -524,7 +528,7 @@ export function scoreForProfile(job: ParsedJob, profile: ProfileFit, eligibility
       if (years >= r.yearsMin) matched++;
     }
   }
-  const eligibility = evaluateEligibility(job.criteria, eligibilityProfile, { cgpaRule: opts.cgpaRule ?? null });
+  const eligibility = evaluateEligibility(job.criteria, eligibilityProfile, { cgpaRule: opts.cgpaRule ?? null, universityRule: opts.universityRule ?? null, universityRuleConfirmed: opts.universityRuleConfirmed === true });
   const worthwhile = isWorthwhile({
     job: {
       fresher: job.fresher.fresher,

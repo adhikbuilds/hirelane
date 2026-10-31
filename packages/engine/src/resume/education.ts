@@ -11,6 +11,7 @@ import boardsData from '../../data/boards.json';
 import branchesData from '../../data/branches.json';
 import degreesData from '../../data/degrees.json';
 import qualificationsData from '../../data/qualifications.json';
+import { findMarks } from './normalize';
 import { detectSections } from './sections';
 import type { Backlogs, Confidence, EducationEntry, EducationLevel, EducationScore, EvidenceSpan, ResumeSection } from './types';
 
@@ -247,6 +248,8 @@ function findScore(text: string): ScoreHit | null {
   }
   G_BARE.lastIndex = 0;
   for (const m of text.matchAll(G_BARE)) hits.push(cgpaHit(m[1]!, m[2], m.index ?? 0, (m.index ?? 0) + m[0].length, 'cgpa'));
+  const marks = findMarks(text);
+  if (marks) hits.push({ score: { kind: 'percent', value: marks.pct, scale: 100 }, start: marks.start, end: marks.end, sgpa: false, assumedScale: false });
   if (hits.length === 0) return null;
   hits.sort((a, b) => a.start - b.start);
   return hits.find((h) => !h.sgpa) ?? hits[0]!;
@@ -275,6 +278,11 @@ const Y = '(?:19[89]\\d|20[0-3]\\d)';
 const MON = '(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.?,?[ \\t]+|\\d{1,2}[ \\t]*[/.][ \\t]*)?';
 const Y_RANGE = new RegExp(`(?<![\\d])(${Y})[ \\t]*(?:-|–|—|to|till|until)[ \\t]*(?:expected[ \\t]*(?:in[ \\t]*|by[ \\t]*)?)?${MON}(${Y}|\\d{2})(?![\\d])`, 'giu');
 const Y_PRESENT = new RegExp(`(?<![\\d])(${Y})[ \\t]*(?:-|–|—|to)[ \\t]*(?:present|ongoing|current|continuing|pursuing|till[ \\t]+date|now)\\b`, 'giu');
+const APOS = "['\u2018\u2019\u02BC]";
+const MON_NAME = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.?[ \\t]*';
+/** "Jun'22 - May'26": two-digit years are read only after an apostrophe. */
+const Y_MON_RANGE = new RegExp(`(?<![\\p{L}\\d])${MON_NAME}${APOS}(\\d{2})[ \\t]*(?:-|–|—|to|till|until)[ \\t]*(?:${MON_NAME})?(?:${APOS}(\\d{2})|(${Y}))(?![\\d])`, 'giu');
+const Y_MON_PRESENT = new RegExp(`(?<![\\p{L}\\d])${MON_NAME}${APOS}(\\d{2})[ \\t]*(?:-|–|—|to)[ \\t]*(?:present|ongoing|current|continuing|pursuing|till[ \\t]+date|now)\\b`, 'giu');
 const Y_PASS_KEY = new RegExp(`\\b(?:expected|expecting|graduating|batch(?:[ \\t]+of)?|passing(?:[ \\t]+year)?|pass[ \\t-]?out(?:[ \\t]+year)?|year[ \\t]+of[ \\t]+(?:passing|completion|graduation)|completed|completion|graduation)[^\\d\\n]{0,15}${MON}(${Y})(?![\\d])`, 'giu');
 const Y_START_KEY = new RegExp(`\\b(?:admitted|admission|joined|enrolled|started|since)[^\\d\\n]{0,15}${MON}(${Y})(?![\\d])`, 'giu');
 const Y_SINGLE = new RegExp(`(?<![\\d.])(${Y})(?![\\d%]|\\.\\d)`, 'gu');
@@ -295,6 +303,17 @@ function findYears(text: string): YearHit | null {
     const at = m.index ?? 0;
     return { start, pass: end, spans: [{ start: at, end: at + m[0].length }] };
   }
+  Y_MON_RANGE.lastIndex = 0;
+  for (const m of text.matchAll(Y_MON_RANGE)) {
+    const start = 2000 + parseInt(m[1]!, 10);
+    const end = m[2] !== undefined ? 2000 + parseInt(m[2], 10) : parseInt(m[3]!, 10);
+    if (end < start || end - start > 10) continue;
+    const at = m.index ?? 0;
+    return { start, pass: end, spans: [{ start: at, end: at + m[0].length }] };
+  }
+  Y_MON_PRESENT.lastIndex = 0;
+  const monPres = Y_MON_PRESENT.exec(text);
+  if (monPres && !pres) return { start: 2000 + parseInt(monPres[1]!, 10), pass: null, spans: [{ start: monPres.index, end: monPres.index + monPres[0].length }] };
   if (pres) return { start: parseInt(pres[1]!, 10), pass: null, spans: [{ start: pres.index, end: pres.index + pres[0].length }] };
   const spans: EvidenceSpan[] = [];
   let start: number | null = null;

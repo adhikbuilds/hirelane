@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- SYNTHETIC fixture. Markup modelled on a public application page; NOT recorded from a live service and unverified against it. -->
+<html><head><title>Graduate Engineer - Acme (fixture, captcha)</title><style>.x{color:red}</style><script>var a = "<input name='ghost'>";</script></head>
+<body>
+<form id="application-form" action="/submit" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf" value="fixture-token">
+  <ul>
+    <li class="application-question">
+      <label for="name">Full name <span class="required">&#10033;</span></label>
+      <input type="text" id="name" name="name" required>
+    </li>
+    <li class="application-question">
+      <label for="email">Email <span class="required">&#10033;</span></label>
+      <input type="email" id="email" name="email" required>
+    </li>
+    <li class="application-question">
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" name="phone">
+    </li>
+    <li class="application-question">
+      <label for="resume">Resume/CV <span class="required">&#10033;</span></label>
+      <input type="file" id="resume" name="resume" required>
+    </li>
+    <li class="application-question">
+      <label for="linkedin">LinkedIn URL</label>
+      <input type="text" id="linkedin" name="urls[LinkedIn]">
+    </li>
+    <li class="application-question">
+      <label for="grad">Graduation year &#10033;</label>
+      <input type="text" id="grad" name="cards[grad][field0]" required>
+    </li>
+    <li class="application-question">
+      <div class="application-label">Are you willing to relocate? &#10033;</div>
+      <label><input type="radio" name="cards[reloc][field0]" value="Yes" required> Yes</label>
+      <label><input type="radio" name="cards[reloc][field0]" value="No"> No</label>
+    </li>
+    <li class="application-question">
+      <label for="notice">Notice period</label>
+      <select id="notice" name="cards[notice][field0]" required>
+        <option value="">Select...</option>
+        <option value="Immediately">Immediately</option>
+        <option value="30 days">30 days</option>
+      </select>
+    </li>
+    <li class="application-question">
+      <label for="more">Additional information</label>
+      <textarea id="more" name="comments" placeholder="Anything else?"></textarea>
+    </li>
+  </ul>
+  <div class="h-captcha" data-sitekey="fixture-sitekey"></div>
+  <button type="submit">Submit application</button>
+</form>
+</body></html>

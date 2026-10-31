@@ -1,8 +1,73 @@
-# Resume pipeline (Slice 1)
+# Resume pipeline (Slices 1 and 3)
 
-**Status:** built, uncommitted, 2026-10-29. Pure engine code plus an extraction library in the runner. Nothing calls the extractor yet: no runner task and no upload route. Both arrive in Slice 3 (`resume:extract`, see `docs/architecture.md` §4.3).
+**Status:** Slice 1 (pure engine and extraction library) and Slice 3 (upload, extract, confirm, eligibility API, builder, download, purge) are built, uncommitted, 2026-10-29. The Slice 3 wiring is in `packages/services/src/{resumes,eligibility,builder}.ts`, `workers/runner/src/tasks/resume-*.ts` and `apps/web/app/api/v1/resumes/**`. The eligibility screen `/you/eligibility` is not built: its folder holds only `actions.ts`, and `pnpm budget` lists it as "not built".
 
-**Owner files:** `packages/engine/src/resume/` (pure), `workers/runner/src/resume/extract/` (I/O, sandboxed), `packages/engine/scripts/evals/sensitive.ts` and `education.ts` (gates).
+**Owner files:** `packages/engine/src/resume/` (pure), `workers/runner/src/resume/` (I/O: sandboxed extraction, pipeline, render), `packages/services/src/{resumes,seal,aad,parsed,eligibility,builder}.ts` (service layer), `packages/engine/scripts/evals/sensitive.ts` and `education.ts` (gates).
+
+## 0. End to end (Slice 3)
+
+```
+POST /api/v1/resumes ──► uploadResume ──► row (uploaded) + sealed blob + enqueue resume:extract {id}
+                                                 │
+resume:extract ──► pipeline.ts (gate → sandboxed extract → normalise → mask → health → education)
+                   ──► row (parsed | needs_text), parsed_enc sealed
+                                                 │
+GET /api/v1/resumes/{id}  (masked parse)          │
+POST /api/v1/resumes/{id}/confirm  ──► new version, made default, eligibility upserted
+GET|PUT /api/v1/eligibility         ──► profile + field_meta provenance
+POST /api/v1/builder/steps → POST /api/v1/builder/finish ──► resume:render (pdfkit, id only) ──► extract
+GET /api/v1/resumes/{id}/file       ──► original bytes, audited in file_access_log (same transaction)
+DELETE /api/v1/resumes/{id}         ──► deleted_at + purge_after (versions too) ──► resume:purge
+```
+
+**Upload** (`POST /api/v1/resumes`, a route handler, not a server action; PLAN Amendment B). The body is raw, capped at 5 MiB (`MAX_RESUME_BYTES`), and rate limited per user. Checks, with the error each returns:
+
+- Type: only PDF and DOCX. The magic bytes must match the declared type (`bad_file_type` 415 otherwise).
+- Size: a declared length over 5 MiB, or a stream that crosses the cap, is `file_too_large` 413. An empty body is `empty_file` 400.
+- Cap: at most 3 resumes per student. Drafts count (`too_many_resumes` 409).
+- Duplicate: the same file twice is `duplicate_resume` 409. The check uses a file HMAC.
+- The blob is sealed under `resumeBlobAad` (`aad.ts`). The original file name lives only inside `parsed_enc`.
+- The job payload carries the resume id only. The enqueue is keyed `resume:extract:{id}`. If the enqueue fails, the route returns `queue_unavailable` 503, the row remains, and `resume:stuck-sweep` re-queues it.
+- `Idempotency-Key` makes a repeat return the stored response and queue no second job.
+
+**Extract** (`resume:extract`, `workers/runner/src/tasks/resume-extract.ts`, which calls `resume/pipeline.ts`). The pipeline has no DB, no vault, no network and no LLM calls. It runs the gate, the sandboxed extraction (§2), normalisation, the text layer, sections, sensitive detection, health (§3) and `parseEducation` (§1). Sensitive values are masked before the parse is sealed (§4). The task writes the extractor-owned columns as the owner role, because `hirelane_app` has no grant on them. Outcomes covered by tests:
+
+- A DOCX with an Aadhaar number ends masked, with the kind flagged and no value in the row. The original blob is untouched (`resume-pipeline-db.test.ts`, "Aadhaar DOCX: masked parse, kind flagged, no value anywhere in the row"). The same case is in `resume-f1-integration.test.ts`. Both are skipped unless the test database is local.
+- An image-only PDF stops at `needs_text`, and it cannot be confirmed (`resume-f1-integration.test.ts`).
+- A 4-page PDF is rejected with `pages` NULL (`resume-pipeline-db.test.ts`).
+- A missing blob fails the row. It does not stay in `extracting`.
+
+**Read.** `GET /api/v1/resumes/{id}` returns the opened, masked parse. `GET /api/v1/resumes` returns summaries only. `GET /api/v1/me/export` contains the parse but no blob key and no file hash (`api-v1.test.ts`, "get and export; the export has the opened parse but no blob key or file hash").
+
+**Confirm** (`POST /api/v1/resumes/{id}/confirm`, body `parsedVersion` and `eligibility`). It creates a new version, makes it the default and upserts the eligibility profile. Rules:
+
+- `stale_parse` 409 when `parsedVersion` is not the current parse.
+- `not_confirmable` 409 for a resume that has not been parsed, or that is `needs_text`.
+- Bad numbers are 400 with an issue path, for example `eligibility.pct_10` `too_big`. Values never appear in an error.
+- Provenance is recorded per field in `field_meta`. A value taken from the resume has `source: 'resume'`. A value the student supplied, or one the parse does not contain, has `source: 'user'`. For example, the parse has no 10th percentage, so `pct_10` is `'user'`, while `grad_score` and `passout_year` are `'resume'` (`api-v1.test.ts`, "confirm creates a new version…").
+
+**Eligibility** (`GET` and `PUT /api/v1/eligibility`, `packages/services/src/eligibility.ts`). `PUT` saves the profile and counts as confirmation: it sets `confirmed_at`. Values are validated by `EligibilityValues`. Errors never echo values (`api-v1.test.ts`, "PUT eligibility validates…"). The matching against drives is in `docs/eligibility.md`. There is no UI for this yet.
+
+**Builder** (`POST /api/v1/builder/steps`, then `POST /api/v1/builder/finish`). Each step is sealed into a draft. Answers are validated to the renderer's limits and are never echoed in errors. Finish requires every required step (`incomplete_draft` 422 otherwise). It then queues `resume:render` with the id only, and returns 202. Only the owner can edit or finish a draft. Render (`workers/runner/src/resume/render/`) uses pdfkit, one column, one page, no network and no embedded JavaScript. The round trip is checked: the rendered PDF goes through the real pipeline and must come back `parsed`, readable, one page, with 9 of 9 checks passing (`resume-render.test.ts`, "goes through the real pipeline as a parsed, readable, one page resume"). The builder offer for an image-only PDF is not covered by any test (see `docs/design/campus-build-plan.md`, Slice 3).
+
+**Download.** `GET /api/v1/resumes/{id}/file` returns the original bytes. The `file_access_log` row is written in the same transaction. A missing blob is a 404 with no audit row. A row that points at another user's blob key is a 404.
+
+**Delete and purge.** `DELETE /api/v1/resumes/{id}` sets `deleted_at` and `purge_after` together. It takes the versions too, and hides the resume. A version whose root was deleted or replaced is hidden. Purge is described under "Retention and recovery" below.
+
+### 0.1 Tasks and crontab
+
+| Task | Trigger | What it does |
+|---|---|---|
+| `resume:extract` | upload, the builder render, and the stuck sweep | the pipeline above |
+| `resume:render` | `finishBuilder` | renders the builder draft to PDF, then queues extract |
+| `resume:purge` | delete, and extract (replacing an Aadhaar or PAN original) | deletes the blobs, then nulls the derived columns (0010b) |
+| `resume:purge-sweep` | hourly (`13 * * * *`) | purges every row whose `purge_after` has passed, and any row deleted 23 h ago or more. Soft-deletes a superseded original that held an Aadhaar, VID or PAN, once the student has a newer clean resume |
+| `resume:stuck-sweep` | hourly (`43 * * * *`) | re-queues extract for rows in `uploaded` for more than 10 minutes, and resets `extracting` rows older than 5 minutes |
+| `idempotency:sweep` | hourly (`27 * * * *`) | deletes idempotency keys older than 24 hours |
+
+Migrations for this slice are `0010_resumes_profiles`, `0010a_resumes_builder_drafts` and `0010b_resumes_purge_retention`. The build plan's "0009" label for Slice 3 is out of date: `0009` is the Slice 2 auth hardening migration.
+
+## Slice 1 detail (pipeline, limits, rules)
 
 ## 1. Pipeline
 
@@ -127,17 +192,44 @@ If the layer is `none` or `garbled`, `ats_readable` fails and the other eight ar
 
 ## 6. Open items and deliberate gaps
 
-- **Network isolation** of the extraction child needs a container or network policy. Not done.
+- **Network isolation** of the extraction child is a deploy precondition, not code: see "Deploy preconditions" below.
 - **Unlabelled contiguous 91x numbers** are discarded as phones. Owner decision: flagging them costs more false positives. Say if you want that changed.
 - **Zip guard:** no local-header name cross-check and no fuzz test yet. The caps are unchanged and real.
 - **DOCX tri-state flags** (`javascript`, `macros`) and flagging vanished text.
 - **Only Aadhaar, VID and PAN are masked.** Callers must send only the masked text.
 - **Mac and Linux only** for the RSS watchdog.
-- **No runner task** registers the extractor yet (`resume:extract`, Slice 3). Nothing stores an upload.
 - The engine exports and eval scripts are listed in `docs/architecture.md` §6.
+
+## Extraction sandbox (ADR: child process, not worker thread)
+
+Amendment B section 2 and the build plan said a fresh `worker_threads` Worker with `resourceLimits` of 256 MB. What was built is a forked **child process** per job (`workers/runner/src/resume/extract/thread.ts`). It is stronger isolation: a hostile file can only kill the child, the environment is empty, and Node's permission model applies. Limits actually used:
+
+| Limit | Value |
+| --- | --- |
+| V8 old generation | 256 MB (`--max-old-space-size`) |
+| Resident set (RSS watchdog, polled every 100 ms, because pdf.js decodes into ArrayBuffers outside the V8 heap) | 640 MB |
+| Wall clock | 10 s, then SIGKILL |
+| Environment | empty (no `DATABASE_URL`, no master key) |
+| Permissions | `--permission`: no child processes, no workers, no writes; read only the `extract/` folder and the real folders of `unpdf` and `fflate` (plus their symlinked `node_modules` entries for package resolution) |
+
+The repo root, `.env`, `.env.local` and the default `./storage` folder are **not readable** by the child (tested in `workers/runner/test/resume-extract-thread.test.ts`). Requires Node 22.18 or later (`engines` was raised). pdf.js is 6.1.200, past the CVE-2024-4367 fix, so this is defence in depth.
+
+## Deploy preconditions
+
+1. **The runner must run in a network-isolated container (no egress) or behind a firewall that blocks outbound traffic from the extraction child.** Node's permission model does not restrict the network, so if hostile file content ever ran code inside pdf.js, only network isolation stops it sending out what it can read. This is required before the pilot.
+2. `HIRELANE_MASTER_KEY` and `DATABASE_URL` are read by the parent process only.
+3. Cron: `resume:purge-sweep` (hourly), `resume:stuck-sweep` (hourly) and `idempotency:sweep` (hourly, deletes keys older than 24 h) must be running (`workers/runner/crontab`).
+
+## Retention and recovery
+
+- **Account delete** removes every stored file first (`apps/web/lib/auth/erasure.ts`, called inside `deleteAccount` before the `users` DELETE; a failed file delete rolls the whole delete back so it can be retried), then the rows cascade.
+- **Purge** deletes the blobs, then nulls `parsed_enc`, `label`, `skills`, `file_hmac` and `blob_key` and sets `purged_at` (migration 0010b).
+- **Stuck resumes:** `resume:stuck-sweep` resets rows left in `extracting` for more than 5 minutes (worker died) and re-queues extract for rows in `uploaded` for more than 10 minutes (enqueue failed). `resume:render` no longer deletes the blob once the row is committed.
 
 ## Related
 
 - `docs/eligibility.md` for criteria matching against the education rows.
-- `docs/auth.md` for the sign-in and account side. Upload and seal rules come with Slice 3.
+- `docs/auth.md` for the sign-in and account side, and for erasure (`lib/auth/erasure.ts`), which removes stored files before the account rows.
+- `docs/public-api.md` §14 for the v1 routes that wrap this pipeline.
+- `docs/architecture.md` §4.3 for the task catalogue and §6 for the codemap.
 - `docs/design/campus-build-plan.md` for the Slice 1 and Slice 3 tasks and acceptance.

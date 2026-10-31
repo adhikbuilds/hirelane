@@ -1,0 +1,13 @@
+From: Northwind Labs Recruiting <jobs@northwindlabs.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=northwindlabs.example.test; dmarc=pass header.from=northwindlabs.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Thu, 29 Oct 2026 09:50:00 GMT
+Message-ID: <corpus-51@northwindlabs.example.test>
+MIME-Version: 1.0
+Subject: Complete your candidate profile
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Hi Meera, your profile at Northwind Labs is 60% complete. Add your project links and your expected graduation date to help our team review your application faster.
+
+PS: Meera - salary details (- figures) are shared with shortlisted candidates only.

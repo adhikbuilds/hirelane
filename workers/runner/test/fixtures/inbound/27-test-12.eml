@@ -1,0 +1,30 @@
+From: Helio Games Recruiting <jobs@heliogames.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=heliogames.example.test; dmarc=pass header.from=heliogames.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 12:02:00 GMT
+Message-ID: <corpus-27@heliogames.example.test>
+MIME-Version: 1.0
+Subject: HackerEarth challenge - Associate Consultant
+Content-Type: multipart/alternative; boundary="alt_26_boundary"
+
+--alt_26_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hello Meera, we have invited you to a HackerEarth coding challenge for Asso=
+ciate Consultant. Open the invitation email from HackerEarth and complete t=
+he challenge by Monday 10 November.
+
+PS: Meera =E2=80=94 salary details (=E2=82=B9 figures) are shared with shor=
+tlisted candidates only.
+--alt_26_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PHA+SGVsbG8gTWVlcmEsIHdlIGhhdmUgaW52aXRlZCB5b3UgdG8gYSBIYWNr
+ZXJFYXJ0aCBjb2RpbmcgY2hhbGxlbmdlIGZvciBBc3NvY2lhdGUgQ29uc3VsdGFudC4gT3BlbiB0
+aGUgaW52aXRhdGlvbiBlbWFpbCBmcm9tIEhhY2tlckVhcnRoIGFuZCBjb21wbGV0ZSB0aGUgY2hh
+bGxlbmdlIGJ5IE1vbmRheSAxMCBOb3ZlbWJlci48L3A+PGJyPgo8cD5QUzogTWVlcmEg4oCUIHNh
+bGFyeSBkZXRhaWxzICjigrkgZmlndXJlcykgYXJlIHNoYXJlZCB3aXRoIHNob3J0bGlzdGVkIGNh
+bmRpZGF0ZXMgb25seS48L3A+PC9ib2R5PjwvaHRtbD4=
+--alt_26_boundary--

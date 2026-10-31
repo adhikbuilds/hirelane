@@ -11,3 +11,7 @@
 43 * * * * resume:stuck-sweep
 # Idempotency keys hold full response bodies; delete after 24 h.
 27 * * * * idempotency:sweep
+# Campus snapshots (TPO numbers read only these): nightly, 02:20 UTC. Counts verified members; 35 days kept.
+20 2 * * * campus:stats
+# Apply pipeline backstop: every 5 minutes. Re-queues ready applications whose submit job was lost; fails ones stuck submitting.
+*/5 * * * * apply:sweep

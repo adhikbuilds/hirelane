@@ -5,6 +5,8 @@
 
 Read-only JSON about open jobs, for people, scripts and AI agents. No key, no sign-in, no application submission.
 
+This file covers the public jobs surface (§1 to §13). The signed-in **v1 API** (accounts, resumes, eligibility, builder, consent, export and delete, the campus student side, the TPO console and auto-apply) is a separate surface with its own OpenAPI document, described in §14.
+
 ---
 
 ## 1. Endpoints
@@ -281,3 +283,127 @@ These are described in PLAN §7.1 but are not built. Do not document them as ava
 - `docs/architecture.md` §6: codemap for the board and the API routes.
 - `PLAN.md` §7: intended API surface. Where this file and PLAN differ, this file describes the code.
 - `docs/ingest.md`: where job data comes from and how closed jobs are detected.
+
+---
+
+## 14. v1 API (signed in, accounts)
+
+> Status: the base routes (§14.1 to §14.5) were built in Slice 3, uncommitted, 2026-10-29. The campus, TPO and apply routes (§14.6 to §14.8) were added in Slice 4, uncommitted, 2026-10-31. Sources: `apps/web/app/api/v1/**` (43 route files, including `openapi.json`), `apps/web/lib/openapi-v1.ts` (the operation list), `apps/web/lib/http` (the v1 wrapper, problem responses), `packages/services/src` (the logic). The route files are thin adapters: they parse, call a service, and map the result (`api-v1-thin` in `.dependency-cruiser.cjs`).
+
+This surface is for the signed-in student and their own data. It is **not** the public jobs API above. It has its own OpenAPI document, served at `GET /api/v1/openapi.json`. That document is built from the zod schemas. It does not include `/openapi.json`, which describes only the public jobs endpoints.
+
+### 14.1 Operations
+
+Every server action that changes data has a v1 twin. `apps/web/tests/api-v1-parity.test.ts` enforces this: each exported action maps to a v1 operation, or to a written exemption.
+
+| Method | Path | `operationId` | Mutation | Notes |
+|---|---|---|---|---|
+| `GET` | `/api/v1/resumes` | `listResumes` | no | Summaries only |
+| `POST` | `/api/v1/resumes` | `uploadResume` | yes | Raw body, PDF or DOCX, 5 MiB. Returns 202 |
+| `GET` | `/api/v1/resumes/{id}` | `getResume` | no | Opened, masked parse |
+| `DELETE` | `/api/v1/resumes/{id}` | `deleteResume` | yes | Soft delete, purge within 24 h |
+| `POST` | `/api/v1/resumes/{id}/confirm` | `confirmResume` | yes | New version, made default, eligibility upserted |
+| `GET` | `/api/v1/resumes/{id}/file` | `downloadResume` | no | Original bytes, audited |
+| `GET` | `/api/v1/eligibility` | `getEligibility` | no | Profile or null |
+| `PUT` | `/api/v1/eligibility` | `saveEligibility` | yes | Counts as confirmation |
+| `POST` | `/api/v1/builder/steps` | `saveBuilderStep` | yes | One builder answer |
+| `POST` | `/api/v1/builder/finish` | `finishBuilder` | yes | Queues the render. Returns 202 |
+| `GET` | `/api/v1/me` | `getMe` | no | The signed-in user |
+| `DELETE` | `/api/v1/me` | `deleteMe` | yes | Needs `confirm: true`. Removes files, then the account |
+| `POST` | `/api/v1/me/consents` | `setConsent` | yes | Append-only. Unknown kinds are refused |
+| `GET` | `/api/v1/me/export` | `exportMe` | no | Everything held about the user. No blob key and no file hash |
+
+The OpenAPI document is `GET /api/v1/openapi.json`. Like every v1 route, it returns 404 while the accounts flag is off, so the surface is not published before launch.
+
+### 14.2 Authentication
+
+- **Session cookie only.** Requests are authenticated by the `__Host-` session cookie (`withAuth`, `lib/auth/session.ts`). No cookie, a garbage cookie, or a `Bearer` header each return 401 (`api-v1.test.ts`, "no session, a garbage cookie and a Bearer header are all 401").
+- **Bearer tokens are not built.** Opaque Bearer tokens for Android are designed in the plan and are scheduled for C3 (`sessions.client` ships in migration 0008). Do not document them as available.
+- **Flag off.** Every v1 route returns 404 as `problem+json` (`api-v1.test.ts`, "flag off: 404 problem+json").
+
+### 14.3 Requests
+
+- **Mutations** need an `Origin` header that matches the app origin, and an `Idempotency-Key` header. Reads need neither (`api-v1.test.ts`, "mutations need the same Origin and an Idempotency-Key; reads need neither").
+- **Idempotency.** A replayed key returns the stored response, and no second job is queued. The same key with a different body is `idempotency_key_reuse` 422. A key that is still in progress is `idempotency_in_progress` 409. A key that is reused with a different `?label=` is a client bug, so it is 422 and not a replay. Keys are swept after 24 hours (`idempotency:sweep`).
+- **Bodies.** Input schemas are strict. An unknown field such as `userId` is a 400, so a client cannot name another user. A non-JSON body, or one over its limit, is refused.
+- **Rate limits** are per user, and a limited response carries `Retry-After`.
+
+### 14.4 Responses and errors
+
+- Every error is `application/problem+json` and carries a request id. Issue paths name the field, not the value (`api-v1.test.ts`, "every error is problem+json with a request id").
+- An unknown failure is a bare 500 with no message. The message is never sent.
+- Cross-user access is **404**, not 403. A resume, version or draft that belongs to someone else looks the same as one that does not exist. This is covered for get, delete, download and builder steps (`api-v1.test.ts`, "a forged user id in a body or a blob key cannot reach another user", and the builder "only the owner's draft can be edited or finished").
+- Other codes used by the v1 services: `invalid_input` 400 with issues, `file_too_large` 413, `bad_file_type` 415, `duplicate_resume` 409, `too_many_resumes` 409, `stale_parse` 409, `not_confirmable` 409, `incomplete_draft` 422, `queue_unavailable` 503 (the row exists and can be re-queued).
+
+### 14.5 Known gaps
+
+- Bearer auth for Android (C3).
+- Actions that have no v1 twin are listed as written exemptions in `apps/web/lib/api/parity.ts` (`ACTION_EXEMPT`). Each exemption needs a reason there.
+- The "every action has a v1 twin" check is a test, not a dependency rule. A new action file is caught only when the test runs in `pnpm verify`.
+
+### 14.6 Campus (student)
+
+Membership, joining, the share level, the access log, the drive inbox and outcomes. Every route here follows §14.2 to §14.4. The rules behind them are in `docs/campus.md`.
+
+| Method | Path | `operationId` | Mutation | Success | Notes |
+|---|---|---|---|---|---|
+| `GET` | `/api/v1/campus/me` | `getMyCampus` | no | 200 | My membership, or `null` |
+| `DELETE` | `/api/v1/campus/me` | `leaveCampus` | yes | 200 | Leaves the campus. `false` when I had no seat |
+| `POST` | `/api/v1/campus/join` | `joinCampusByCode` | yes | 200 | Body `code` (8 characters) and optional `cohortId`. Without a cohort it returns the cohorts to choose from |
+| `POST` | `/api/v1/campus/join/email` | `startCampusEmailJoin` | yes | 200 | Body `email`. Mails a six-digit code to a registered college domain |
+| `POST` | `/api/v1/campus/join/email/verify` | `verifyCampusEmailJoin` | yes | 200 | Body `email`, `code` (six digits), `cohortId`. Joins as `email`, or as `roster` when the mailbox is on the roster |
+| `PUT` | `/api/v1/campus/share` | `setShareLevel` | yes | 200 | Body `level`: `aggregate`, `outcomes` or `full`. Recorded as a consent |
+| `GET` | `/api/v1/campus/access-log` | `listAccessLog` | no | 200 | Every TPO read of my data, newest first. Shows no reader |
+| `GET` | `/api/v1/campus/drives` | `listMyDrives` | no | 200 | My drive inbox: drives I am eligible for or not yet known to fail, with the reasons |
+| `GET` | `/api/v1/campus/outcomes` | `listMyOutcomes` | no | 200 | My reported interviews and offers |
+| `POST` | `/api/v1/campus/outcomes` | `reportOutcome` | yes | 201 | Body `kind` (`interview` or `offer`), `employer`, optional `roleTitle` and `packageLpa`. Starts as `student_reported` |
+| `POST` | `/api/v1/campus/outcomes/{id}/letter` | `attachOutcomeLetter` | yes | 200 | Offer letter as a raw PDF, at most 2 MiB. Sealed |
+
+Errors: `invalid_code` 400, `invalid_cohort` 400, `invalid_email` 400, `rate_limited` 429, `try_again_shortly` 429, `already_member` 409, `seat_taken` 409, `not_in_campus` 409, `too_many_outcomes` 409 (50 per student), `not_a_college_email` 422, `mail_unavailable` 503, `file_too_large` 413, `bad_file_type` 415.
+
+### 14.7 TPO console
+
+Staff only. A caller who does not staff the campus gets the same 404 as a stranger, on every route here. Every call first claims a pending invite for the caller's verified email. Where a route takes `campusId`, it is a query parameter or a body field. If the caller staffs several campuses and omits it, the answer is `400 campus_required`. The owner-only rules are in `docs/campus.md` §6.
+
+| Method | Path | `operationId` | Mutation | Success | Notes |
+|---|---|---|---|---|---|
+| `GET` | `/api/v1/tpo/me` | `getTpoMe` | no | 200 | Campuses I staff, empty for a student. Writes when an invite is claimed |
+| `GET` | `/api/v1/tpo/cohorts` | `listTpoCohorts` | no | 200 | `campusId`. Cohorts with the joined count, rounded and suppressed |
+| `POST` | `/api/v1/tpo/cohorts` | `createTpoCohort` | yes | 201 | Body `passoutYear`, `programme`, optional `campusId`. 200 when it already existed |
+| `GET` | `/api/v1/tpo/cohorts/{id}/stats` | `getCohortStats` | no | 200 | Fixed metrics from the latest snapshot. Optional `metric` |
+| `POST` | `/api/v1/tpo/cohorts/{id}/roster` | `importRoster` | yes | 200 | Raw CSV body, at most 1 MiB. Stages the roster only |
+| `GET` | `/api/v1/tpo/drives` | `listTpoDrives` | no | 200 | `campusId`. Drives published for the campus |
+| `POST` | `/api/v1/tpo/drives` | `publishDrive` | yes | 201 | Body `cohortId`, `title`, `noticeText`, optional `link` (stored, never fetched). Returns the parsed criteria and scam flags |
+| `GET` | `/api/v1/tpo/drives/{id}` | `getDriveCounts` | no | 200 | Eligible, unknown and ineligible counts. Suppressed like the stats. A drive whose counts were not released (see `docs/campus.md` §5) shows no numbers |
+| `GET` | `/api/v1/tpo/outcomes` | `listTpoOutcomes` | no | 200 | Outcomes of students at `outcomes` or `full`. Optional `cohortId`. Writes one access-log row per student listed |
+| `POST` | `/api/v1/tpo/outcomes/{id}/verify` | `verifyOutcome` | yes | 200 | Marks the outcome `tpo_verified` |
+| `GET` | `/api/v1/tpo/outcomes/{id}/letter` | `downloadOutcomeLetter` | no | 200 | PDF, only when the student has consented to share the letter. Writes a `letter_view` row |
+| `GET` | `/api/v1/tpo/export/naac` | `exportNaac` | no | 200 | CSV in the shape of criterion 5.2.1. Writes one `naac_export` row per student. The headers are not checked against the NAAC manual |
+| `POST` | `/api/v1/tpo/staff` | `inviteStaff` | yes | 201 | Owner only. Body `campusId`, `email`. 200 when already invited |
+| `GET` | `/api/v1/tpo/staff` | `listStaff` | no | 200 | Owner only. No email addresses |
+| `DELETE` | `/api/v1/tpo/staff/{id}` | `removeStaff` | yes | 200 | Owner only. `campusId` as a query parameter. Removes a seat or an open invite |
+| `POST` | `/api/v1/tpo/staff/{id}/transfer-ownership` | `transferOwnership` | yes | 200 | Owner only. Body `campusId`. The target must be a claimed staff member. The caller becomes staff |
+
+Errors: `campus_required` 400, `invalid_email` 400, `empty_file` 400, `bad_csv` 400, `missing_email_column` 400, `no_valid_rows` 400, `too_few_rows` 400 (fewer than 10 valid rows), `file_too_large` 413, `too_many_rows` 413, `import_rate_limited` 429 (one import per cohort per 24 hours), `drive_limit` 429 (10 drives per cohort in 30 days), `last_owner` 409, `not_found` 404 for anything outside the caller's staff.
+
+### 14.8 Apply
+
+The right swipe, the tracker, the answer bank, the employer inbox and auto-apply consent. Nothing is sent unless the student has granted auto-apply, the day has a free slot, the platform is enabled and `HIRELANE_AUTO_APPLY` is on. Today the only transport is the fixture (`docs/apply.md`).
+
+| Method | Path | `operationId` | Mutation | Success | Notes |
+|---|---|---|---|---|---|
+| `POST` | `/api/v1/apply/swipe` | `swipeRight` | yes | 201 (200 when the application already exists) | Body `jobId`, optional `resumeId`. Creates the application with a 4 second undo window. Returns the application, the apply address and `autoApply` |
+| `GET` | `/api/v1/apply/applications` | `listApplications` | no | 200 | The tracker, newest first. Optional `status`, and `limit` (1 to 100, default 50) |
+| `GET` | `/api/v1/apply/applications/{id}` | `getApplication` | no | 200 | Answers (with `needsYou` and the reason), receipt, apply address and matched employer messages |
+| `POST` | `/api/v1/apply/applications/{id}/undo` | `undoApplication` | yes | 200 | Only inside the 4 second window |
+| `POST` | `/api/v1/apply/applications/{id}/rearm` | `rearmApplication` | yes | 200 | Only for `blocked_fallback` with reason `needs_you`. Puts the application back to `ready` with a new window and queues the submit again |
+| `POST` | `/api/v1/apply/applications/{id}/finish` | `markFinishedByStudent` | yes | 200 | Only for `blocked_fallback`. Marks it `submitted` by me. Nothing was sent by Hirelane |
+| `GET` | `/api/v1/apply/inbox` | `listInbox` | no | 200 | Employer messages forwarded to me, newest first, with the unread count |
+| `PUT` | `/api/v1/apply/inbox` | `markInboxRead` | yes | 200 | Marks every notification read |
+| `GET` | `/api/v1/apply/answers` | `listAnswers` | no | 200 | My answer bank |
+| `PUT` | `/api/v1/apply/answers` | `saveAnswer` | yes | 200 | Body `questionKey` (`a-z0-9_.:-`, up to 80 characters), `answer` (up to 2,000 characters), optional `labelSeen` and `sensitive`. Creates or replaces the answer for that key |
+| `DELETE` | `/api/v1/apply/answers/{id}` | `deleteAnswer` | yes | 200 | Deletes one answer |
+| `GET` | `/api/v1/apply/consent` | `getApplySettings` | no | 200 | Auto-apply state, the time it was decided, and the apply address |
+| `PUT` | `/api/v1/apply/consent` | `setAutoApply` | yes | 200 | Body `granted`. Recorded as an append-only consent |
+
+Errors: `auto_apply_off` 503, `job_closed` 409, `job_not_applicable` 409, `undo_window_closed` 409, `not_rearmable` 409, `not_blocked` 409, `conflict` 409, `not_found` 404 for an application or answer that is not mine.

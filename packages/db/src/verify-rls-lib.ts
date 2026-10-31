@@ -20,8 +20,18 @@ import { isLocalUrl } from './env.js';
  * ins-only read and insert own rows; no update, no delete
  * rev      revoked from the app role entirely
  * pub      readable by the app role, nothing else
+ * ten      read-only, scoped to the caller's tenant (a campus, or the caller as subject): the caller sees every row of
+ *          their own tenant and none of another's; every write is denied (writes go through definer functions)
  */
-export type RlsMode = 'own' | 'own-r' | 'own-nd' | 'rev' | 'ins-only' | 'pub';
+export type RlsMode = 'own' | 'own-r' | 'own-nd' | 'rev' | 'ins-only' | 'pub' | 'ten';
+
+/** Tenant-keyed tables (modes `ten`, and `rev` when the table is keyed by a tenant instead of a user). */
+export interface TenantSpec {
+  /** Column that holds the tenant id (uuid). */
+  column: string;
+  /** Seeds (idempotently) and returns the tenant id the user belongs to. */
+  of(admin: Client, userId: string): Promise<string>;
+}
 
 export interface RlsTableSpec {
   /** Short label used in messages. */
@@ -39,6 +49,8 @@ export interface RlsTableSpec {
   insertSql?: string;
   /** UPDATE run as the app role; `$1` is the user id. Defaults to `SET col = col`. Needed when only some columns are grantable. */
   updateSql?: string;
+  /** Present for tables keyed by a tenant (campus, cohort) instead of a user: the checks run per tenant. */
+  tenant?: TenantSpec;
 }
 
 /** Real tables under test. Later milestones append here (users, profiles, resumes, picks, ...). */
@@ -53,6 +65,8 @@ async function ensureUser(admin: Client, userId: string): Promise<void> {
   );
 }
 const dropUsers = async (admin: Client, ids: string[]): Promise<void> => {
+  // Campus fixtures hang off a membership, so remove them before the users go (a campus has no owner column to cascade from).
+  await admin.query('DELETE FROM campuses WHERE id IN (SELECT campus_id FROM cohort_members WHERE user_id = ANY($1::uuid[]))', [ids]);
   await admin.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [ids]);
 };
 const authSpec = (
@@ -73,6 +87,129 @@ const authSpec = (
   cleanup: dropUsers,
   ...extra,
 });
+
+/**
+ * Seeds one campus world for a user, once: campus, domain, cohort, a verified membership, a roster row and import, a staff
+ * seat, an access-log row, join attempts, an OTP binding, a published drive with a check, an outcome and a stats row. Every
+ * campus table spec seeds through it, so each fixture user owns a tenant of their own.
+ */
+async function seedCampus(admin: Client, userId: string): Promise<{ campusId: string; cohortId: string; driveId: string }> {
+  await ensureUser(admin, userId);
+  const have = await admin.query<{ campus_id: string; cohort_id: string; drive: string }>(
+    `SELECT m.campus_id, m.cohort_id, (SELECT d.id FROM drives d WHERE d.cohort_id = m.cohort_id LIMIT 1) AS drive FROM cohort_members m WHERE m.user_id = $1`,
+    [userId],
+  );
+  if (have.rows[0]) return { campusId: have.rows[0].campus_id, cohortId: have.rows[0].cohort_id, driveId: have.rows[0].drive };
+  const campusId = randomUUID();
+  const cohortId = randomUUID();
+  const driveId = randomUUID();
+  const challengeId = randomUUID();
+  const tag = campusId.slice(0, 8);
+  const q = (sql: string, p: unknown[] = []) => admin.query(sql, p);
+  await q('INSERT INTO campuses (id, name, code_hmac) VALUES ($1, $2, $3)', [campusId, `rls-fixture ${tag}`, `rls-code-${campusId}`]);
+  await q('INSERT INTO campus_domains (campus_id, domain) VALUES ($1, $2)', [campusId, `rls-${tag}.example.test`]);
+  await q("INSERT INTO cohorts (id, campus_id, passout_year, programme) VALUES ($1, $2, 2026, 'RLS Programme')", [cohortId, campusId]);
+  await q(
+    "INSERT INTO cohort_members (user_id, campus_id, cohort_id, verified_via, verified_at, email_hmac) VALUES ($1, $2, $3, 'email', now(), $4)",
+    [userId, campusId, cohortId, `rls-mail-${userId}`],
+  );
+  await q('INSERT INTO cohort_roster (campus_id, cohort_id, email_hmac) VALUES ($1, $2, $3)', [campusId, cohortId, `rls-roster-${userId}`]);
+  await q('INSERT INTO cohort_imports (campus_id, cohort_id, rows_total, rows_valid, rows_rejected) VALUES ($1, $2, 1, 1, 0)', [campusId, cohortId]);
+  await q("INSERT INTO tpo_members (campus_id, user_id, email_hmac, role, claimed_at) VALUES ($1, $2, $3, 'owner', now())", [campusId, userId, `rls-staff-${userId}`]);
+  await q("INSERT INTO tpo_access_log (campus_id, subject_user_id, action) VALUES ($1, $2, 'outcomes_list')", [campusId, userId]);
+  await q("INSERT INTO join_attempts (user_id, kind, ok) VALUES ($1, 'code', true)", [userId]);
+  await q(
+    "INSERT INTO otp_challenges (id, channel, purpose, target_hmac, code_hash, expires_at, user_id) VALUES ($1, 'email', 'campus_email', 'rls', 'rls', now() + interval '1 day', $2)",
+    [challengeId, userId],
+  );
+  await q('INSERT INTO campus_otp_bindings (challenge_id, user_id, campus_id) VALUES ($1, $2, $3)', [challengeId, userId, campusId]);
+  await q("INSERT INTO drives (id, campus_id, cohort_id, title, notice_text) VALUES ($1, $2, $3, 'RLS drive', 'Open to all.')", [driveId, campusId, cohortId]);
+  await q("INSERT INTO drive_checks (drive_id, user_id, verdict) VALUES ($1, $2, 'unknown')", [driveId, userId]);
+  await q("INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer) VALUES ($1, $2, $3, 'offer', 'RLS Employer')", [userId, campusId, cohortId]);
+  await q("INSERT INTO cohort_stats_daily (cohort_id, day, metric, n, p) VALUES ($1, current_date, 'joined_verified', 1, 1)", [cohortId]);
+  return { campusId, cohortId, driveId };
+}
+const dropCampuses = dropUsers;
+const campusSpec = (name: string, mode: RlsMode, userColumn: string, extra: Partial<RlsTableSpec> = {}): RlsTableSpec => ({
+  name,
+  table: `public.${name}`,
+  mode,
+  userColumn,
+  seed: async (admin, userId) => {
+    await seedCampus(admin, userId);
+  },
+  cleanup: dropCampuses,
+  ...extra,
+});
+const campusTenant = (column: string, pick: 'campusId' | 'cohortId'): TenantSpec => ({
+  column,
+  of: async (admin, userId) => (await seedCampus(admin, userId))[pick],
+});
+const userTenant = (column: string): TenantSpec => ({ column, of: async (admin, userId) => (await seedCampus(admin, userId), userId) });
+
+/**
+ * Seeds one apply world for a user, once (0012): a job to apply to and a spare job for the insert probe, an application, a
+ * form answer, a receipt, an inbound message, a notification and an apply address. The jobs are named rls-apply-* and removed
+ * again by dropApply, so a run against a real local database leaves nothing on the public board.
+ */
+async function seedApply(admin: Client, userId: string): Promise<void> {
+  await ensureUser(admin, userId);
+  const have = await admin.query('SELECT 1 FROM applications WHERE user_id = $1', [userId]);
+  if (have.rows[0]) return;
+  const tag = userId;
+  const q = (sql: string, p: unknown[] = []) => admin.query(sql, p);
+  const companyId = randomUUID();
+  const boardId = randomUUID();
+  await q('INSERT INTO companies (id, slug, name, domain) VALUES ($1, $2, $3, $4)', [companyId, `rls-apply-${tag}`, 'RLS Apply Co', `rls-apply-${tag}.example.test`]);
+  await q("INSERT INTO company_boards (id, company_id, ats, token) VALUES ($1, $2, 'greenhouse', $3)", [boardId, companyId, `rls-apply-${tag}`]);
+  const jobs: string[] = [];
+  for (const kind of ['seed', 'probe']) {
+    const postingId = randomUUID();
+    const jobId = randomUUID();
+    await q(
+      `INSERT INTO postings (id, board_id, external_id, key, url, title, raw, content_hash, first_seen_at, last_seen_at, source)
+       VALUES ($1, $2, $3, $4, $5, 'RLS job', '{}'::jsonb, 'h', now(), now(), 'fixture')`,
+      [postingId, boardId, `rls-${kind}`, `rls-apply-${kind}-${tag}`, `https://greenhouse.fixture.invalid/rls/${kind}`],
+    );
+    await q(
+      `INSERT INTO jobs (id, slug, company_id, title, title_norm, doc_hash, first_seen_at, last_seen_at, enrich_version, primary_posting_id, source)
+       VALUES ($1, $2, $3, 'RLS job', 'rls job', 'd', now(), now(), 1, $4, 'fixture')`,
+      [jobId, `rls-apply-${kind}-${tag}`, companyId, postingId],
+    );
+    jobs.push(jobId);
+  }
+  const appId = randomUUID();
+  await q('INSERT INTO applications (id, user_id, job_id) VALUES ($1, $2, $3)', [appId, userId, jobs[0]]);
+  await q("INSERT INTO application_answers (application_id, user_id, field_id, label, needs_you) VALUES ($1, $2, 'rls', 'RLS question', true)", [appId, userId]);
+  await q("INSERT INTO receipts (application_id, user_id, answers_hash, platform, result_code, sent) VALUES ($1, $2, repeat('0', 64), 'greenhouse', 'rls_seed', false)", [appId, userId]);
+  const inboundId = randomUUID();
+  await q(
+    "INSERT INTO inbound_messages (id, user_id, application_id, message_id, employer, from_domain, kind, matched_by, excerpt_enc, received_at) VALUES ($1, $2, $3, $4, 'RLS Apply Co', 'example.test', 'other', 'company', '\\x00', now())",
+    [inboundId, userId, appId, `rls-${userId}`],
+  );
+  await q("INSERT INTO notifications (user_id, kind, title, application_id, inbound_id) VALUES ($1, 'employer_message', 'RLS note', $2, $3)", [userId, appId, inboundId]);
+  await q('INSERT INTO apply_addresses (user_id, handle, domain, reply_handle) VALUES ($1, $2, $3, $4)', [
+    userId,
+    `rls${userId.replace(/-/g, '').slice(0, 12)}`,
+    'apply.example.test',
+    userId.replace(/-/g, '').slice(0, 16),
+  ]);
+}
+const dropApply = async (admin: Client, ids: string[]): Promise<void> => {
+  await admin.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [ids]);
+  await admin.query("DELETE FROM jobs WHERE slug LIKE 'rls-apply-%'");
+  await admin.query("DELETE FROM companies WHERE slug LIKE 'rls-apply-%'");
+};
+const applySpec = (name: string, mode: RlsMode, userColumn: string, extra: Partial<RlsTableSpec> = {}): RlsTableSpec => ({
+  name,
+  table: `public.${name}`,
+  mode,
+  userColumn,
+  seed: seedApply,
+  cleanup: dropApply,
+  ...extra,
+});
+const applyTenant: TenantSpec = { column: 'user_id', of: async (admin, userId) => (await seedApply(admin, userId), userId) };
 
 export const RLS_TABLES: RlsTableSpec[] = [
   // 0008 auth. users is created and deleted by the owner role, so the app role gets read + update only.
@@ -125,12 +262,83 @@ export const RLS_TABLES: RlsTableSpec[] = [
   authSpec('eligibility_profiles', 'own', 'user_id', 'INSERT INTO eligibility_profiles (user_id, confirmed_at) VALUES ($1, now())', {
     insertSql: 'INSERT INTO eligibility_profiles (user_id, confirmed_at) VALUES ($1, now()) ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id',
   }),
+  // 0011 campus. Each fixture user owns a tenant (seedCampus). Students read their own campus rows (ten) and edit only
+  // their share level (cohort_members, own-r); outcomes are reported by the student (own-nd); the rest is definer-only (rev).
+  campusSpec('campuses', 'ten', 'id', { tenant: campusTenant('id', 'campusId') }),
+  campusSpec('campus_domains', 'ten', 'campus_id', { tenant: campusTenant('campus_id', 'campusId') }),
+  campusSpec('cohorts', 'ten', 'campus_id', { tenant: campusTenant('campus_id', 'campusId') }),
+  campusSpec('drives', 'ten', 'campus_id', { tenant: campusTenant('campus_id', 'campusId') }),
+  campusSpec('drive_checks', 'ten', 'user_id', { tenant: userTenant('user_id') }),
+  campusSpec('tpo_access_log', 'ten', 'subject_user_id', { tenant: userTenant('subject_user_id') }),
+  campusSpec('cohort_members', 'own-r', 'user_id', { updateSql: 'UPDATE cohort_members SET share_level = share_level WHERE user_id = $1' }),
+  campusSpec('outcomes', 'own-nd', 'user_id', {
+    insertSql:
+      "INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer) VALUES ($1, (SELECT campus_id FROM cohort_members WHERE user_id = current_setting('hirelane.user_id')::uuid), (SELECT cohort_id FROM cohort_members WHERE user_id = current_setting('hirelane.user_id')::uuid), 'interview', 'RLS Probe')",
+    updateSql: 'UPDATE outcomes SET employer = employer WHERE user_id = $1',
+  }),
+  campusSpec('cohort_roster', 'rev', 'campus_id', { tenant: campusTenant('campus_id', 'campusId') }),
+  campusSpec('cohort_imports', 'rev', 'campus_id', { tenant: campusTenant('campus_id', 'campusId') }),
+  campusSpec('tpo_members', 'rev', 'campus_id', { tenant: campusTenant('campus_id', 'campusId') }),
+  campusSpec('cohort_stats_daily', 'rev', 'cohort_id', { tenant: campusTenant('cohort_id', 'cohortId') }),
+  campusSpec('join_attempts', 'rev', 'user_id', { tenant: userTenant('user_id') }),
+  campusSpec('campus_otp_bindings', 'rev', 'user_id', { tenant: userTenant('user_id') }),
+  // 0012 apply pipeline. The app role creates an application (ready only) and may undo it; the worker owns every outcome.
+  // Addresses are insert-only (the cap is not the student's to raise); answers, receipts and inbound mail are read-only.
+  applySpec('apply_addresses', 'ins-only', 'user_id', {
+    insertSql:
+      "INSERT INTO apply_addresses (user_id, handle, domain, reply_handle) VALUES ($1, 'rlsprobe' || substr(md5(current_setting('hirelane.user_id')), 1, 8), 'apply.example.test', substr(md5(current_setting('hirelane.user_id') || 'p'), 1, 16)) ON CONFLICT (user_id) DO NOTHING",
+  }),
+  applySpec('applications', 'own-nd', 'user_id', {
+    insertSql:
+      "INSERT INTO applications (user_id, job_id) VALUES ($1, (SELECT id FROM jobs WHERE slug = 'rls-apply-probe-' || current_setting('hirelane.user_id')))",
+    updateSql: 'UPDATE applications SET status = status WHERE user_id = $1',
+  }),
+  applySpec('notifications', 'own-r', 'user_id', { updateSql: 'UPDATE notifications SET read_at = read_at WHERE user_id = $1' }),
+  applySpec('application_answers', 'ten', 'user_id', { tenant: applyTenant }),
+  applySpec('receipts', 'ten', 'user_id', { tenant: applyTenant }),
+  applySpec('inbound_messages', 'ten', 'user_id', { tenant: applyTenant }),
 ];
+
+/**
+ * Every SECURITY DEFINER function in schema public, and whether the app role may execute it. The harness fails on a
+ * definer function that is not listed, one without a pinned search_path, one PUBLIC can execute, and any mismatch between
+ * the app role's EXECUTE right and `appCallable`.
+ */
+export const DEFINER_REGISTRY: Record<string, { appCallable: boolean }> = {
+  campus_join_code: { appCallable: true },
+  campus_email_issue: { appCallable: true },
+  campus_email_spend: { appCallable: true },
+  campus_email_join: { appCallable: true },
+  campus_leave: { appCallable: true },
+  tpo_claim_invites: { appCallable: true },
+  tpo_memberships: { appCallable: true },
+  tpo_create_cohort: { appCallable: true },
+  tpo_list_cohorts: { appCallable: true },
+  tpo_cohort_stats: { appCallable: true },
+  tpo_publish_drive: { appCallable: true },
+  tpo_list_drives: { appCallable: true },
+  tpo_drive_counts: { appCallable: true },
+  tpo_list_outcomes: { appCallable: true },
+  tpo_verify_outcome: { appCallable: true },
+  tpo_outcome_letter: { appCallable: true },
+  tpo_naac_rows: { appCallable: true },
+  tpo_import_roster: { appCallable: true },
+  tpo_invite_staff: { appCallable: true },
+  tpo_list_staff: { appCallable: true },
+  // 0013: owner-only staff lifecycle (app-callable), and the roster applier run by the nightly snapshot job (owner only).
+  tpo_remove_staff: { appCallable: true },
+  tpo_transfer_ownership: { appCallable: true },
+  campus_apply_roster: { appCallable: false },
+  tpo_role: { appCallable: false },
+  tpo_campus_of_cohort: { appCallable: false },
+  // 0012: the insert trigger that snapshots the job. Fires as a trigger only; nobody calls it.
+  applications_before_insert: { appCallable: false },
+};
 
 /** Tables with a user_id column that are intentionally not row-isolated. */
 const USER_ID_EXEMPT = new Set(['feature_flags']);
 
-export type FixtureFault = 'no-rls' | 'open-insert' | 'grant-revoked' | 'grant-update' | 'grant-delete';
+export type FixtureFault = 'no-rls' | 'open-insert' | 'grant-revoked' | 'grant-update' | 'grant-delete' | 'open-tenant' | 'ten-writable';
 
 export interface VerifyRlsOptions {
   /** Connection string of the database under test. Must be local: the harness creates a role. */
@@ -165,7 +373,11 @@ function fixtureSpecs(schema: string): RlsTableSpec[] {
       await c.query(`INSERT INTO ${schema}.${name} (user_id, note) VALUES ($1, 'seed')`, [userId]);
     },
   });
-  return [mk('fx_own', 'own'), mk('fx_rev', 'rev'), mk('fx_ins', 'ins-only'), mk('fx_pub', 'pub'), mk('fx_nd', 'own-nd')];
+  const ten: RlsTableSpec = {
+    ...mk('fx_ten', 'ten'),
+    tenant: { column: 'user_id', of: async (_c, userId) => userId },
+  };
+  return [mk('fx_own', 'own'), mk('fx_rev', 'rev'), mk('fx_ins', 'ins-only'), mk('fx_pub', 'pub'), mk('fx_nd', 'own-nd'), ten];
 }
 
 function fixtureDdl(schema: string, owner: string, faults: readonly FixtureFault[]): string[] {
@@ -203,6 +415,12 @@ function fixtureDdl(schema: string, owner: string, faults: readonly FixtureFault
     `ALTER TABLE ${schema}.fx_nd ENABLE ROW LEVEL SECURITY`,
     `CREATE POLICY fx_nd_all ON ${schema}.fx_nd FOR ALL TO hirelane_app USING (${SAME_USER}) WITH CHECK (${SAME_USER})`,
     `GRANT SELECT, INSERT, UPDATE${faults.includes('grant-delete') ? ', DELETE' : ''} ON ${schema}.fx_nd TO hirelane_app`,
+    `CREATE TABLE ${schema}.fx_ten (${cols})`,
+    `ALTER TABLE ${schema}.fx_ten ENABLE ROW LEVEL SECURITY`,
+    // A leak is a SELECT policy that does not scope to the tenant.
+    `CREATE POLICY fx_ten_sel ON ${schema}.fx_ten FOR SELECT TO hirelane_app USING (${faults.includes('open-tenant') ? 'true' : SAME_USER})`,
+    `GRANT SELECT${faults.includes('ten-writable') ? ', INSERT' : ''} ON ${schema}.fx_ten TO hirelane_app`,
+    ...(faults.includes('ten-writable') ? [`CREATE POLICY fx_ten_ins ON ${schema}.fx_ten FOR INSERT TO hirelane_app WITH CHECK (true)`] : []),
     `CREATE TABLE ${schema}.fx_pub (${cols})`,
     `GRANT SELECT ON ${schema}.fx_pub TO hirelane_app`,
     `RESET ROLE`,
@@ -230,7 +448,46 @@ async function probe(owner: Client, userId: string | null, sql: string, params: 
 
 const DENIED = '42501';
 
+async function checkTenantTable(spec: RlsTableSpec, owner: Client, admin: Client, a: string, b: string, ok: (cond: boolean, msg: string) => void): Promise<void> {
+  const t = spec.table;
+  const n = spec.name;
+  const tc = spec.tenant!.column;
+  const ta = await spec.tenant!.of(admin, a);
+  const tb = await spec.tenant!.of(admin, b);
+  ok(ta !== tb, `${n}: the two fixture users share a tenant`);
+  const denied = async (as: string | null, sql: string, params: unknown[] = []) => (await probe(owner, as, sql, params)).code === DENIED;
+  const ins = spec.insertSql ?? `INSERT INTO ${t} (${tc}) VALUES ($1)`;
+  const upd = spec.updateSql ?? `UPDATE ${t} SET ${tc} = ${tc} WHERE ${tc} = $1`;
+  const del = `DELETE FROM ${t} WHERE ${tc} = $1`;
+
+  const seeded = await admin.query(`SELECT ${tc}::text AS v FROM ${t} WHERE ${tc} = ANY($1::uuid[])`, [[ta, tb]]);
+  ok(seeded.rows.some((r) => r.v === ta) && seeded.rows.some((r) => r.v === tb), `${n}: seed rows missing for the fixture tenants`);
+
+  if (spec.mode === 'ten') {
+    const meta = (await admin.query<{ rls: boolean; force: boolean }>(`SELECT relrowsecurity AS rls, relforcerowsecurity AS force FROM pg_class WHERE oid = $1::regclass`, [t])).rows[0];
+    ok(meta?.rls === true, `${n}: row level security is not enabled`);
+    ok(meta?.force === false, `${n}: FORCE ROW LEVEL SECURITY is set (decision: ENABLE without FORCE)`);
+    const mine = await probe(owner, a, `SELECT count(*)::int AS n FROM ${t} WHERE ${tc} = $1`, [ta]);
+    ok(mine.code === undefined && (mine.rows[0]?.n as number) >= 1, `${n}: user A cannot read A's own tenant rows`);
+    const theirs = await probe(owner, a, `SELECT count(*)::int AS n FROM ${t} WHERE ${tc} = $1`, [tb]);
+    ok(theirs.code === undefined && theirs.rows[0]?.n === 0, `${n}: user A can read another tenant's rows`);
+    const none = await probe(owner, null, `SELECT 1 FROM ${t}`);
+    ok(none.code !== undefined || none.rows.length === 0, `${n}: rows are visible with no user context`);
+    ok(await denied(a, ins, [ta]), `${n}: a tenant-scoped table accepts inserts from the app role`);
+    ok(await denied(a, upd, [ta]), `${n}: a tenant-scoped table accepts updates from the app role`);
+    ok(await denied(a, del, [ta]), `${n}: a tenant-scoped table accepts deletes from the app role`);
+  } else if (spec.mode === 'rev') {
+    ok(await denied(a, `SELECT 1 FROM ${t}`), `${n}: revoked table is readable by the app role`);
+    ok(await denied(a, ins, [ta]), `${n}: revoked table accepts inserts from the app role`);
+    ok(await denied(a, upd, [ta]), `${n}: revoked table accepts updates from the app role`);
+    ok(await denied(a, del, [ta]), `${n}: revoked table accepts deletes from the app role`);
+  } else {
+    ok(false, `${n}: mode ${spec.mode} is not supported for tenant-keyed tables`);
+  }
+}
+
 async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: string, b: string, ok: (cond: boolean, msg: string) => void): Promise<void> {
+  if (spec.tenant) return checkTenantTable(spec, owner, admin, a, b, ok);
   const t = spec.table;
   const col = spec.userColumn;
   const n = spec.name;
@@ -312,6 +569,31 @@ async function checkTable(spec: RlsTableSpec, owner: Client, admin: Client, a: s
   }
 }
 
+/** SECURITY DEFINER functions: registered, search_path pinned, closed to PUBLIC, open to the app role only where intended. */
+async function checkDefiners(admin: Client, ok: (cond: boolean, msg: string) => void): Promise<void> {
+  const rows = (
+    await admin.query<{ name: string; args: string; config: string[] | null; pub: boolean; app: boolean; owner: string }>(
+      `SELECT p.proname AS name, p.oid::regprocedure::text AS args, p.proconfig AS config,
+              has_function_privilege('public', p.oid, 'EXECUTE') AS pub,
+              has_function_privilege('hirelane_app', p.oid, 'EXECUTE') AS app,
+              pg_get_userbyid(p.proowner) AS owner
+         FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'public' AND p.prosecdef`,
+    )
+  ).rows;
+  const seen = new Set<string>();
+  for (const r of rows) {
+    seen.add(r.name);
+    const entry = DEFINER_REGISTRY[r.name];
+    ok(!!entry, `${r.args}: SECURITY DEFINER function is not in DEFINER_REGISTRY (register it, pin search_path, revoke PUBLIC)`);
+    ok((r.config ?? []).some((c) => /^search_path=/.test(c) && !/\$user/.test(c)), `${r.args}: SECURITY DEFINER function has no pinned search_path`);
+    ok(!r.pub, `${r.args}: PUBLIC can execute this SECURITY DEFINER function`);
+    if (entry) ok(r.app === entry.appCallable, `${r.args}: the app role's EXECUTE right (${r.app}) differs from the registry (${entry.appCallable})`);
+    ok(r.owner !== 'hirelane_app', `${r.args}: owned by the app role`);
+  }
+  for (const name of Object.keys(DEFINER_REGISTRY)) ok(seen.has(name), `${name}: listed in DEFINER_REGISTRY but missing from the database`);
+}
+
 async function checkPosture(admin: Client, registry: RlsTableSpec[], ok: (cond: boolean, msg: string) => void): Promise<void> {
   const role = (await admin.query<{ rolsuper: boolean; rolbypassrls: boolean }>(
     "SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = 'hirelane_app'",
@@ -331,6 +613,8 @@ async function checkPosture(admin: Client, registry: RlsTableSpec[], ok: (cond: 
 
   const member = (await admin.query<{ m: boolean }>("SELECT pg_has_role(current_user, 'hirelane_app', 'MEMBER') AS m")).rows[0]!.m;
   ok(member, 'the connecting role cannot SET ROLE hirelane_app (not a member)');
+
+  await checkDefiners(admin, ok);
 
   // Registry completeness: new RLS tables must be added to RLS_TABLES, and no user table may skip RLS.
   const registered = new Set(registry.map((s) => s.table.replace(/^public\./, '')));

@@ -1,0 +1,422 @@
+{
+  "01-interview-1.eml": {
+    "kind": "interview",
+    "encoding": "7bit-lf",
+    "company": "Northwind Labs",
+    "domain": "northwindlabs.example.test",
+    "subject": "Let us chat: Graduate Engineer Trainee at Northwind Labs"
+  },
+  "02-interview-2.eml": {
+    "kind": "interview",
+    "encoding": "rfc2047-q-latin1",
+    "company": "Lumen Robotics",
+    "domain": "lumenrobotics.example.test",
+    "subject": "Interview invitation - Backend Developer"
+  },
+  "03-interview-3.eml": {
+    "kind": "interview",
+    "encoding": "plain-with-8bit",
+    "company": "Quartz Health",
+    "domain": "quartzhealth.example.test",
+    "subject": "Next round: panel discussion"
+  },
+  "04-interview-4.eml": {
+    "kind": "interview",
+    "encoding": "quoted-printable-utf8",
+    "company": "Saffron Retail",
+    "domain": "saffronretail.example.test",
+    "subject": "Quick phone screen?"
+  },
+  "05-interview-5.eml": {
+    "kind": "interview",
+    "encoding": "rfc2047-b-subject",
+    "company": "Kestrel Analytics",
+    "domain": "kestrelanalytics.example.test",
+    "subject": "Moving you to the interview stage"
+  },
+  "06-interview-6.eml": {
+    "kind": "interview",
+    "encoding": "html-only-qp",
+    "company": "Tamarind Cloud",
+    "domain": "tamarindcloud.example.test",
+    "subject": "Your interview is scheduled - Software Developer"
+  },
+  "07-interview-7.eml": {
+    "kind": "interview",
+    "encoding": "multipart-alternative",
+    "company": "Helio Games",
+    "domain": "heliogames.example.test",
+    "subject": "Can we schedule a conversation?"
+  },
+  "08-interview-8.eml": {
+    "kind": "interview",
+    "encoding": "folded-subject-mixed",
+    "company": "Brightpath Systems",
+    "domain": "brightpathsystems.example.test",
+    "subject": "HR round on Friday 14 November"
+  },
+  "09-interview-9.eml": {
+    "kind": "interview",
+    "encoding": "7bit-crlf",
+    "company": "Orchid Payments",
+    "domain": "orchidpayments.example.test",
+    "subject": "Invitation: meet our engineering team"
+  },
+  "10-interview-10.eml": {
+    "kind": "interview",
+    "encoding": "base64-utf8",
+    "company": "Banyan Logistics",
+    "domain": "banyanlogistics.example.test",
+    "subject": "Reminder - your interview tomorrow"
+  },
+  "11-interview-11.eml": {
+    "kind": "interview",
+    "encoding": "7bit-lf",
+    "company": "Northwind Labs",
+    "domain": "northwindlabs.example.test",
+    "subject": "Technical round - Northwind Labs"
+  },
+  "12-interview-12.eml": {
+    "kind": "interview",
+    "encoding": "rfc2047-q-latin1",
+    "company": "Lumen Robotics",
+    "domain": "lumenrobotics.example.test",
+    "subject": "Re: your application - availability"
+  },
+  "13-interview-13.eml": {
+    "kind": "interview",
+    "encoding": "plain-with-8bit",
+    "company": "Quartz Health",
+    "domain": "quartzhealth.example.test",
+    "subject": "Final round with the founders"
+  },
+  "14-interview-14.eml": {
+    "kind": "interview",
+    "encoding": "quoted-printable-utf8",
+    "company": "Saffron Retail",
+    "domain": "saffronretail.example.test",
+    "subject": "We'd like to meet you"
+  },
+  "15-interview-15.eml": {
+    "kind": "interview",
+    "encoding": "rfc2047-b-subject",
+    "company": "Kestrel Analytics",
+    "domain": "kestrelanalytics.example.test",
+    "subject": "Slot confirmation for Associate Consultant"
+  },
+  "16-test-1.eml": {
+    "kind": "test",
+    "encoding": "html-only-qp",
+    "company": "Tamarind Cloud",
+    "domain": "tamarindcloud.example.test",
+    "subject": "Next step: online assessment"
+  },
+  "17-test-2.eml": {
+    "kind": "test",
+    "encoding": "multipart-alternative",
+    "company": "Helio Games",
+    "domain": "heliogames.example.test",
+    "subject": "Coding challenge - Data Analyst"
+  },
+  "18-test-3.eml": {
+    "kind": "test",
+    "encoding": "folded-subject-mixed",
+    "company": "Brightpath Systems",
+    "domain": "brightpathsystems.example.test",
+    "subject": "Take-home exercise"
+  },
+  "19-test-4.eml": {
+    "kind": "test",
+    "encoding": "7bit-crlf",
+    "company": "Orchid Payments",
+    "domain": "orchidpayments.example.test",
+    "subject": "Aptitude test link"
+  },
+  "20-test-5.eml": {
+    "kind": "test",
+    "encoding": "base64-utf8",
+    "company": "Banyan Logistics",
+    "domain": "banyanlogistics.example.test",
+    "subject": "Your Codility test for Backend Developer"
+  },
+  "21-test-6.eml": {
+    "kind": "test",
+    "encoding": "7bit-lf",
+    "company": "Northwind Labs",
+    "domain": "northwindlabs.example.test",
+    "subject": "Pre-employment assessment"
+  },
+  "22-test-7.eml": {
+    "kind": "test",
+    "encoding": "rfc2047-q-latin1",
+    "company": "Lumen Robotics",
+    "domain": "lumenrobotics.example.test",
+    "subject": "Assessment invite from Lumen Robotics"
+  },
+  "23-test-8.eml": {
+    "kind": "test",
+    "encoding": "plain-with-8bit",
+    "company": "Quartz Health",
+    "domain": "quartzhealth.example.test",
+    "subject": "Complete your coding test"
+  },
+  "24-test-9.eml": {
+    "kind": "test",
+    "encoding": "quoted-printable-utf8",
+    "company": "Saffron Retail",
+    "domain": "saffronretail.example.test",
+    "subject": "Case study before we proceed"
+  },
+  "25-test-10.eml": {
+    "kind": "test",
+    "encoding": "rfc2047-b-subject",
+    "company": "Kestrel Analytics",
+    "domain": "kestrelanalytics.example.test",
+    "subject": "Round 1: online test"
+  },
+  "26-test-11.eml": {
+    "kind": "test",
+    "encoding": "html-only-qp",
+    "company": "Tamarind Cloud",
+    "domain": "tamarindcloud.example.test",
+    "subject": "Technical screening exercise"
+  },
+  "27-test-12.eml": {
+    "kind": "test",
+    "encoding": "multipart-alternative",
+    "company": "Helio Games",
+    "domain": "heliogames.example.test",
+    "subject": "HackerEarth challenge - Associate Consultant"
+  },
+  "28-rejection-1.eml": {
+    "kind": "rejection",
+    "encoding": "folded-subject-mixed",
+    "company": "Brightpath Systems",
+    "domain": "brightpathsystems.example.test",
+    "subject": "Update on your application"
+  },
+  "29-rejection-2.eml": {
+    "kind": "rejection",
+    "encoding": "7bit-crlf",
+    "company": "Orchid Payments",
+    "domain": "orchidpayments.example.test",
+    "subject": "Your application to Orchid Payments"
+  },
+  "30-rejection-3.eml": {
+    "kind": "rejection",
+    "encoding": "base64-utf8",
+    "company": "Banyan Logistics",
+    "domain": "banyanlogistics.example.test",
+    "subject": "Application status"
+  },
+  "31-rejection-4.eml": {
+    "kind": "rejection",
+    "encoding": "7bit-lf",
+    "company": "Northwind Labs",
+    "domain": "northwindlabs.example.test",
+    "subject": "Thank you for interviewing with us"
+  },
+  "32-rejection-5.eml": {
+    "kind": "rejection",
+    "encoding": "rfc2047-q-latin1",
+    "company": "Lumen Robotics",
+    "domain": "lumenrobotics.example.test",
+    "subject": "Regarding Backend Developer"
+  },
+  "33-rejection-6.eml": {
+    "kind": "rejection",
+    "encoding": "plain-with-8bit",
+    "company": "Quartz Health",
+    "domain": "quartzhealth.example.test",
+    "subject": "Your application status has changed"
+  },
+  "34-rejection-7.eml": {
+    "kind": "rejection",
+    "encoding": "quoted-printable-utf8",
+    "company": "Saffron Retail",
+    "domain": "saffronretail.example.test",
+    "subject": "Assessment results"
+  },
+  "35-rejection-8.eml": {
+    "kind": "rejection",
+    "encoding": "rfc2047-b-subject",
+    "company": "Kestrel Analytics",
+    "domain": "kestrelanalytics.example.test",
+    "subject": "Decision on your application"
+  },
+  "36-rejection-9.eml": {
+    "kind": "rejection",
+    "encoding": "html-only-qp",
+    "company": "Tamarind Cloud",
+    "domain": "tamarindcloud.example.test",
+    "subject": "Re: Interview invitation - Software Developer"
+  },
+  "37-rejection-10.eml": {
+    "kind": "rejection",
+    "encoding": "multipart-alternative",
+    "company": "Helio Games",
+    "domain": "heliogames.example.test",
+    "subject": "Thanks for your time"
+  },
+  "38-rejection-11.eml": {
+    "kind": "rejection",
+    "encoding": "folded-subject-mixed",
+    "company": "Brightpath Systems",
+    "domain": "brightpathsystems.example.test",
+    "subject": "Your candidature"
+  },
+  "39-rejection-12.eml": {
+    "kind": "rejection",
+    "encoding": "7bit-crlf",
+    "company": "Orchid Payments",
+    "domain": "orchidpayments.example.test",
+    "subject": "Update from Orchid Payments hiring"
+  },
+  "40-rejection-13.eml": {
+    "kind": "rejection",
+    "encoding": "base64-utf8",
+    "company": "Banyan Logistics",
+    "domain": "banyanlogistics.example.test",
+    "subject": "Application outcome"
+  },
+  "41-rejection-14.eml": {
+    "kind": "rejection",
+    "encoding": "7bit-lf",
+    "company": "Northwind Labs",
+    "domain": "northwindlabs.example.test",
+    "subject": "Re: your interview slot"
+  },
+  "42-rejection-15.eml": {
+    "kind": "rejection",
+    "encoding": "rfc2047-q-latin1",
+    "company": "Lumen Robotics",
+    "domain": "lumenrobotics.example.test",
+    "subject": "Following up on Software Developer"
+  },
+  "43-rejection-16.eml": {
+    "kind": "rejection",
+    "encoding": "plain-with-8bit",
+    "company": "Quartz Health",
+    "domain": "quartzhealth.example.test",
+    "subject": "Candidate update"
+  },
+  "44-rejection-17.eml": {
+    "kind": "rejection",
+    "encoding": "quoted-printable-utf8",
+    "company": "Saffron Retail",
+    "domain": "saffronretail.example.test",
+    "subject": "About your application"
+  },
+  "45-rejection-18.eml": {
+    "kind": "rejection",
+    "encoding": "rfc2047-b-subject",
+    "company": "Kestrel Analytics",
+    "domain": "kestrelanalytics.example.test",
+    "subject": "Thank you for applying to Kestrel Analytics"
+  },
+  "46-other-1.eml": {
+    "kind": "other",
+    "encoding": "html-only-qp",
+    "company": "Tamarind Cloud",
+    "domain": "tamarindcloud.example.test",
+    "subject": "We received your application"
+  },
+  "47-other-2.eml": {
+    "kind": "other",
+    "encoding": "multipart-alternative",
+    "company": "Helio Games",
+    "domain": "heliogames.example.test",
+    "subject": "Application received: Data Analyst"
+  },
+  "48-other-3.eml": {
+    "kind": "other",
+    "encoding": "folded-subject-mixed",
+    "company": "Brightpath Systems",
+    "domain": "brightpathsystems.example.test",
+    "subject": "Thanks for applying"
+  },
+  "49-other-4.eml": {
+    "kind": "other",
+    "encoding": "7bit-crlf",
+    "company": "Orchid Payments",
+    "domain": "orchidpayments.example.test",
+    "subject": "Automatic reply: out of office"
+  },
+  "50-other-5.eml": {
+    "kind": "other",
+    "encoding": "base64-utf8",
+    "company": "Banyan Logistics",
+    "domain": "banyanlogistics.example.test",
+    "subject": "Your weekly job alerts"
+  },
+  "51-other-6.eml": {
+    "kind": "other",
+    "encoding": "7bit-lf",
+    "company": "Northwind Labs",
+    "domain": "northwindlabs.example.test",
+    "subject": "Complete your candidate profile"
+  },
+  "52-other-7.eml": {
+    "kind": "other",
+    "encoding": "rfc2047-q-latin1",
+    "company": "Lumen Robotics",
+    "domain": "lumenrobotics.example.test",
+    "subject": "Welcome to the Lumen Robotics talent community"
+  },
+  "53-other-8.eml": {
+    "kind": "other",
+    "encoding": "plain-with-8bit",
+    "company": "Quartz Health",
+    "domain": "quartzhealth.example.test",
+    "subject": "Campus webinar invitation"
+  },
+  "54-other-9.eml": {
+    "kind": "other",
+    "encoding": "quoted-printable-utf8",
+    "company": "Saffron Retail",
+    "domain": "saffronretail.example.test",
+    "subject": "Documents needed for onboarding"
+  },
+  "55-other-10.eml": {
+    "kind": "other",
+    "encoding": "rfc2047-b-subject",
+    "company": "Kestrel Analytics",
+    "domain": "kestrelanalytics.example.test",
+    "subject": "Rate your candidate experience"
+  },
+  "56-other-11.eml": {
+    "kind": "other",
+    "encoding": "html-only-qp",
+    "company": "Tamarind Cloud",
+    "domain": "tamarindcloud.example.test",
+    "subject": "A note from our CEO"
+  },
+  "57-other-12.eml": {
+    "kind": "other",
+    "encoding": "multipart-alternative",
+    "company": "Helio Games",
+    "domain": "heliogames.example.test",
+    "subject": "Your application is under review"
+  },
+  "58-other-13.eml": {
+    "kind": "other",
+    "encoding": "folded-subject-mixed",
+    "company": "Brightpath Systems",
+    "domain": "brightpathsystems.example.test",
+    "subject": "Please confirm your email address"
+  },
+  "59-other-14.eml": {
+    "kind": "other",
+    "encoding": "7bit-crlf",
+    "company": "Orchid Payments",
+    "domain": "orchidpayments.example.test",
+    "subject": "Referral programme update"
+  },
+  "60-other-15.eml": {
+    "kind": "other",
+    "encoding": "base64-utf8",
+    "company": "Banyan Logistics",
+    "domain": "banyanlogistics.example.test",
+    "subject": "Delivery Status Notification"
+  }
+}

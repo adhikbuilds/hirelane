@@ -1,0 +1,20 @@
+From: Northwind Labs Recruiting <jobs@northwindlabs.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=northwindlabs.example.test; dmarc=pass header.from=northwindlabs.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Tue, 27 Oct 2026 07:30:00 GMT
+Message-ID: <corpus-31@northwindlabs.example.test>
+MIME-Version: 1.0
+Subject: Thank you for interviewing with us
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Hi Neha,
+
+Thank you for interviewing with us last week. We enjoyed meeting you, but we've decided to pursue other candidates for this role. We'll keep your details and may reach out about future openings.
+
+Best,
+Sam
+
+-- 
+Sam Thomas, Recruiting Coordinator
+P.S. Unfortunately our office is closed on public holidays.

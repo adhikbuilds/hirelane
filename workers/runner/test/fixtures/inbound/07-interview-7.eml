@@ -1,0 +1,36 @@
+From: Helio Games Recruiting <jobs@heliogames.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=heliogames.example.test; dmarc=pass header.from=heliogames.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 10:42:00 GMT
+Message-ID: <corpus-07@heliogames.example.test>
+MIME-Version: 1.0
+Subject: Can we schedule a conversation?
+Content-Type: multipart/alternative; boundary="alt_6_boundary"
+
+--alt_6_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Neha -
+
+Could we schedule a conversation with two members of the team? We'd like to=
+ hear about the projects on your resume, especially the one on heliogames d=
+ata pipelines.
+
+Cheers,
+Lata
+
+--=20
+Lata Iyer
+People Operations, Helio Games
+--alt_6_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PHA+SGkgTmVoYSAtPC9wPjxicj4KPHA+Q291bGQgd2Ugc2NoZWR1bGUgYSBj
+b252ZXJzYXRpb24gd2l0aCB0d28gbWVtYmVycyBvZiB0aGUgdGVhbT8gV2UnZCBsaWtlIHRvIGhl
+YXIgYWJvdXQgdGhlIHByb2plY3RzIG9uIHlvdXIgcmVzdW1lLCBlc3BlY2lhbGx5IHRoZSBvbmUg
+b24gaGVsaW9nYW1lcyBkYXRhIHBpcGVsaW5lcy48L3A+PGJyPgo8cD5DaGVlcnMsPGJyPgpMYXRh
+PC9wPjxicj4KPHA+LS0gPGJyPgpMYXRhIEl5ZXI8YnI+ClBlb3BsZSBPcGVyYXRpb25zLCBIZWxp
+byBHYW1lczwvcD48L2JvZHk+PC9odG1sPg==
+--alt_6_boundary--
