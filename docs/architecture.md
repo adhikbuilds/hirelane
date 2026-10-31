@@ -1,6 +1,6 @@
 # Hirelane architecture
 
-> Status: Phase 0 (task 0.2, architect), first reconciled against the working tree on 2026-10-16. Drift pass against the code on 2026-10-28: engine, ingest, agent, runner tasks, web landing v3, waitlist, autopilot stats, migrations 0001 to 0006 and the FORCE RLS decision are updated. The public board and API (Phase 3) are in the codemap; their contract is in `docs/public-api.md`.
+> Status: Phase 0 (task 0.2, architect), first reconciled against the working tree on 2026-10-16. Drift pass against the code on 2026-10-28: engine, ingest, agent, runner tasks, web landing v3, waitlist, autopilot stats, migrations 0001 to 0006 and the FORCE RLS decision are updated. The public board and API (Phase 3) are in the codemap; their contract is in `docs/public-api.md`. Drift pass on 2026-11-01: §4 (crontab and task catalogue), §5 (environment rows) and §6 (codemap) now cover picks and paste, notifications, the ops CLI, migrations 0014 to 0016 and the apply address.
 > Each section says whether it describes what is **built** or what is **planned**. Every path in the codemap (§6) is tagged with the phase that creates it. Items still tagged P4 or later are not built.
 > PLAN.md §5, §6 and §10 are the source of truth. Where this document goes beyond them, or where the build differs from them, it says so under **Gap** or **Note**.
 > `doc-updater` keeps this codemap current (task 0.11).
@@ -189,7 +189,9 @@ The intended schedule (PLAN §5.5) is:
 27 * * * *    idempotency:sweep     # Slice 3: deletes idempotency keys older than 24 h
 ```
 
-**Built today** (`workers/runner/crontab`): `heartbeat` (`* * * * *`), `ingest:schedule` (`7 */6 * * *`, Phase 1) and `enrich:schedule` (`37 */6 * * *`, Phase 2, 30 minutes after ingest). The `company:logo` line above is not in the crontab yet, because the task is not registered (§4.3). The Slice 3 lines (`resume:purge-sweep`, `resume:stuck-sweep`, `idempotency:sweep`) are in the crontab, and `resume:purge-sweep`, `resume:stuck-sweep` and `idempotency:sweep` are registered in `tasks/resume-purge.ts`, `tasks/resume-stuck.ts`. The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
+**Built today** (`workers/runner/crontab`): `heartbeat` (`* * * * *`), `ingest:schedule` (`7 */6 * * *`, Phase 1) and `enrich:schedule` (`37 */6 * * *`, Phase 2, 30 minutes after ingest). The `company:logo` line above is not in the crontab yet. The task is registered (§4.3), but no schedule entry exists. The Slice 3 lines (`resume:purge-sweep`, `resume:stuck-sweep`, `idempotency:sweep`) are in the crontab, and `resume:purge-sweep`, `resume:stuck-sweep` and `idempotency:sweep` are registered in `tasks/resume-purge.ts`, `tasks/resume-stuck.ts`. The other entries are added by the phase that creates their task. The ingest flow is described in `docs/ingest.md`.
+
+**Slice 4 and later, in the crontab (uncommitted, checked 2026-11-01):** `20 2 * * *` `campus:stats`, `*/5 * * * *` `apply:sweep`, `*/5 * * * *` `inbound:scan` (the fixture mailbox; a missing folder is not an error), `10 3 * * *` `housekeeping:sweep` and `*/10 * * * *` `notify:sweep`. Each is registered in `tasks/index.ts`, and each has a row in §4.3.
 
 ### 4.3 Task catalogue (PLAN §5.5, condensed)
 
@@ -203,7 +205,7 @@ The intended schedule (PLAN §5.5) is:
 | `enrich:company` | enqueued by `enrich:schedule` (`enrich:run` calls the same code in-process, without the queue) | key `enrich:company:{companyId}`; `maxAttempts 3` | admin | 2 | Built. Enriches one company's postings, then enqueues `facets:refresh` when anything was created or enriched |
 | `enrich:posting` | was planned as new or changed posting; `enrich_version` bump | per posting | admin | 2 | Registered in `tasks/enrich.ts`, but no code enqueues it yet. `enrich:company` is the batch path |
 | `facets:refresh` | enqueued by the enrich tasks, delayed 60 s | `jobKey facets:refresh`; queue `facets`; `maxAttempts 3` | admin | 2 | Built. `REFRESH MATERIALIZED VIEW CONCURRENTLY job_facets` |
-| `company:logo` | new company, or monthly | per company; SSRF-guarded | admin | 3 | Coded and tested in `tasks/company.ts`, with fixture and live modes through `@hirelane/ingest/src/company`. **Not registered:** `tasks/index.ts` does not spread `createCompanyTasks()`, and the crontab has no entry |
+| `company:logo` | new company, or monthly | per company; SSRF-guarded | admin | 3 | Coded and tested in `tasks/company.ts`, with fixture and live modes through `@hirelane/ingest/src/company`. Registered in `tasks/index.ts` (checked 2026-11-01). **No crontab entry yet**, so it runs only when queued by hand |
 | `embed:job` / `embed:resume` / `embed:reindex` | enrich, parse, provider change | per entity | admin / user | 2–4 | Planned |
 | `match:user-full` | resume or profile change | per user (replace) | user | 4 | Planned |
 | `match:user-delta` | ingest finalize | per user | user | 4 | Planned |
@@ -215,6 +217,12 @@ The intended schedule (PLAN §5.5) is:
 | `resume:purge-sweep` | cron `13 * * * *` | singleton | user (per resume) | 3 | Built (Slice 3). Purges rows with `purge_after` passed, and rows deleted 23 h ago or more, so the 24 h bound holds after an hourly gap. Soft-deletes superseded Aadhaar, VID or PAN originals |
 | `resume:stuck-sweep` | cron `43 * * * *` | singleton | admin | 3 | Built (Slice 3). Re-queues `resume:extract` for rows in `uploaded` for more than 10 minutes, and resets `extracting` rows older than 5 minutes. `tasks/resume-stuck.ts` |
 | `idempotency:sweep` | cron `27 * * * *` | singleton | admin | 3 | Built (Slice 3). Deletes `idempotency_keys` older than 24 h. `tasks/resume-stuck.ts` |
+| `campus:stats` | cron `20 2 * * *` | singleton | admin | 4 | Built (Slice 4, uncommitted). Applies the roster, counts the cohorts, evaluates drive verdicts and writes the k-gated snapshot. `tasks/campus-stats.ts`. See `docs/campus.md` |
+| `apply:submit` | enqueued by `swipeRight`, and by `apply:sweep` | `jobKey apply:submit:<id>`; per application | user | 5 | Built (Slice 4, uncommitted, fixture only). The executor (`packages/agent/src/submit/`) behind every gate in `docs/apply.md` §3. `tasks/apply-submit.ts` |
+| `apply:sweep` | cron `*/5 * * * *` | singleton | admin | 5 | Built (Slice 4, uncommitted). Re-queues lost `ready` submits, fails `submitting` rows older than 15 minutes. `tasks/apply-submit.ts`, `apply-common.ts` |
+| `inbound:scan` | cron `*/5 * * * *` | singleton | admin | 5 | Built (Slice 4, uncommitted). Reads `*.eml` from `HIRELANE_MAIL_INBOX` (a fixture mailbox; no live transport). `tasks/inbound-scan.ts`. See `docs/apply.md` §8 |
+| `housekeeping:sweep` | cron `10 3 * * *` | singleton | admin | 8 | Built (uncommitted, 2026-11-01). Deletes expired or consumed `otp_challenges`, `rate_limits` older than 2 days and `join_attempts` older than 30 days. `tasks/housekeeping.ts` |
+| `notify:sweep` | cron `*/10 * * * *` | singleton | admin | 6 | Built (uncommitted, 2026-11-01). New-drive and closes-tomorrow rows, then the email. Needs a production transport. `tasks/notify-sweep.ts`. See `docs/notifications.md` |
 | `application:commit-expired` | every minute | singleton | see §3.1 | 5 | Planned |
 | `mail:inbound` / `mail:forward` | webhook | per message id; forward p95 ≤ 60s | admin, then user | 6 | Planned |
 | `autopilot:run` | after match delta | per user; drafts only | user | 7 | Planned |
@@ -255,13 +263,20 @@ The intended schedule (PLAN §5.5) is:
 | `HIRELANE_MODEL_BULK` | `claude-haiku-5-5` | agent | no | 2 | In `.env.example`. Extraction and classification fallback |
 | `HIRELANE_EMBEDDINGS` | `hash` | agent, worker | no | 2 | In `.env.example`. `hash` (CI) or `local` (cached in `.cache/models`) |
 | `HIRELANE_MASTER_KEY` | none (dev key from `pnpm setup:keys`) | agent and db encryption (AES-256-GCM envelope) | **yes** | 4 | Closed 2026-10-29: the root `package.json` has `setup:keys`, which runs `packages/vault/src/setup-keys.ts`. The same key also feeds the auth HMAC subkeys (OTP, address, IP, signed cookies). Never committed. Rotation re-wraps the data keys (Phase 8) |
-| `HIRELANE_REPLY_DOMAIN` | `replies.localhost` in `.env.example` | agent `mail/`, web copy panel | no | 5 | The ADR had "dev value TBD". The file sets `replies.localhost`. Alias `{reply_handle}+{reply_token}@{domain}` |
+| `HIRELANE_REPLY_DOMAIN` | none | none | no | 5 | **Removed from `.env.example` (2026-11-01).** No code path reads it. The apply address uses `HIRELANE_APPLY_DOMAIN` and the tag `handle+reply_handle@domain` (`docs/apply.md` §7) |
 | Inbound-mail webhook HMAC secret | `[assumption: name TBD]` | web `/api/webhooks/inbound-email` | **yes** | 6 | HMAC-SHA256 over timestamp + body, ±5 minutes. Not yet named (§7, item 4) |
 | Real mail transport config | `[assumption: name TBD]` | agent `mail/` | **yes** | 6 | Not chosen. Slice 2 ships the file outbox only (`HIRELANE_MAIL_OUTBOX`) |
 | Razorpay key and webhook secret | `[assumption: name TBD]` | web billing, `billing:process-event` | **yes** | 7 | Provider `fake` in dev. Not yet named |
 | Stripe key and webhook secret | `[assumption: name TBD]` | web billing, `billing:process-event` | **yes** | 7 | Provider `fake` in dev. Not yet named |
 | `HIRELANE_FAULTS` | empty | ingest (test only) | no | 8 | In `.env.example`, blank. For example `board:500:<token>` |
-| `HIRELANE_ENABLE_SUBMIT` | `0` in `.env.example` | agent `submit/` | no | 9 | **Note:** the ADR said "unset", but `.env.example` sets `0`, which the file says must stay `0` by default. Keep `0`. This is one of four independent switches. It must be `1`, **and** a `feature_flags` row, user opt-in and the ATS allowlist must all be present |
+| `HIRELANE_ENABLE_SUBMIT` | none | none | no | 9 | **Removed from `.env.example` (2026-11-01).** CI (`.github/workflows/verify.yml`) still sets it to `0`, and no code path reads it. Auto-apply is governed by `HIRELANE_AUTO_APPLY` (below) and the gates in `docs/apply.md` §3 |
+| `HIRELANE_AUTO_APPLY` | unset: `off` in production, `fixture` elsewhere | agent `apply-mode.ts`, services swipe, runner | no | 5 | `off`, `fixture` or `live` (`live` behaves as `fixture`). Any other value is `off`. Startup needs `HIRELANE_APPLY_DOMAIN` when it is not `off` (`docs/apply.md` §1). In `.env.example`, blank |
+| `HIRELANE_APPLY_DOMAIN` | `apply.hirelane.localhost` | agent (`assertApplyDomain`), services (apply address), runner | no | 5 | Domain of every student's apply address. Must be a real domain in production. Addresses are permanent (`docs/apply.md` §7) |
+| `HIRELANE_MAIL_AUTHSERV_ID` | none | agent (`apply-mode.ts`), runner `inbound-scan` | no | 5 | Authserv-id of our receiving MTA. Required in production, and not a localhost name. The MTA must strip inbound `Authentication-Results` that carry it (`docs/apply.md` §8) |
+| `HIRELANE_MAIL_INBOX` | `<repo>/.mail/inbox` | runner `inbound-scan` | no | 5 | Folder of `*.eml` for the fixture mailbox |
+| `HIRELANE_STORAGE_DIR` | `<workspace root>/storage` outside production | vault `blob.ts` (web and runner) | no | 3 | In production it must be an absolute path, or startup fails. Web and runner must point at the same folder (`localBlobStoreFromEnv`). In `.env.example`, blank |
+| `HIRELANE_OPS_ACTOR` | the OS user name | `pnpm ops` | no | 8 | Recorded on every `ops_audit` row (`docs/ops.md` §1) |
+| `HIRELANE_OPS_ALLOW_REMOTE` | unset | `pnpm ops` | no | 8 | Set to `1` to run ops against a database that is not local (`docs/ops.md` §1) |
 | `TZ` | `UTC` | worker | no | 0 | **Gap (open, checked 2026-10-28):** not set in `workers/runner`, `package.json` or `.env.example` (see §4.1) |
 
 `ENGINE_VERSION` is a code constant exported by `@hirelane/engine`, not an environment variable. It is `'1.0.0'` in `packages/engine/src/version.ts`.
@@ -297,16 +312,20 @@ hirelane/
 │  ├─ resume.md                   [built Slice 1, uncommitted] resume pipeline: extract, sensitive, sections, health
 │  ├─ eligibility.md              [built Slice 1, uncommitted] criterion grammar, unknown semantics, CGPA rule
 │  ├─ auth.md                     [built Slice 2, uncommitted] Google and email code, sessions, 18+ gate, accounts flag, delete. The UI pages are not built
-│  ├─ public-api.md               [built P3, uncommitted] public JSON API, markdown negotiation, llms.txt, sitemaps, CORS, ETag, rate limits. §14: the signed-in v1 API (Slices 3 and 4)
+│  ├─ public-api.md               [built P3, uncommitted] public JSON API, markdown negotiation, llms.txt, sitemaps, CORS, ETag, rate limits. §14: the signed-in v1 API (Slices 3 and 4, and §14.9 picks and paste, 2026-11-01)
 │  ├─ answers.md                 [built Slice 4, uncommitted, 2026-10-31] application answers without an LLM: classifier, the 23 keys, evidence rule, eval gate. See the engine line below
-│  ├─ apply.md                    [built Slice 4, uncommitted, 2026-10-31] right swipe = applied: fixture-only executor, undo window, states, cap, consent, receipts, employer mail, open-before-pilot list
-│  ├─ campus.md                   [built Slice 4, uncommitted, 2026-10-31] campus joins, share levels, k = 10 numbers, roster staging, drive caps and differencing, staff lifecycle
+│  ├─ apply.md                    [built Slice 4, uncommitted, updated 2026-11-01] right swipe = applied: fixture-only executor, undo window, states, cap, consent, receipts, employer mail, open-before-pilot and closed lists
+│  ├─ picks.md                    [built, uncommitted, 2026-11-01] daily picks (GET /api/v1/picks, pure ranking), paste a job (POST /api/v1/paste), the picks eval
+│  ├─ notifications.md            [built, uncommitted, 2026-11-01] Home rows and email for four kinds, the sweep, the unsubscribe page; what is not wired
+│  ├─ ops.md                      [built, uncommitted, 2026-11-01] `pnpm ops` operator commands, the audit rows and the environment they need
+│  ├─ campus.md                   [built Slice 4, uncommitted, updated 2026-11-01] campus joins, share levels, k = 10 numbers, roster staging and preview, drive lifecycle (draft, announce, close), drive caps and differencing, staff lifecycle
 │  ├─ recon/                      [built] Shortlist teardown notes and text (reference only; shots/ and *-text.md are gitignored)
 │  ├─ screens/                    [built] phase-0 to phase-3 screenshots (desktop and mobile), committed per phase
 │  └─ privacy-model.md            [planned P4]
 ├─ scripts/
 │  ├─ brand-guard.ts              [built P0] self-tests in scripts/test/brand-guard.test.ts
-│  └─ no-submit-guard.ts          [built P0] self-tests in scripts/test/no-submit-guard.test.ts
+│  ├─ no-submit-guard.ts          [built P0] self-tests in scripts/test/no-submit-guard.test.ts
+│  └─ ops/main.ts, deps.ts        [built, uncommitted, 2026-11-01] `pnpm ops`: the entry point, the actor, the keyed hashes and the remote-database guard. Tests in scripts/test/ops-deps.test.ts. See docs/ops.md
 ├─ e2e/
 │  ├─ support/screens.ts          [built P0] savePhaseScreen(page, N)
 │  ├─ phase-0-shell.spec.ts       [built P0] wordmark, Overpass loaded, paper background, health endpoint
@@ -331,7 +350,7 @@ hirelane/
 │  ├─ db/
 │  │  ├─ package.json             [built P0] exports ".", "./env"; scripts migrate, seed, reset, verify-schema, test, typecheck
 │  │  ├─ migrations/NNNN_*.sql    [built P0 to P3] 0001_foundation, 0002_companies_boards_postings, 0003_ingest_runs, 0004_jobs_enrichment,
-│  │  │                         0004a_llm_calls, 0004b_posting_geo, 0005_public_board, 0006_waitlist, 0007_rls_posture, 0008_auth, 0009_auth_hardening (Slice 2 and the RLS posture, 2026-10-29), 0010_resumes_profiles, 0010a_resumes_builder_drafts, 0010b_resumes_purge_retention (Slice 3), 0011_campus, 0011a_campus_functions, 0011b_campus_fixes, 0012_apply_pipeline, 0012a_apply_fixes, 0013_campus_audit, 0013a_apply_audit, 0013b_campus_rule_bounds (Slice 4 and apply, uncommitted, 2026-10-31)
+│  │  │                         0004a_llm_calls, 0004b_posting_geo, 0005_public_board, 0006_waitlist, 0007_rls_posture, 0008_auth, 0009_auth_hardening (Slice 2 and the RLS posture, 2026-10-29), 0010_resumes_profiles, 0010a_resumes_builder_drafts, 0010b_resumes_purge_retention (Slice 3), 0011_campus, 0011a_campus_functions, 0011b_campus_fixes, 0012_apply_pipeline, 0012a_apply_fixes, 0013_campus_audit, 0013a_apply_audit, 0013b_campus_rule_bounds (Slice 4 and apply, uncommitted, 2026-10-31), 0014_pilot_blockers (draft suggestions, the TPO read and write gate, `ops_audit`), 0015_picks_notify_drives (drive lifecycle, notifications, prefs, unsubscribe), 0016_review_fixes (resume guard trigger, waitlist erasure) (2026-11-01)
 │  │  ├─ test/                    [built P0] migrator.test.ts, verify-schema.test.ts, queue.test.ts, helpers.ts
 │  │  └─ src/
 │  │     ├─ client.ts            [built P0] getPool, getDb, withAdmin, withUser, close
@@ -345,6 +364,7 @@ hirelane/
 │  │     ├─ enrich/{index,persist,coverage}.ts  [built P2] reference seeds (skills, FX), job and requirement writes, clustering candidates, pending-company listing, `refreshJobFacets`
 │  │     ├─ schema/{ingest,jobs,llm,waitlist}.ts  [built P1 to P3] companies, company_boards, postings, ingest_runs, ingest_source_runs; jobs, job_requirements, skills, fx_rates; llm_calls; waitlist
 │  │     ├─ queue.ts             [built P0] addJob over quickAddJob (owner connection, §2.3)
+│     ├─ ops/index.ts          [built, uncommitted, 2026-11-01] pilot operator commands (campus, domains, CGPA rule, owner invite, platform switch). One transaction per command, each with an `ops_audit` row. Entry: `scripts/ops/main.ts`. See docs/ops.md
 │  │     ├─ schema/ops.ts        [built P0] worker_heartbeats, feature_flags, rate_limits
 │  │     ├─ schema/index.ts      [built P0]
 │  │     ├─ verify-rls.ts        [built, 102 checks in verify]
@@ -372,9 +392,10 @@ hirelane/
 │     ├─ embeddings/              [planned P2] hash; local [P4]
 │     ├─ resume/                  [planned P4] LLM parse. The deterministic parser is in `packages/engine/src/resume/` (Slice 1)
 │     ├─ draft/, approval/, handoff/, tailor/   [planned P5]
-│     ├─ mail/                    [built Slice 2] mailer contract, file outbox, code template. Inbound: the fixture-mailbox reader is in `workers/runner/src/tasks/inbound-*.ts` (Slice 4). No live mail transport yet (P6)
-│     └─ submit/                  [built, uncommitted, 2026-10-31] fixture-only executor: `execute.ts` (the gates and order), `transport.ts` (the host guard, fixture hosts only), `challenge.ts` (CAPTCHA, challenge and login markers), `forms.ts`, `payload.ts`, reached through `apply:submit`. No live transport. `src/apply-mode.ts` reads `HIRELANE_AUTO_APPLY`. See docs/apply.md
-├─ packages/services/            [built Slice 3, uncommitted] @hirelane/services: the shared service layer (Amendment B §11). Depends on db, engine, vault, agent only (rule `services-deps`). Files: `resumes.ts` (upload, list, get, confirm, download, delete), `eligibility.ts`, `builder.ts` and `builder-steps.ts`, `me.ts` (get, export), `idempotency.ts`, `seal.ts`, `aad.ts`, `parsed.ts`, `provenance.ts`, `errors.ts` (`ServiceError`, `toProblem`), `ctx.ts`, `db.ts`, `views.ts`. Slice 4 (uncommitted, 2026-10-31) adds `campus/` (membership and join codes, roster, drives, TPO staff, outcomes, NAAC; see docs/campus.md) and `apply/` (swipe, consent, apply address, tracker, inbox, answer bank; see docs/apply.md). Tests in `packages/services/test/`
+│     ├─ mail/                    [built Slice 2] mailer contract, file outbox, code template. `mail/factory.ts` (2026-11-01): `createMailer`, which in production throws unless a real transport is injected. Inbound: the fixture-mailbox reader is in `workers/runner/src/tasks/inbound-*.ts` (Slice 4). No live mail transport yet (P6)
+│     ├─ apply-address.ts        [built, uncommitted, 2026-11-01] `applyAddressOf`: the one `handle+reply_handle@domain` shape used by forms, the API and the answer record
+│     └─ submit/                  [built, uncommitted, 2026-10-31] `allowlist.ts` (2026-11-01): the apply-host allowlist, checked before any transport call. Fixture-only executor: `execute.ts` (the gates and order), `transport.ts` (the host guard, fixture hosts only), `challenge.ts` (CAPTCHA, challenge and login markers), `forms.ts`, `payload.ts`, reached through `apply:submit`. No live transport. `src/apply-mode.ts` reads `HIRELANE_AUTO_APPLY`. See docs/apply.md
+├─ packages/services/            [built Slice 3, uncommitted] @hirelane/services: the shared service layer (Amendment B §11). Depends on db, engine, vault, agent only (rule `services-deps`). Files: `resumes.ts` (upload, list, get, confirm, download, delete), `eligibility.ts`, `builder.ts` and `builder-steps.ts`, `me.ts` (get, export), `idempotency.ts`, `seal.ts`, `aad.ts`, `parsed.ts`, `provenance.ts`, `errors.ts` (`ServiceError`, `toProblem`), `ctx.ts`, `db.ts`, `views.ts`. Slice 4 (uncommitted, 2026-10-31) adds `campus/` (membership and join codes, roster, drives, TPO staff, outcomes, NAAC; see docs/campus.md) and `apply/` (swipe, consent, apply address, tracker, inbox, answer bank; see docs/apply.md). 2026-11-01 adds `picks/` (ranking, eval, `getPicks`; see docs/picks.md), `paste/` (`checkPastedJob`; see docs/picks.md), `notify/` (Home rows, the sweep, the unsubscribe token and preferences; see docs/notifications.md), and `campus/drive-inbox.ts` (draft, announce, close, reach), `campus/roster-preview.ts` and `campus/ist.ts`. Tests in `packages/services/test/`
 ├─ packages/vault/               [built Slice 2] @hirelane/vault: master key provider, HMAC subkeys (`hmac`), blob storage (`HIRELANE_STORAGE_DIR`), `setup-keys.ts`
 ├─ workers/runner/                [built, partial P0] package name @hirelane/runner
 │  ├─ src/index.ts                [built P0] graphile-worker bootstrap, concurrency 4, pollInterval 2000
@@ -383,19 +404,20 @@ hirelane/
 │  ├─ src/resume/pipeline.ts      [built Slice 3, uncommitted] the extraction pipeline: gate, extract, normalise, text layer, sections, mask, health, education. No DB, no network, 0 LLM calls
 │  ├─ src/resume/render/          [built Slice 3, uncommitted] pdfkit builder renderer (`answers.ts`, `index.ts`): one page, single column
 │  ├─ src/tasks/resume-common.ts, resume-extract.ts, resume-render.ts, resume-purge.ts, resume-stuck.ts   [built Slice 3, uncommitted] resume:extract, resume:render, resume:purge, resume:purge-sweep, resume:stuck-sweep, idempotency:sweep. All registered in `tasks/index.ts`
-│  ├─ src/tasks/campus-stats.ts, apply-common.ts, apply-submit.ts, inbound-scan.ts, inbound-classify.ts, inbound-mime.ts   [built Slice 4, uncommitted, 2026-10-31] `campus:stats` (nightly, drive verdicts and counts, roster apply), `apply:submit` and `apply:sweep` (the executor's repo and gates), `inbound:scan` (fixture mailbox; no schedule). Registered in `tasks/index.ts`. See docs/campus.md and docs/apply.md
-│  ├─ src/tasks/index.ts          [built P0, extended P1 to P2] taskList = { heartbeat, ...createIngestTasks(), ...createEnrichTasks(), ...resume tasks (Slice 3) }. `createCompanyTasks()` is not spread in yet
+│  ├─ src/tasks/campus-stats.ts, apply-common.ts, apply-submit.ts, inbound-scan.ts, inbound-classify.ts, inbound-mime.ts   [built Slice 4, uncommitted, 2026-10-31] `campus:stats` (nightly, drive verdicts and counts, roster apply), `apply:submit` and `apply:sweep` (the executor's repo and gates), `inbound:scan` (fixture mailbox; on the crontab every 5 minutes since 2026-11-01). Registered in `tasks/index.ts`. See docs/campus.md and docs/apply.md
+│  ├─ src/tasks/housekeeping.ts, notify-sweep.ts   [built, uncommitted, 2026-11-01] `housekeeping:sweep` (daily, retention for hashed identifiers) and `notify:sweep` (every 10 minutes; drive rows, then email). See docs/notifications.md
+│  ├─ src/tasks/index.ts          [built P0, extended P1 to P2, Slices 3 and 4, 2026-11-01] taskList = { heartbeat, ingest, enrich, company, resume, campus stats, apply, inbound, housekeeping, notify }. The startup guard refuses to start with auto-apply on and no apply domain
 │  ├─ src/tasks/ingest.ts         [built P1] ingest:schedule, ingest:source, ingest:finalize; deps injectable (IngestDeps)
 │  ├─ src/tasks/enrich.ts         [built P2] enrich:schedule, enrich:company, enrich:posting (registered, no caller), facets:refresh; deps injectable (EnrichDeps)
 │  ├─ src/tasks/enrich-core.ts    [built P2] enrichCompany, enrichPostingById, ensureReferenceData, syncJobLifecycle, loadEngineFx
 │  ├─ src/tasks/enrich-raw.ts     [built P2] replays `postings.raw` through the real ingest connector, so the engine gets a RawPosting
-│  ├─ src/tasks/company.ts        [built P3, unregistered] company:logo; fixture or live mode (SSRF-guarded)
+│  ├─ src/tasks/company.ts        [built P3, registered 2026-11-01, no cron entry] company:logo; fixture or live mode (SSRF-guarded)
 │  ├─ src/tasks/heartbeat.ts      [built P0]
 │  ├─ test/runner.test.ts         [built P0] heartbeat behaviour, task list, crontab
 │  ├─ test/ingest.tasks.test.ts   [built P1]
 │  ├─ test/enrich.tasks.test.ts, test/enrich.test.ts   [built P2]
 │  ├─ test/company.tasks.test.ts  [built P3]
-│  └─ crontab                     [partial P0, extended P1 to P2, Slices 3 and 4 (resume, campus:stats, apply:sweep)] heartbeat, `7 */6 * * * ingest:schedule`, `37 */6 * * * enrich:schedule`; full schedule in §4.2
+│  └─ crontab                     [partial P0, extended P1 to P2, Slices 3 and 4 (resume, campus:stats, apply:sweep, inbound:scan), housekeeping:sweep and notify:sweep (2026-11-01)] heartbeat, `7 */6 * * * ingest:schedule`, `37 */6 * * * enrich:schedule`; full schedule in §4.2
 ├─ apps/web/                      [built P0 to P3, landing v3 and waitlist] Next 15, React 19, Tailwind v4, :3001. Depends on @hirelane/db and @hirelane/engine
 │  ├─ middleware.ts               [built P3] markdown negotiation for /job/{slug} (lib/negotiate.ts). Rewrites to /md/job/{slug}, 404s direct /md/*, adds Vary and a Link alternate to HTML
 │  ├─ app/layout.tsx, wordmark.tsx, source-badge.tsx, globals.css, icon.svg, fonts/   [built P0] shell, wordmark, ATS source marks, Overpass
@@ -433,9 +455,10 @@ hirelane/
 │  ├─ lib/session.ts              [stub P0] getSession is a placeholder until P4
 │  ├─ lib/auth/                   [built Slice 2, uncommitted] flags, origin, cookies, session, pending-signup, email-code, google, linkedin, oidc-shared, erasure, request, deps. See docs/auth.md
 │  ├─ app/auth/linkedin/{start,callback}/route.ts   [built Slice 3, uncommitted] LinkedIn OIDC route handlers. See docs/auth.md §4d
-│  ├─ app/api/v1/                 [built Slices 3 and 4, uncommitted] 43 route files (base, campus, tpo, apply), thin adapters over @hirelane/services. `lib/http/v1.ts` is the wrapper (accounts flag, session, Origin, rate limit, Idempotency-Key). Operation lists: `lib/openapi-campus.ts`, `lib/openapi-apply.ts`, `lib/openapi-types.ts`. `lib/adapters/` maps service output to the campus and apply screens' view models. Operations, auth and errors in docs/public-api.md §14. OpenAPI at app/api/v1/openapi.json/route.ts
+│  ├─ app/api/v1/                 [built Slices 3 and 4, uncommitted; picks and paste added 2026-11-01] 47 route files (base, campus, tpo, apply, picks, paste), thin adapters over @hirelane/services. `lib/openapi-picks.ts` (picks and paste operations). `lib/http/v1.ts` is the wrapper (accounts flag, session, Origin, rate limit, Idempotency-Key). Operation lists: `lib/openapi-campus.ts`, `lib/openapi-apply.ts`, `lib/openapi-types.ts`. `lib/adapters/` maps service output to the campus and apply screens' view models. Operations, auth and errors in docs/public-api.md §14. OpenAPI at app/api/v1/openapi.json/route.ts
 │  ├─ app/campus/                 [built Slice 4, uncommitted] TPO console pages: overview, drives, outcomes, settings, students. The student's drive inbox is `app/(app)/drives/`. See docs/campus.md
-│  ├─ app/(app)/resume, you, paste, home, drives, tracker, ...   [built Slice 3 screens] server actions wrap the services. /you/eligibility is NOT built (folder holds actions.ts only)
+│  ├─ app/(app)/resume, you, paste, home, drives, tracker, ...   [built Slice 3 screens] server actions wrap the services. /you/eligibility is NOT built (folder holds actions.ts only). 2026-11-01: `picks/` (the deck), `welcome/` (apply and college steps), `tracker/[id]`, and `lib/student/` (the view loaders and maps, sample data)
+│  ├─ app/unsubscribe/            [built, uncommitted, 2026-11-01] GET shows a confirm button; the POST action (`actions.ts`) turns off the two optional email kinds. See docs/notifications.md §4
 │  ├─ app/auth/google/{start,callback}/route.ts   [built Slice 2] Google OIDC route handlers
 │  ├─ app/(auth)/, app/(app)/     [built Slice 2] server actions only (signin, signin/code, welcome, you). No page.tsx yet, so the UI is not reachable
 │  ├─ lib/public-api-params.ts    [built P3] API_PARAM_ORDER, parseStrict (400 on bad values), serializeApi (canonical links)

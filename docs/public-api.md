@@ -288,7 +288,7 @@ These are described in PLAN §7.1 but are not built. Do not document them as ava
 
 ## 14. v1 API (signed in, accounts)
 
-> Status: the base routes (§14.1 to §14.5) were built in Slice 3, uncommitted, 2026-10-29. The campus, TPO and apply routes (§14.6 to §14.8) were added in Slice 4, uncommitted, 2026-10-31. Sources: `apps/web/app/api/v1/**` (43 route files, including `openapi.json`), `apps/web/lib/openapi-v1.ts` (the operation list), `apps/web/lib/http` (the v1 wrapper, problem responses), `packages/services/src` (the logic). The route files are thin adapters: they parse, call a service, and map the result (`api-v1-thin` in `.dependency-cruiser.cjs`).
+> Status: the base routes (§14.1 to §14.5) were built in Slice 3, uncommitted, 2026-10-29. The campus, TPO and apply routes (§14.6 to §14.8) were added in Slice 4, uncommitted, 2026-10-31. Picks and paste (§14.9) were added on 2026-11-01, uncommitted, together with the changes to the export, the idempotency store and the TPO drive publish. Sources: `apps/web/app/api/v1/**` (47 route files, including `openapi.json`), `apps/web/lib/openapi-v1.ts` (the operation list), `apps/web/lib/openapi-picks.ts` (picks and paste), `apps/web/lib/http` (the v1 wrapper, problem responses), `packages/services/src` (the logic). The route files are thin adapters: they parse, call a service, and map the result (`api-v1-thin` in `.dependency-cruiser.cjs`).
 
 This surface is for the signed-in student and their own data. It is **not** the public jobs API above. It has its own OpenAPI document, served at `GET /api/v1/openapi.json`. That document is built from the zod schemas. It does not include `/openapi.json`, which describes only the public jobs endpoints.
 
@@ -309,9 +309,9 @@ Every server action that changes data has a v1 twin. `apps/web/tests/api-v1-pari
 | `POST` | `/api/v1/builder/steps` | `saveBuilderStep` | yes | One builder answer |
 | `POST` | `/api/v1/builder/finish` | `finishBuilder` | yes | Queues the render. Returns 202 |
 | `GET` | `/api/v1/me` | `getMe` | no | The signed-in user |
-| `DELETE` | `/api/v1/me` | `deleteMe` | yes | Needs `confirm: true`. Removes files, then the account |
+| `DELETE` | `/api/v1/me` | `deleteMe` | yes | Needs `confirm: true`. Removes files, then the account and its plain-email waitlist row |
 | `POST` | `/api/v1/me/consents` | `setConsent` | yes | Append-only. Unknown kinds are refused |
-| `GET` | `/api/v1/me/export` | `exportMe` | no | Everything held about the user. No blob key and no file hash |
+| `GET` | `/api/v1/me/export` | `exportMe` | no | Everything held about the user: the answer bank, consents, file access log, applications (opened answers and receipts), apply address, inbound messages (opened), notifications and email settings, outcomes (letter bytes left out, `hasLetter` instead), drive checks, cohort memberships and the college access log. No blob key and no file hash |
 
 The OpenAPI document is `GET /api/v1/openapi.json`. Like every v1 route, it returns 404 while the accounts flag is off, so the surface is not published before launch.
 
@@ -324,7 +324,7 @@ The OpenAPI document is `GET /api/v1/openapi.json`. Like every v1 route, it retu
 ### 14.3 Requests
 
 - **Mutations** need an `Origin` header that matches the app origin, and an `Idempotency-Key` header. Reads need neither (`api-v1.test.ts`, "mutations need the same Origin and an Idempotency-Key; reads need neither").
-- **Idempotency.** A replayed key returns the stored response, and no second job is queued. The same key with a different body is `idempotency_key_reuse` 422. A key that is still in progress is `idempotency_in_progress` 409. A key that is reused with a different `?label=` is a client bug, so it is 422 and not a replay. Keys are swept after 24 hours (`idempotency:sweep`).
+- **Idempotency.** A replayed key returns the stored response, and no second job is queued. The same key with a different body is `idempotency_key_reuse` 422. A key that is still in progress is `idempotency_in_progress` 409. A key that is reused with a different `?label=` is a client bug, so it is 422 and not a replay. Keys are swept after 24 hours (`idempotency:sweep`). **The stored response body is sealed with the vault** (AAD `idem:<user>:<key>`), not kept as plaintext, because a replayed body can carry decrypted personal data.
 - **Bodies.** Input schemas are strict. An unknown field such as `userId` is a 400, so a client cannot name another user. A non-JSON body, or one over its limit, is refused.
 - **Rate limits** are per user, and a limited response carries `Retry-After`.
 
@@ -363,22 +363,25 @@ Errors: `invalid_code` 400, `invalid_cohort` 400, `invalid_email` 400, `rate_lim
 
 ### 14.7 TPO console
 
-Staff only. A caller who does not staff the campus gets the same 404 as a stranger, on every route here. Every call first claims a pending invite for the caller's verified email. Where a route takes `campusId`, it is a query parameter or a body field. If the caller staffs several campuses and omits it, the answer is `400 campus_required`. The owner-only rules are in `docs/campus.md` §6.
+Staff only. A caller who does not staff the campus gets the same 404 as a stranger, on every route here. No call claims an invite any more (decision 2026-10-31): the invitee takes the seat with `POST /api/v1/tpo/claim`, and every `GET` here is read-only. Where a route takes `campusId`, it is a query parameter or a body field. If the caller staffs several campuses and omits it, the answer is `400 campus_required`. The owner-only rules are in `docs/campus.md` §6.
 
 | Method | Path | `operationId` | Mutation | Success | Notes |
 |---|---|---|---|---|---|
-| `GET` | `/api/v1/tpo/me` | `getTpoMe` | no | 200 | Campuses I staff, empty for a student. Writes when an invite is claimed |
+| `GET` | `/api/v1/tpo/me` | `getTpoMe` | no | 200 | Campuses I staff, empty for a student, and `pendingInvite` (an invite for my verified mailbox is waiting). Writes nothing |
+| `POST` | `/api/v1/tpo/claim` | `claimStaffInvites` | yes | 200 | Takes the seat of a pending invite for my verified mailbox. Returns `{ claimed }`. Idempotent. The only place an invite is claimed |
 | `GET` | `/api/v1/tpo/cohorts` | `listTpoCohorts` | no | 200 | `campusId`. Cohorts with the joined count, rounded and suppressed |
 | `POST` | `/api/v1/tpo/cohorts` | `createTpoCohort` | yes | 201 | Body `passoutYear`, `programme`, optional `campusId`. 200 when it already existed |
 | `GET` | `/api/v1/tpo/cohorts/{id}/stats` | `getCohortStats` | no | 200 | Fixed metrics from the latest snapshot. Optional `metric` |
 | `POST` | `/api/v1/tpo/cohorts/{id}/roster` | `importRoster` | yes | 200 | Raw CSV body, at most 1 MiB. Stages the roster only |
 | `GET` | `/api/v1/tpo/drives` | `listTpoDrives` | no | 200 | `campusId`. Drives published for the campus |
-| `POST` | `/api/v1/tpo/drives` | `publishDrive` | yes | 201 | Body `cohortId`, `title`, `noticeText`, optional `link` (stored, never fetched). Returns the parsed criteria and scam flags |
+| `POST` | `/api/v1/tpo/drives` | `publishDrive` | yes | 201 | Body `cohortId`, `title`, `noticeText`, optional `link` (stored, never fetched), `deadline` (`YYYY-MM-DD`), `rounds` and `documents` (free text). Publishes at once (live). Returns the parsed criteria and scam flags. Counts toward the 10 per cohort in 30 days. The draft, announce and close steps have no route yet (`docs/campus.md` §5) |
 | `GET` | `/api/v1/tpo/drives/{id}` | `getDriveCounts` | no | 200 | Eligible, unknown and ineligible counts. Suppressed like the stats. A drive whose counts were not released (see `docs/campus.md` §5) shows no numbers |
-| `GET` | `/api/v1/tpo/outcomes` | `listTpoOutcomes` | no | 200 | Outcomes of students at `outcomes` or `full`. Optional `cohortId`. Writes one access-log row per student listed |
+| `GET` | `/api/v1/tpo/outcomes` | `listTpoOutcomes` | no | 200 | Outcomes of students at `outcomes` or `full`, with `studentName` and `studentEmail` withheld (null). Optional `cohortId`. Writes nothing |
+| `POST` | `/api/v1/tpo/outcomes/reveal` | `revealTpoOutcomes` | yes, no Idempotency-Key | 200 | The same list with names (emails at `full`). Body `campusId`, `cohortId` optional. Writes one `outcomes_list` row per student named |
 | `POST` | `/api/v1/tpo/outcomes/{id}/verify` | `verifyOutcome` | yes | 200 | Marks the outcome `tpo_verified` |
-| `GET` | `/api/v1/tpo/outcomes/{id}/letter` | `downloadOutcomeLetter` | no | 200 | PDF, only when the student has consented to share the letter. Writes a `letter_view` row |
-| `GET` | `/api/v1/tpo/export/naac` | `exportNaac` | no | 200 | CSV in the shape of criterion 5.2.1. Writes one `naac_export` row per student. The headers are not checked against the NAAC manual |
+| `POST` | `/api/v1/tpo/outcomes/{id}/letter` | `downloadOutcomeLetter` | yes, no Idempotency-Key | 200 | PDF, only when the student has consented to share the letter. Writes a `letter_view` row |
+| `GET` | `/api/v1/tpo/export/naac` | `previewNaacExport` | no | 200 | A preview: `rows`, `filename`, `header`. No student named. Writes nothing |
+| `POST` | `/api/v1/tpo/export/naac` | `exportNaac` | yes, no Idempotency-Key | 200 | CSV in the shape of criterion 5.2.1. Writes one `naac_export` row per student. The headers are not checked against the NAAC manual |
 | `POST` | `/api/v1/tpo/staff` | `inviteStaff` | yes | 201 | Owner only. Body `campusId`, `email`. 200 when already invited |
 | `GET` | `/api/v1/tpo/staff` | `listStaff` | no | 200 | Owner only. No email addresses |
 | `DELETE` | `/api/v1/tpo/staff/{id}` | `removeStaff` | yes | 200 | Owner only. `campusId` as a query parameter. Removes a seat or an open invite |
@@ -392,7 +395,7 @@ The right swipe, the tracker, the answer bank, the employer inbox and auto-apply
 
 | Method | Path | `operationId` | Mutation | Success | Notes |
 |---|---|---|---|---|---|
-| `POST` | `/api/v1/apply/swipe` | `swipeRight` | yes | 201 (200 when the application already exists) | Body `jobId`, optional `resumeId`. Creates the application with a 4 second undo window. Returns the application, the apply address and `autoApply` |
+| `POST` | `/api/v1/apply/swipe` | `swipeRight` | yes | 201 (200 when the application already exists) | Body `jobId`, optional `resumeId`. Creates the application with a 4 second undo window. At most 20 swipes a minute per student (`429 rate_limited` with `Retry-After`). Returns the application, the apply address and `autoApply` |
 | `GET` | `/api/v1/apply/applications` | `listApplications` | no | 200 | The tracker, newest first. Optional `status`, and `limit` (1 to 100, default 50) |
 | `GET` | `/api/v1/apply/applications/{id}` | `getApplication` | no | 200 | Answers (with `needsYou` and the reason), receipt, apply address and matched employer messages |
 | `POST` | `/api/v1/apply/applications/{id}/undo` | `undoApplication` | yes | 200 | Only inside the 4 second window |
@@ -407,3 +410,16 @@ The right swipe, the tracker, the answer bank, the employer inbox and auto-apply
 | `PUT` | `/api/v1/apply/consent` | `setAutoApply` | yes | 200 | Body `granted`. Recorded as an append-only consent |
 
 Errors: `auto_apply_off` 503, `job_closed` 409, `job_not_applicable` 409, `undo_window_closed` 409, `not_rearmable` 409, `not_blocked` 409, `conflict` 409, `not_found` 404 for an application or answer that is not mine.
+
+### 14.9 Picks and paste
+
+Today's ranked roles, and a check on a job the student was sent from outside. Both use the student's own profile and resume skills, read through their own session. Nothing is stored by either. The rules are in `docs/picks.md`.
+
+| Method | Path | `operationId` | Mutation | Success | Notes |
+|---|---|---|---|---|---|
+| `GET` | `/api/v1/picks` | `getPicks` | no | 200 | Up to 10 picks for today (`date` in IST), ranked from 1. Each has `eligibility` (`eligible` or `check`), the `rules` with the maths, must-haves matched and missing, pay as stated, `whoYouKnow` (always `null` for now), and how long ago it was posted. A role whose stated academic rule the student fails never appears. Placed students get `placed: true` and no picks |
+| `POST` | `/api/v1/paste` | `checkPastedJob` | yes, no Idempotency-Key | 200 | Body `text` (20 to 20,000 characters) and optional `url` (http or https, at most 500 characters). Returns the job as parsed, `eligibility` (`eligible`, `not_eligible` or `check`), `fit` (`worthwhile`, `not_worthwhile` or `suspicious`), and `scam` (risk and signals, quotes cut to 200 characters). The link is shown, never fetched. Writes nothing. 20 per 10 minutes per student (`429 rate_limited`, `Retry-After`) |
+
+Errors: `invalid_input` 400 (for example a paste under 20 characters, or a `url` that is not http or https), `rate_limited` 429 on paste.
+
+The two operations are listed in `apps/web/lib/openapi-picks.ts`. Notification rows and email settings have services but **no v1 route yet**; see `docs/notifications.md` §6.

@@ -45,7 +45,7 @@
 - **Work authorisation and visa sponsorship:** from the student's row for the job's country. A `visa_held` student is asked about sponsorship, because only they know if it will be needed later.
 - **Answer bank:** `notice_period`, `relocation`, `expected_ctc`, `current_ctc`, `work_authorization`, `visa_sponsorship`, `why_company`, `why_role` and `about_yourself` take the student's own saved answer first, when one exists (at most 2,000 characters).
 - **Always `needs_you`:** `gender_eeo` (demographic questions are always the student's) and `sensitive_id` (family, parents, guardian, emergency contacts, Aadhaar, PAN, passport). These are applied after the set is built, so no source can override them.
-- **Free-text templates** (`why_company`, `why_role`, `about_yourself`): built from the strongest confirmed resume evidence. That is the first experience ("`<role>` experience at `<org>`"), else a project title, else up to three skills. Without a confirmed resume there is no template. `why_company` also needs a line about the company, and `why_role` needs the role title.
+- **Free-text templates** (`why_company`, `why_role`, `about_yourself`): **a draft only; never sent unseen** (decision 2026-10-31). The executor turns it into `needs_you` (reason `confirm_draft`) and keeps the text as a sealed suggestion on the application. The student confirms or edits it by saving it as their own answer; that saved answer is then sent. Built from the strongest confirmed resume evidence. That is the first experience ("`<role>` experience at `<org>`"), else a project title, else up to three skills. Without a confirmed resume there is no template. `why_company` also needs a line about the company, and `why_role` needs the role title.
 
 ## 4. The classifier
 
@@ -70,7 +70,7 @@
 
 ## 6. Known gaps
 
-- **Template free text is auto-submitted.** In the worker, `why_role` is filled from the template and sent without asking the student, once the resume is confirmed and has some evidence. `about_yourself` is sent the same way, if the profile also has a degree. Only `why_company` is held back, for the reason in §5. Owner decision: whether templates should ever be sent unseen. See `docs/apply.md`, "Open before pilot".
+- **Template free text is no longer auto-submitted** (closed 2026-10-31, `docs/apply.md` "Open before pilot" 1). The executor holds any answer for `why_company`, `why_role` or `about_yourself` whose evidence is not the student's own saved answer, and any answer with company-line evidence, as `needs_you` with the draft as a suggestion. `why_company` still always has an empty company line in the worker (§5).
 - **The university rule is not passed by any caller.** The engine accepts it, but the worker's answer port passes only the campus rule. See `docs/eligibility.md` §5.
 - The classifier and the templates are not tested against real employer forms. There is no live ATS transport (see `docs/apply.md`).
 
