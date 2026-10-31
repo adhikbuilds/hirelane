@@ -135,8 +135,13 @@ textarea.input{height:auto;min-height:120px;padding:12px;line-height:1.5;resize:
 .rc-fit em{font-style:normal;font-size:13px;color:rgb(255 246 232/.78);display:inline-flex;gap:4px;align-items:center}
 .rc-fit em svg{width:14px;height:14px;transition:transform var(--dur-state)}
 .rc.open .rc-fit em svg{transform:rotate(90deg)}
-.rc-maths{display:none;background:var(--card-ink);color:var(--cream);border-radius:12px;padding:6px 14px;margin-top:-8px;font-size:13px}
-.rc.open .rc-maths{display:block}
+.rc-maths{background:var(--card-ink);color:var(--cream);border-radius:12px;padding:6px 14px;font-size:13px}
+.rc-fitline{display:flex;gap:8px;align-items:center;font-size:15px;font-weight:600}
+.rc-fitline .glyph{width:18px;height:18px;font-size:14px}
+.rc-what{font-size:14px;color:var(--fg2)}
+.rc-detail{display:none;gap:12px;padding-top:12px;border-top:1px solid var(--line)}
+.rc.open .rc-detail{display:grid}
+.rc-co .rc-name{display:block;font-weight:600;font-size:16px;color:var(--fg)}
 .rc-maths div{display:flex;gap:8px;padding:6px 0;line-height:1.4}
 .rc-maths div+div{border-top:1px solid rgb(255 246 232/.14)}
 .rc-maths .glyph{width:16px;height:18px;font-size:13px;color:var(--card-lime)}
@@ -148,7 +153,10 @@ textarea.input{height:auto;min-height:120px;padding:12px;line-height:1.5;resize:
 .rc-who u{display:block;font-size:13px;font-weight:600;text-underline-offset:3px;margin-top:1px}
 .rc-who .av{width:28px;height:28px;background:transparent;border:1px solid currentColor;color:inherit;font-size:11px}
 .rc-fresh{font-size:13px;color:var(--fg2);font-weight:500}
-.rc-more{font-size:14px;font-weight:600;color:var(--fg);text-underline-offset:3px}
+.rc-more{justify-self:start;display:inline-flex;gap:6px;align-items:center;min-height:44px;margin:-8px 0;padding:0;border:0;background:none;font:600 14px/1 var(--sans);color:var(--fg);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.rc-more svg{width:14px;height:14px;transition:transform var(--dur-state)}
+.rc.open .rc-more svg{transform:rotate(90deg)}
+.rc-link{font-size:14px;font-weight:600;color:var(--fg);text-underline-offset:3px}
 .stamp{position:absolute;bottom:18px;right:16px;padding:6px 14px;border:2px solid var(--fg);border-radius:var(--radius-control);font:600 22px/1.1 var(--sans);letter-spacing:-.01em;color:var(--fg);background:var(--fill);transform:rotate(-8deg) scale(1.08);opacity:0;pointer-events:none}
 .stamp.skip{left:16px;right:auto;transform:rotate(8deg) scale(1.08)}
 
@@ -419,11 +427,32 @@ textarea.input{height:auto;min-height:120px;padding:12px;line-height:1.5;resize:
 .bars i{height:3px;border-radius:2px;background:var(--line);position:relative;overflow:hidden}
 .bars i.on::after{content:"";position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(.35)}
 .deck{position:relative;outline:none;margin-bottom:32px}
-.deck .ghost{position:absolute;inset:0;transform-origin:50% 100%;border:1px solid var(--card-ink);background:var(--fill,var(--surface));border-radius:var(--radius-card)}
-.ghost.lime{--fill:var(--card-lime)}.ghost.sun{--fill:var(--card-sun)}.ghost.blue{--fill:var(--card-blue)}.ghost.pink{--fill:var(--card-pink)}
-.deck .g1{transform:translateY(10px) scale(.96);z-index:1}
-.deck .g2{transform:translateY(20px) scale(.92);z-index:0}
 .deck .rc{z-index:2}
+/* picks: phone = one card deck; desktop = list + detail, no dragging */
+.picks{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+.plist{display:none}
+.pdeck{max-width:520px;width:100%;justify-self:center}
+.prow{display:grid;grid-template-columns:1fr auto;gap:2px 12px;width:100%;text-align:left;padding:14px 16px;border:0;background:none;color:var(--ink);cursor:pointer;font:inherit}
+.prow+.prow{border-top:1px solid var(--line)}
+.prow:hover{background:var(--raised)}
+.prow.sel{background:var(--raised);box-shadow:inset 2px 0 0 var(--accent)}
+.prow .t{font-weight:500;font-size:15px}
+.prow .m{grid-column:1/-1;font-size:13px;color:var(--ink-2)}
+.prow .st{font-size:13px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.prow.done .t{color:var(--ink-2)}
+@container shell (min-width:901px){
+  .picks{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+  .plist{display:block}
+  .pdeck{max-width:none;justify-self:stretch}
+  .pdeck .bars,.pdeck .sec-h{display:none}
+  .pside{grid-column:2}
+  .deck .rc{cursor:default}
+  .pdeck .rc-detail .rc-maths{display:none}
+}
+@container shell (min-width:1280px){
+  .picks{grid-template-columns:minmax(0,4fr) minmax(0,5fr) minmax(0,4fr)}
+  .pside{grid-column:auto}
+}
 .deck .rc.drag{transition:none}
 .deck-acts{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-top:8px}
 .deck-acts .btn{--h:44px}
@@ -1122,14 +1151,15 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 
 <!-- =============== APP: PICKS =============== -->
 <template id="t-app-picks">
-<div class="a-head"><h1 class="a-title">Today’s picks</h1><p class="sample">Sample student. Drag the card, use the buttons, or press the arrow keys.</p></div>
-<div class="home">
-  <div style="max-width:520px;width:100%;justify-self:center">
+<div class="a-head"><h1 class="a-title">Today’s picks</h1><p class="sample">Sample student. On a phone, swipe the card. On a computer, pick from the list and use the buttons or arrow keys.</p></div>
+<div class="picks">
+  <div class="plist panel" data-plist aria-label="Today’s picks"></div>
+  <div class="pdeck">
     <div class="sec-h"><h2 class="small" style="font-size:13px">Roles you qualify for, today</h2><span class="small num" data-count>1 of 3</span></div>
     <div class="bars"><i class="on"></i><i></i><i></i></div>
     <div data-deck="picks"></div>
   </div>
-  <div class="panel" data-side>
+  <div class="panel pside" data-side>
     <div style="padding:16px 16px 8px" class="c-h">Your check for this role</div>
     <div class="checkp" data-rules></div>
     <div style="border-top:1px solid var(--line)" class="rows">
@@ -1493,17 +1523,23 @@ function card(k,o={}){
   const pay=d.pay?`<div class="rc-pay"><b>${d.pay}</b><span>${d.month}</span></div>`:`<div class="rc-pay none"><b>Pay not stated</b><span>The posting doesn’t give pay. We never estimate it.</span></div>`;
   const maths=d.rules.map(r=>`<div><span class="glyph">${G[r[0]][0]}</span><span>${r[1]}${r[2]?`<br><span style="opacity:.75">${r[2]}</span>`:''}</span></div>`).join('');
   const compact=o.compact;
+  const city=d.chips[0];
+  const detail=compact?'':`<button class="rc-more" type="button" aria-expanded="false">Details${ic('chev')}</button>
+   <div class="rc-detail">
+    <p class="rc-what">${d.what}</p>
+    <ul class="rc-chips">${d.chips.map(c=>`<li>${c}</li>`).join('')}</ul>
+    <div class="rc-maths">${maths}</div>
+    <div class="rc-must"><span class="num">${d.must[0]} of ${d.must[1]} must-haves</span><i style="--v:${d.must[0]/d.must[1]}"></i></div>
+    ${d.who?`<button class="rc-who" type="button"><span class="av">${d.who[0]}</span><span>${d.who[1]}<u>Draft an ask</u></span></button>`:''}
+    <a class="rc-link" href="#">The day, the rounds and the full posting</a>
+   </div>`;
   return `<article class="rc ${d.fill}" data-k="${k}" aria-label="${d.role} at ${d.co}">
-   <div class="rc-co"><span class="rc-logo" aria-hidden="true">${d.init}</span><div><b>${d.co}</b><span>${d.what}</span></div></div>
+   <div class="rc-co"><span class="rc-logo" aria-hidden="true">${d.init}</span><div><span class="rc-name">${d.co}</span><span>${city}</span></div></div>
    <h3 class="rc-role">${d.role}</h3>
-   <ul class="rc-chips">${d.chips.map(c=>`<li>${c}</li>`).join('')}</ul>
    ${pay}
-   <button class="rc-fit" type="button" aria-expanded="false"><span>${d.fit}</span><em>Maths${ic('chev')}</em></button>
-   <div class="rc-maths">${maths}</div>
-   ${compact?'':`<div class="rc-must"><span class="num">${d.must[0]} of ${d.must[1]} must-haves</span><i style="--v:${d.must[0]/d.must[1]}"></i></div>`}
-   ${d.who&&!compact?`<button class="rc-who" type="button"><span class="av">${d.who[0]}</span><span>${d.who[1]}<u>Draft an ask</u></span></button>`:''}
+   <p class="rc-fitline"><span class="glyph" aria-hidden="true">✓</span>${d.fit}</p>
    <p class="rc-fresh">${d.fresh}</p>
-   ${compact?'':`<a class="rc-more" href="#">Why you fit, the day, the rounds</a>`}
+   ${detail}
    <div class="stamp" aria-hidden="true"><span class="pilot">Applied</span><span class="pre">Ready</span></div><div class="stamp skip" aria-hidden="true">Skip</div>
   </article>`;
 }
@@ -1617,7 +1653,7 @@ function render(){
 function hydrate(root){
   $$('i[data-i]',root).forEach(i=>{const c=i.classList.contains('s16')?'ic s16':'ic';i.outerHTML=ic(i.dataset.i,c)});
   $$('[data-card]',root).forEach(el=>{el.innerHTML=card(el.dataset.card,{compact:el.dataset.compact});if(el.dataset.stamp&&!el.classList.contains('s-card')){const s=$('.stamp',el);s.style.opacity=1;s.style.transform='rotate(-8deg) scale(1)'}});
-  root.addEventListener('click',e=>{const f=e.target.closest('.rc-fit');if(f){const c=f.closest('.rc');c.classList.toggle('open');f.setAttribute('aria-expanded',c.classList.contains('open'))}});
+  root.addEventListener('click',e=>{const f=e.target.closest('.rc-more');if(f){const c=f.closest('.rc');c.classList.toggle('open');f.setAttribute('aria-expanded',c.classList.contains('open'))}});
   $$('[data-stage]',root).forEach(initStage);
   $$('[data-rules]',root).forEach(el=>el.innerHTML=rulesHTML('trellis'));
   $$('[data-deck]',root).forEach(initDeck);
@@ -1644,16 +1680,22 @@ function initStage(s){
 function initDeck(host){
   const order=['trellis','ankur','saarthi']; let i=0; const hist=[];
   const page=host.closest('.a-main'); const isApplied=st.page==='applied'&&host.dataset.deck==='picks';
-  host.innerHTML=`<div class="deck" tabindex="0" aria-label="Today’s picks. Left arrow skips, right arrow applies, up arrow saves."><div class="ghost g2"></div><div class="ghost g1"></div><div class="slot"></div></div>
+  const done={}; const shell=host.closest('.shell'); const wide=()=>!!shell&&shell.offsetWidth>900; const plist=page&&$('[data-plist]',page);
+  const next=from=>{for(let n=from+1;n<order.length;n++)if(!done[n])return n;for(let n=0;n<order.length;n++)if(!done[n])return n;return order.length};
+  const LBL={apply:st.copy==='pre'?'Ready':'Applied',skip:'Skipped',save:'Saved'};
+  function list(){if(!plist)return;plist.innerHTML=order.map((k,n)=>{const d=CARDS[k],s=done[n];return `<button class="prow${n===i?' sel':''}${s?' done':''}" data-n="${n}"${n===i?' aria-current="true"':''}><span class="t">${d.role}</span><span class="st">${s?LBL[s]:(d.pay||'Pay not stated')}</span><span class="m">${d.co}, ${d.chips[0]}. ${d.fit}.</span></button>`}).join('')}
+  host.innerHTML=`<div class="deck" tabindex="0" aria-label="Today’s picks. Left arrow skips, right arrow applies, up arrow saves."><div class="slot"></div></div>
    <div class="deck-acts"><button class="btn" data-a="skip">${ic('x','ic s16')}Skip</button><button class="btn" data-a="save">${ic('plus','ic s16')}Save</button><button class="btn p" data-a="apply">${ic('check','ic s16')}<span class="pilot">Apply</span><span class="pre">Get it ready</span></button></div>
    <p class="mode"><span class="pilot">Applies from</span><span class="pre">Ready from</span><span class="mono">rahul.k3x@apply.hirelane.in</span></p>
    <div class="toast-slot"><p class="hint">Drag the card, use the buttons, or press the arrow keys.</p><div class="toast" role="status"><b></b><span></span><button class="undo">Undo</button><i class="cd"></i></div></div>`;
   const deck=$('.deck',host), slot=$('.slot',deck), toast=$('.toast',host); let tmr;
+  if(plist)plist.onclick=e=>{const b=e.target.closest('.prow');if(!b)return;const n=+b.dataset.n;if(done[n])return;i=n;show();deck.focus({preventScroll:true})};
   const count=page&&$('[data-count]',page), bars=page&&$$('.bars i',page), side=page&&$('[data-rules]',page);
   function show(){
     const k=order[i];
-    if(!k){slot.innerHTML=`<div class="panel" style="padding:24px;border-radius:var(--radius-card)"><div class="c-h">That’s today’s picks.</div><p class="ink2" style="margin-top:6px">New roles you qualify for show up here each morning.</p></div>`;$$('.ghost',deck).forEach(g=>g.style.display='none');return}
-    slot.innerHTML=card(k); $$('.ghost',deck).forEach((g,n)=>{const nk=order[i+2-n];g.style.display=nk?'':'none';g.className='ghost g'+(2-n)+(nk?' '+CARDS[nk].fill:'')});
+    if(!k){slot.innerHTML=`<div class="panel" style="padding:24px;border-radius:var(--radius-card)"><div class="c-h">That’s today’s picks.</div><p class="ink2" style="margin-top:6px">New roles you qualify for show up here each morning.</p></div>`;list();return}
+    slot.innerHTML=card(k); list();
+    if(wide()&&host.dataset.deck==='picks'){const c=$('.rc',slot);c.classList.add('open');$('.rc-more',c).setAttribute('aria-expanded','true')}
     if(count)count.textContent=`${i+1} of ${order.length}`; if(bars)bars.forEach((b,n)=>b.classList.toggle('on',n===i));
     if(side)side.innerHTML=rulesHTML(k);
     const an=page&&$('[data-ans]',page); if(an){const a=CARDS[k].ans; an.innerHTML=a[2]?`<div class="rl-main"><div class="rl-t">Answers ready: ${a[0]} of ${a[1]}</div><div class="rl-m">Needs you: ${a[2].charAt(0).toLowerCase()+a[2].slice(1)}</div></div><span class="btn sm">Answer</span>`:`<div class="rl-main"><div class="rl-t">Answers ready: ${a[0]} of ${a[1]}</div><div class="rl-m">Nothing needs you before you apply.</div></div>`}
@@ -1675,22 +1717,22 @@ function initDeck(host){
     el.style.transition=`transform var(--dur-card) var(--ease-out),opacity var(--dur-card) var(--ease-out)`;
     if(kind==='apply'){const s=$('.stamp:not(.skip)',el);s.style.transition='opacity 120ms, transform 120ms';s.style.opacity=1;s.style.transform='rotate(-8deg) scale(1)'}
     el.style.transform=dir?`translateX(${dir*1.2*w}px) rotate(${dir*12}deg)`:`translateY(-60%) scale(.9)`; el.style.opacity=dir?1:0;
-    hist.push(i); setTimeout(()=>{i++;show()},matchMedia('(prefers-reduced-motion: reduce)').matches?0:280);
+    hist.push(i); done[i]=kind; setTimeout(()=>{i=next(i);show()},matchMedia('(prefers-reduced-motion: reduce)').matches?0:280);
     toastShow(kind,k);
   }
   function bind(el){
     let x0=null,dx=0; const w=()=>deck.offsetWidth;
     const sa=$('.stamp:not(.skip)',el), ss=$('.stamp.skip',el);
-    el.addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;x0=e.clientX;dx=0;el.setPointerCapture(e.pointerId);el.style.transition='none'});
+    el.addEventListener('pointerdown',e=>{if(wide()||e.target.closest('button,a'))return;x0=e.clientX;dx=0;el.setPointerCapture(e.pointerId);el.style.transition='none'});
     el.addEventListener('pointermove',e=>{if(x0===null)return;dx=e.clientX-x0;el.style.transform=`translateX(${dx}px) rotate(${dx/w()*12}deg)`;const p=Math.min(1,Math.abs(dx)/(w()*.35));(dx>0?sa:ss).style.opacity=p;(dx>0?ss:sa).style.opacity=0;(dx>0?sa:ss).style.transform=`rotate(${dx>0?-8:8}deg) scale(${1.08-.08*p})`});
     const up=()=>{if(x0===null)return;x0=null;if(dx>w()*.35)commit('apply',el);else if(dx<-w()*.35)commit('skip',el);else{el.style.transition='transform var(--dur-enter) var(--ease-out)';el.style.transform='';sa.style.opacity=0;ss.style.opacity=0}};
     el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
   }
   $('.deck-acts',host).onclick=e=>{const b=e.target.closest('button');const el=$('.rc',slot);if(b&&el)commit(b.dataset.a,el)};
-  deck.onkeydown=e=>{const el=$('.rc',slot);if(!el)return;if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();$('.undo',toast).click();return}const m={ArrowLeft:'skip',ArrowRight:'apply',ArrowUp:'save'}[e.key];if(m){e.preventDefault();commit(m,el)}else if(e.key===' '){e.preventDefault();$('.rc-fit',el).click()}};
-  $('.undo',toast).onclick=()=>{if(!hist.length)return;clearTimeout(tmr);toast.classList.remove('on');i=hist.pop();show();const el=$('.rc',slot);el.style.transition='none';el.style.transform='translateY(-12px)';el.style.opacity=0;void el.offsetWidth;el.style.transition='transform var(--dur-enter) var(--ease-out),opacity var(--dur-enter) var(--ease-out)';el.style.transform='';el.style.opacity=1;deck.focus({preventScroll:true})};
+  deck.onkeydown=e=>{const el=$('.rc',slot);if(!el)return;if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();$('.undo',toast).click();return}const m={ArrowLeft:'skip',ArrowRight:'apply',ArrowUp:'save'}[e.key];if(m){e.preventDefault();commit(m,el)}else if(e.key===' '){e.preventDefault();const m=$('.rc-more',el);if(m)m.click()}};
+  $('.undo',toast).onclick=()=>{if(!hist.length)return;clearTimeout(tmr);toast.classList.remove('on');i=hist.pop();delete done[i];show();const el=$('.rc',slot);el.style.transition='none';el.style.transform='translateY(-12px)';el.style.opacity=0;void el.offsetWidth;el.style.transition='transform var(--dur-enter) var(--ease-out),opacity var(--dur-enter) var(--ease-out)';el.style.transform='';el.style.opacity=1;deck.focus({preventScroll:true})};
   show();
-  if(isApplied){hist.push(0);i=1;show();toastShow('apply','trellis');toast.classList.add('frozen')}
+  if(isApplied){hist.push(0);done[0]='apply';i=1;show();toastShow('apply','trellis');toast.classList.add('frozen')}
 }
 
 /* ---------- console data ---------- */
