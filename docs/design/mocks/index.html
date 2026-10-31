@@ -428,30 +428,21 @@ textarea.input{height:auto;min-height:120px;padding:12px;line-height:1.5;resize:
 .bars i.on::after{content:"";position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(.35)}
 .deck{position:relative;outline:none;margin-bottom:32px}
 .deck .rc{z-index:2}
-/* picks: phone = one card deck; desktop = list + detail, no dragging */
+/* picks: a scrollable feed of light cards, each with its own actions; desktop adds a sticky check panel */
+.feed-list{display:grid;gap:20px}
+.fitem{display:grid;gap:8px;cursor:pointer}
+.fact{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr);gap:8px}
+.fact .btn{--h:44px}
+.fdone{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--line);border-radius:var(--radius-panel);background:var(--surface);font-size:14px;min-height:56px}
+.fdone b{font-weight:600}
+.fdone .ink2{font-size:13px;white-space:nowrap}
+.pfeed{max-width:560px;width:100%;justify-self:center}
 .picks{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
-.plist{display:none}
-.pdeck{max-width:520px;width:100%;justify-self:center}
-.prow{display:grid;grid-template-columns:1fr auto;gap:2px 12px;width:100%;text-align:left;padding:14px 16px;border:0;background:none;color:var(--ink);cursor:pointer;font:inherit}
-.prow+.prow{border-top:1px solid var(--line)}
-.prow:hover{background:var(--raised)}
-.prow.sel{background:var(--raised);box-shadow:inset 2px 0 0 var(--accent)}
-.prow .t{font-weight:500;font-size:15px}
-.prow .m{grid-column:1/-1;font-size:13px;color:var(--ink-2)}
-.prow .st{font-size:13px;font-weight:500;color:var(--ink-2);white-space:nowrap}
-.prow.done .t{color:var(--ink-2)}
 @container shell (min-width:901px){
-  .picks{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
-  .plist{display:block}
-  .pdeck{max-width:none;justify-self:stretch}
-  .pdeck .bars,.pdeck .sec-h{display:none}
-  .pside{grid-column:2}
-  .deck .rc{cursor:default}
-  .pdeck .rc-detail .rc-maths{display:none}
-}
-@container shell (min-width:1280px){
-  .picks{grid-template-columns:minmax(0,4fr) minmax(0,5fr) minmax(0,4fr)}
-  .pside{grid-column:auto}
+  .picks{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+  .pfeed{justify-self:stretch;max-width:600px}
+  .picks .pside{position:sticky;top:calc(var(--mk-h) + 84px)}
+  .fitem.sel .rc{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
 }
 .deck .rc.drag{transition:none}
 .deck-acts{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-top:8px}
@@ -774,7 +765,7 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 <template id="t-site-landing">
 <section class="hero"><div class="wrap">
   <h1 class="display">Jobs matched to your marks.</h1>
-  <p class="lede"><span class="pre">Hirelane checks every role against your percentage, backlogs, batch and branch, and gets your application ready on the company’s own site.</span><span class="pilot">Hirelane checks every role against your percentage, backlogs, batch and branch, then applies on the company’s own site when you swipe right.</span></p>
+  <p class="lede"><span class="pre">Hirelane checks every role against your percentage, backlogs, batch and branch, and gets your application ready on the company’s own site.</span><span class="pilot">Hirelane checks every role against your percentage, backlogs, batch and branch, then applies on the company’s own site when you tap Apply.</span></p>
   <div class="ctas"><a class="btn p" href="#/site/signin">Get started, it’s free</a><a class="tlink" href="#/site/colleges">I run a placement cell <i data-i="arrow"></i></a></div>
   <div class="stage-wrap">
     <div class="stage" data-stage>
@@ -831,7 +822,7 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
         <div class="vrow"><span class="glyph g-ok">✓</span><span>Active backlogs: 0, needs none</span></div>
       </div></div>
     </div>
-    <div class="step"><span class="n">2</span><h3>Swipe right to apply</h3><p><span class="pilot">Hirelane fills the company’s form and sends it from your Hirelane address.</span><span class="pre">Your answers are ready on the company’s own form. You press submit.</span></p>
+    <div class="step"><span class="n">2</span><h3>Tap Apply</h3><p><span class="pilot">Hirelane fills the company’s form and sends it from your Hirelane address.</span><span class="pre">Your answers are ready on the company’s own form. You press submit.</span></p>
       <div class="crop"><div class="minicard" data-card="trellis" data-stamp="1" data-compact="1"></div></div>
     </div>
     <div class="step"><span class="n">3</span><h3>If a site blocks us, you finish it there</h3><p>Your answers are ready to copy, one field at a time.</p>
@@ -910,7 +901,7 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
   <h2 class="title">What Hirelane never does</h2>
   <div class="ruled">
     <div><b>Charge students.</b><p>No fee to apply, ever. A job that asks for one is flagged.</p></div>
-    <div><b>Submit without you.</b><p><span class="pre">You press submit on the employer’s own site. Your answers are ready there.</span><span class="pilot">You agree once, and every right swipe is your instruction. Switch to submitting yourself any time. We stop at CAPTCHAs and sign-ins.</span></p></div>
+    <div><b>Submit without you.</b><p><span class="pre">You press submit on the employer’s own site. Your answers are ready there.</span><span class="pilot">You agree once, and every Apply you tap is your instruction. Switch to submitting yourself any time. We stop at CAPTCHAs and sign-ins.</span></p></div>
     <div><b>Show marks to colleges.</b><p>By default your placement cell sees totals; groups under 10 are hidden. If you share outcomes, they see your interview and offer status.</p></div>
     <div><b>Scrape job boards.</b><p>Roles come from company career pages and your college’s drives.</p></div>
     <div><b>Keep your data after you leave.</b><p>Delete your account in Settings and everything is gone within 24 hours.</p></div>
@@ -920,7 +911,7 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 <section class="site-sec"><div class="wrap split">
   <div class="txt"><h2 class="title">Questions</h2><p><a class="tlink" href="#/site/landing">All questions <i data-i="arrow"></i></a></p></div>
   <div class="faq" style="margin-top:0">
-    <details open><summary>Does Hirelane apply for me?<i data-i="plus"></i></summary><p><span class="pre">Not yet. When you swipe right, Hirelane gets your application ready on the company’s own site, with your Hirelane address ready to use. Once the pilot is live, Hirelane sends it for you, and you can switch to submitting yourself any time.</span><span class="pilot">Yes, when you swipe right. You agree once during sign-up, and you can switch to submitting yourself any time in Settings. Every application gets a receipt.</span></p></details>
+    <details open><summary>Does Hirelane apply for me?<i data-i="plus"></i></summary><p><span class="pre">Not yet. When you tap Apply, Hirelane gets your application ready on the company’s own site, with your Hirelane address ready to use. Once the pilot is live, Hirelane sends it for you, and you can switch to submitting yourself any time.</span><span class="pilot">Yes, when you tap Apply. You agree once during sign-up, and you can switch to submitting yourself any time in Settings. Every application gets a receipt.</span></p></details>
     <details><summary>Where do the jobs come from?<i data-i="plus"></i></summary><p>Company career pages on public hiring systems, plus drives your placement cell pastes. We never scrape job boards.</p></details>
     <details><summary>Is it free for students?<i data-i="plus"></i></summary><p>Yes. Hirelane never charges students.</p></details>
     <details><summary>Can my college see my marks?<i data-i="plus"></i></summary><p>No. Placement cells see totals, and groups under 10 are hidden. If you choose to share outcomes, they see your interview and offer status.</p></details>
@@ -1036,7 +1027,7 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 <!-- =============== AUTH: SIGN IN =============== -->
 <template id="t-auth-signin">
 <div class="au-main">
-  <div><h1 class="au-h">Find jobs you can actually get.</h1><p class="au-sub"><span class="pre">Check your resume, see which roles you qualify for and why, and get ready to apply in one swipe.</span><span class="pilot">Check your resume, see which roles you qualify for and why, and apply with one swipe.</span></p></div>
+  <div><h1 class="au-h">Find jobs you can actually get.</h1><p class="au-sub"><span class="pre">Check your resume, see which roles you qualify for and why, and get ready to apply in one tap.</span><span class="pilot">Check your resume, see which roles you qualify for and why, and apply with one tap.</span></p></div>
   <div class="au-card-w"><div class="au-card">
     <div class="au-prog"><i class="on"></i><i></i><i></i><i></i><i></i></div>
     <h2>Sign in</h2><p>New here? Signing in creates your account.</p>
@@ -1053,13 +1044,13 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 <!-- =============== APP: ONBOARDING =============== -->
 <template id="t-auth-welcome">
 <div class="au-main">
-  <div><h1 class="au-h"><span class="pilot">Swipe right, and we apply.</span><span class="pre">Swipe right, and it’s ready.</span></h1><p class="au-sub">Step 4 of 5. You can change this any time in Settings.</p></div>
+  <div><h1 class="au-h"><span class="pilot">Tap Apply, and we send it.</span><span class="pre">Tap Apply, and it’s ready.</span></h1><p class="au-sub">Step 4 of 5. You can change this any time in Settings.</p></div>
   <div class="au-card-w"><div class="au-card">
     <div class="au-prog"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
-    <h2><span class="pilot">When you swipe right, Hirelane applies for you.</span><span class="pre">When you swipe right, Hirelane gets your application ready.</span></h2>
+    <h2><span class="pilot">When you tap Apply, Hirelane applies for you.</span><span class="pre">When you tap Apply, Hirelane gets your application ready.</span></h2>
     <p><span class="pilot">We fill the company’s form from your resume and your answers, and send it from your Hirelane address. Replies come to your inbox here. If a site blocks us, you finish it there with everything ready. You’ll see a receipt for every application.</span><span class="pre">We fill the company’s form from your resume and your answers, ready to send from your Hirelane address. You press submit on their site. Replies come to your inbox here.</span></p>
     <div class="au-addr">rahul.k3x@apply.hirelane.in</div>
-    <button class="au-btn"><span class="pilot">Turn on swipe to apply</span><span class="pre">Use my Hirelane address</span></button>
+    <button class="au-btn"><span class="pilot">Turn on one-tap apply</span><span class="pre">Use my Hirelane address</span></button>
     <button class="au-btn o">I’ll submit myself</button>
     <a class="au-link" href="#/site/landing">What Hirelane never does</a>
   </div></div>
@@ -1088,9 +1079,8 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 <div class="a-head"><h1 class="a-title">Good morning, Rahul</h1><p class="a-count"><b>3 new roles</b> you qualify for since yesterday</p><p class="sample">Sample student. Real numbers appear once picks are live.</p></div>
 <div class="home">
   <div>
-    <div class="sec-h"><h2>Today’s picks</h2><span class="small num" data-count>1 of 3</span></div>
-    <div class="bars"><i class="on"></i><i></i><i></i></div>
-    <div data-deck="home"></div>
+    <div class="sec-h"><h2>Today’s picks</h2><span class="small num" data-count>3 left</span></div>
+    <div data-feed="home"></div>
   </div>
   <div class="panel rp rows">
     <div><div class="grp" style="display:flex;justify-content:space-between">Needs you<span class="num">2</span></div>
@@ -1118,7 +1108,7 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
         <div class="rowlink"><div class="rl-main"><div class="rl-t">Security code from Kosha Payments</div><div class="code num" style="margin:6px 0 4px">482 913</div><div class="rl-m">Works for 10 minutes. Received 9:40.</div></div><button class="btn sm" aria-label="Copy code"><i data-i="copy"></i>Copy</button></div>
         <a class="rowlink" href="#/app/needs"><div class="rl-main"><div class="rl-t">Finish Brightdesk on their site</div><div class="rl-m">It asked for a sign-in. Your 7 answers are ready.</div></div><span class="rl-a">Finish</span><i data-i="chev"></i></a>
       </div></div>
-    <div><div class="sec-h"><h2>Matched to you, today</h2><a href="#/app/picks">Swipe all 3</a></div>
+    <div><div class="sec-h"><h2>Matched to you, today</h2><a href="#/app/picks">See all 3</a></div>
       <div class="minicard" data-card="trellis" data-compact="1"></div>
       <div class="panel rows" style="margin-top:12px">
         <a class="rowlink" href="#/app/picks"><div class="rl-main"><div class="rl-t">Shipment Coordinator</div><div class="rl-m">Ankur Logistics, Pune</div><div class="rl-m">₹3.2 LPA, you qualify: 3 of 3 rules</div></div><span class="pill new">New</span><i data-i="chev"></i></a>
@@ -1151,13 +1141,11 @@ table.tt .ib{height:2px;background:var(--series-track);box-shadow:0 0 0 1px var(
 
 <!-- =============== APP: PICKS =============== -->
 <template id="t-app-picks">
-<div class="a-head"><h1 class="a-title">Today’s picks</h1><p class="sample">Sample student. On a phone, swipe the card. On a computer, pick from the list and use the buttons or arrow keys.</p></div>
+<div class="a-head"><h1 class="a-title">Today’s picks</h1><p class="sample">Sample student. Scroll the feed; each role has Skip, Save and Apply. Tap a card to see its check on the right.</p></div>
 <div class="picks">
-  <div class="plist panel" data-plist aria-label="Today’s picks"></div>
-  <div class="pdeck">
-    <div class="sec-h"><h2 class="small" style="font-size:13px">Roles you qualify for, today</h2><span class="small num" data-count>1 of 3</span></div>
-    <div class="bars"><i class="on"></i><i></i><i></i></div>
-    <div data-deck="picks"></div>
+  <div class="pfeed">
+    <div class="sec-h"><h2 class="small" style="font-size:13px">Roles you qualify for, today</h2><span class="small num" data-count>4 left</span></div>
+    <div data-feed="picks"></div>
   </div>
   <div class="panel pside" data-side>
     <div style="padding:16px 16px 8px" class="c-h">Your check for this role</div>
@@ -1547,7 +1535,7 @@ function card(k,o={}){
 /* ---------- state + router ---------- */
 const PAGES={
  site:[['landing','Landing'],['colleges','For colleges'],['pilot','Pilot'],['signin','Sign in']],
- app:[['welcome','Onboarding: applying'],['join','Onboarding: college'],['home-ab','Home: A and B'],['home-a','Home A'],['home-b','Home B'],['picks','Picks deck'],['applied','Right swipe: applied + undo'],['drives','Drives'],['tracker','Tracker'],['needs','Needs you']],
+ app:[['welcome','Onboarding: applying'],['join','Onboarding: college'],['home-ab','Home: A and B'],['home-a','Home A'],['home-b','Home B'],['picks','Picks feed'],['applied','Applied + undo'],['drives','Drives'],['tracker','Tracker'],['needs','Needs you']],
  console:[['overview','Overview'],['drives','Drives'],['newdrive','Add a drive'],['students','Students'],['outcomes','Outcomes and NAAC']]
 };
 const st={surface:'site',page:'landing',frame:'desktop',theme:'light',ctheme:'dark',copy:'pilot'};
@@ -1634,7 +1622,7 @@ function render(){
     else if(p==='home-ab'){
       html=`<div class="cmp t-${st.theme}"><div class="cmp-in"><h1 class="a-title">Home: two directions</h1><p class="ink2" style="margin-top:4px">Same sample student, same data. Pick one for the build. Both keep colour to the role card only.</p>
        <div class="cmp-grid">
-        <div class="cmp-col"><h2><span class="lbl">A</span>Deck first</h2><p>Today’s top pick is the page. Everything else is one ruled panel beside or under it.</p><ul><li>Fastest path to a swipe</li><li>Approved direction from 29 Oct</li></ul><div class="frame">${appShell(tpl('app-home-a'),'home-a',st.theme)}</div><p style="margin-top:12px"><a class="tlink" href="${href('app','home-a')}">Open A at desktop ${ic('arrow')}</a></p></div>
+        <div class="cmp-col"><h2><span class="lbl">A</span>Feed first</h2><p>Today’s picks are the page, as a scrollable feed. Everything else is one ruled panel beside or under it.</p><ul><li>Fastest path to Apply</li><li>Approved direction from 29 Oct</li></ul><div class="frame">${appShell(tpl('app-home-a'),'home-a',st.theme)}</div><p style="margin-top:12px"><a class="tlink" href="${href('app','home-a')}">Open A at desktop ${ic('arrow')}</a></p></div>
         <div class="cmp-col"><h2><span class="lbl">B</span>List first</h2><p>What needs you comes first, then today’s matches as a short list with one compact card.</p><ul><li>Codes and unfinished applications never get missed</li><li>Shows the week as a feed, not a recap</li></ul><div class="frame">${appShell(tpl('app-home-b'),'home-b',st.theme)}</div><p style="margin-top:12px"><a class="tlink" href="${href('app','home-b')}">Open B at desktop ${ic('arrow')}</a></p></div>
        </div></div></div>`;
     } else {
@@ -1657,6 +1645,7 @@ function hydrate(root){
   $$('[data-stage]',root).forEach(initStage);
   $$('[data-rules]',root).forEach(el=>el.innerHTML=rulesHTML('trellis'));
   $$('[data-deck]',root).forEach(initDeck);
+  $$('[data-feed]',root).forEach(initFeed);
   $$('[data-chart]',root).forEach(initChart);
   $$('[data-totals]',root).forEach(el=>el.innerHTML=totals());
   $$('[data-sbar]',root).forEach(el=>el.innerHTML=sbar(el.dataset.sbar==='act'));
@@ -1733,6 +1722,37 @@ function initDeck(host){
   $('.undo',toast).onclick=()=>{if(!hist.length)return;clearTimeout(tmr);toast.classList.remove('on');i=hist.pop();delete done[i];show();const el=$('.rc',slot);el.style.transition='none';el.style.transform='translateY(-12px)';el.style.opacity=0;void el.offsetWidth;el.style.transition='transform var(--dur-enter) var(--ease-out),opacity var(--dur-enter) var(--ease-out)';el.style.transform='';el.style.opacity=1;deck.focus({preventScroll:true})};
   show();
   if(isApplied){hist.push(0);done[0]='apply';i=1;show();toastShow('apply','trellis');toast.classList.add('frozen')}
+}
+
+/* ---------- feed ---------- */
+function initFeed(host){
+  const all=['trellis','ankur','saarthi','medhaa']; const order=host.dataset.feed==='home'?all.slice(0,3):all;
+  const page=host.closest('.a-main'); const count=page&&$('[data-count]',page);
+  const pre=()=>st.copy==='pre'; const state={}, sent={}; let sel=0;
+  const LBL={apply:()=>pre()?'Ready':'Applied',skip:()=>'Skipped',save:()=>'Saved'};
+  function side(k){
+    const r=page&&$('[data-rules]',page); if(r)r.innerHTML=rulesHTML(k);
+    const an=page&&$('[data-ans]',page); if(an){const a=CARDS[k].ans||[0,0,null]; an.innerHTML=a[2]?`<div class="rl-main"><div class="rl-t">Answers ready: ${a[0]} of ${a[1]}</div><div class="rl-m">Needs you: ${a[2].charAt(0).toLowerCase()+a[2].slice(1)}</div></div><span class="btn sm">Answer</span>`:`<div class="rl-main"><div class="rl-t">Answers ready: ${a[0]} of ${a[1]}</div><div class="rl-m">Nothing needs you before you apply.</div></div>`}
+    const rd=page&&$('[data-rounds]',page); if(rd)rd.textContent=CARDS[k].rounds||'Dates come with the invite.';
+  }
+  function render(){
+    host.innerHTML=`<div class="feed-list">${order.map((k,n)=>{const d=CARDS[k],s=state[n];
+      if(s){const tail=s==='apply'&&!pre()?(sent[n]?'<a class="btn sm" href="#/app/tracker">See receipt</a>':`<span class="ink2">Sends in 4 seconds</span><button class="btn sm" data-undo="${n}">Undo</button>`):`<button class="btn sm" data-undo="${n}">Undo</button>`;
+        return `<div class="fdone" data-n="${n}"><span><b>${LBL[s]()}:</b> ${d.role}, ${d.co}</span><span style="display:flex;gap:10px;align-items:center">${tail}</span></div>`}
+      return `<div class="fitem${n===sel?' sel':''}" data-n="${n}">${card(k)}<div class="fact"><button class="btn" data-a="skip" data-n="${n}">${ic('x','ic s16')}Skip</button><button class="btn" data-a="save" data-n="${n}">${ic('plus','ic s16')}Save</button><button class="btn p" data-a="apply" data-n="${n}">${ic('check','ic s16')}${pre()?'Get it ready':'Apply'}</button></div></div>`}).join('')}</div>
+     <p class="mode"><span>${pre()?'Ready from':'Applies from'}</span><span class="mono">rahul.k3x@apply.hirelane.in</span></p>`;
+    if(count)count.textContent=`${order.filter((_,n)=>!state[n]).length} left`;
+  }
+  host.onclick=e=>{
+    const u=e.target.closest('[data-undo]'); if(u){delete state[+u.dataset.undo];render();return}
+    const b=e.target.closest('[data-a]');
+    if(b){const n=+b.dataset.n,a=b.dataset.a,d=CARDS[order[n]];state[n]=a;render();
+      $('#live').textContent=`${LBL[a]()}: ${d.role} at ${d.co}. Undo is available.`;
+      if(a==='apply'&&!pre())setTimeout(()=>{if(state[n]==='apply'){sent[n]=true;render()}},4000);return}
+    const it=e.target.closest('.fitem'); if(it&&!e.target.closest('a')){sel=+it.dataset.n;side(order[sel]);$$('.fitem',host).forEach(x=>x.classList.toggle('sel',x===it))}
+  };
+  if(st.page==='applied'&&host.dataset.feed==='picks'){state[0]='apply';sel=1}
+  render(); side(order[sel]);
 }
 
 /* ---------- console data ---------- */
