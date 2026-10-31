@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { applyHostAllowed, DEFAULT_ALLOWED_HOSTS } from './allowlist';
 import { runSubmit } from './execute';
 import { createFixtureTransport, defaultTransport, guardTransport, isFixtureUrl } from './transport';
 import type { AnswerPort, GatePort, HttpRequest, HttpResponse, Platform, QuestionAsked, ResolvedAnswer, ResumeFile, SubmitJob, SubmitPorts, Transport } from './types';
@@ -262,7 +263,8 @@ describe('the default transport refuses everything that is not a fixture host', 
   });
   it('a live-looking apply URL ends as "finish on their site" with no request made, and fetch is never called', async () => {
     const spy = vi.spyOn(globalThis, 'fetch');
-    const out = await runSubmit({ applicationId: '33333333-3333-4333-8333-333333333333', platform: 'greenhouse', applyUrl: 'https://boards.example.com/acme/jobs/1' }, ports({ transport: defaultTransport() }));
+    // The host is put on the allowlist here on purpose, so this test still proves the SECOND door (the transport guard) holds.
+    const out = await runSubmit({ applicationId: '33333333-3333-4333-8333-333333333333', platform: 'greenhouse', applyUrl: 'https://boards.example.com/acme/jobs/1' }, ports({ transport: defaultTransport() }), { allowedHosts: ['boards.example.com'] });
     expect(out).toMatchObject({ state: 'blocked_fallback', code: 'live_disabled', message: 'finish on their site', receipt: { sent: false } });
     expect(spy).not.toHaveBeenCalled();
   });
@@ -280,7 +282,7 @@ describe('the default transport refuses everything that is not a fixture host', 
 });
 
 describe('the module has no network of its own and no dependency on anything that could add one', () => {
-  const files = ['execute.ts', 'challenge.ts', 'transport.ts', 'payload.ts', 'types.ts', 'html.ts', 'forms/common.ts', 'forms/lever.ts', 'forms/ashby.ts', 'forms/greenhouse.ts', 'forms/index.ts', 'index.ts'];
+  const files = ['execute.ts', 'challenge.ts', 'transport.ts', 'payload.ts', 'types.ts', 'html.ts', 'forms/common.ts', 'forms/lever.ts', 'forms/ashby.ts', 'forms/greenhouse.ts', 'forms/index.ts', 'index.ts', 'allowlist.ts'];
   const src = files.map((n) => readFileSync(join(import.meta.dirname, n), 'utf8')).join('\n');
   const imports = [...src.matchAll(/from '([^']+)'/g)].map((m) => m[1]!);
   it('imports only its own files and three node builtins (crypto, fs, path)', () => {
@@ -291,5 +293,109 @@ describe('the module has no network of its own and no dependency on anything tha
   });
   it('has no hook for an LLM, a browser or a solver service', () => {
     expect(src).not.toMatch(/@anthropic-ai|openai|puppeteer|playwright|2captcha|anticaptcha|capsolver|setTimeout|setInterval/i);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------
+// Pilot blocker 1 (docs/apply.md "Open before pilot" item 1): prose the engine composed is NEVER sent unseen.
+// ---------------------------------------------------------------------------------------------------------------------------
+describe('composed free text is never auto-submitted; it comes back as a draft the student must confirm', () => {
+  const DRAFT = 'I am applying for the Engineer role at Acme. It fits my Intern experience at Beta, and I want to build on it.';
+  /** The lever fixture asks "Additional information". `evidence` decides whether the engine wrote it or the student did. */
+  const prose = (key: string, evidence: { source: string; field: string }[]): AnswerPort => ({
+    resolve(q) {
+      if (q.label.toLowerCase().includes('additional information')) return { key, status: 'filled', value: DRAFT, evidence };
+      return answers().resolve(q);
+    },
+  });
+  const TEMPLATE_EVIDENCE = [{ source: 'company', field: 'name' }, { source: 'resume', field: 'experience' }];
+
+  it.each(['why_role', 'about_yourself', 'why_company'])('%s from a template blocks as needs_you, keeps the draft as a suggestion, and sends nothing', async (key) => {
+    const t = new Recorder();
+    const out = await runSubmit(job('lever'), ports({ transport: t, answers: prose(key, TEMPLATE_EVIDENCE) }));
+    expect(out).toMatchObject({ state: 'blocked_fallback', code: 'needs_you', message: 'finish on their site', receipt: { sent: false } });
+    expect(t.sent.map((r) => r.method)).toEqual(['GET']);
+    expect(out.steps).not.toContain('submit');
+    const a = out.answers.find((x) => x.key === key)!;
+    expect(a).toMatchObject({ needsYou: true, reason: 'confirm_draft', value: null, suggestion: DRAFT });
+    // the draft is not in the receipt hash input: nothing was composed into the submission
+    expect(out.receipt.answersHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('a template answer blocks the submission as a whole', async () => {
+    const out = await runSubmit(job('lever'), ports({ answers: prose('why_role', TEMPLATE_EVIDENCE) }));
+    expect(out.state).toBe('blocked_fallback');
+  });
+
+  it('prose the engine composed under any key is held when its evidence is the company line', async () => {
+    const out = await runSubmit(job('lever'), ports({ answers: prose('unknown', [{ source: 'company', field: 'about' }]) }));
+    expect(out.answers.find((a) => a.suggestion === DRAFT)).toMatchObject({ needsYou: true, reason: 'confirm_draft' });
+    expect(out.state).toBe('blocked_fallback');
+  });
+
+  it('the student\'s own saved answer for the same key IS sent', async () => {
+    const t = new Recorder();
+    const out = await runSubmit(job('lever'), ports({ transport: t, answers: prose('why_role', [{ source: 'answer_bank', field: 'why_role' }]) }));
+    expect(out.state).toBe('submitted');
+    expect(Buffer.from(t.sent[1]!.body as Uint8Array).toString('utf8')).toContain(DRAFT);
+  });
+
+  it('structured facts still auto-fill (name, email, notice period, graduation year)', async () => {
+    const out = await runSubmit(job('greenhouse'), ports());
+    expect(out.state).toBe('submitted');
+    expect(out.answers.every((a) => !a.needsYou && a.suggestion == null)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------
+// Pilot blocker 2: the apply-host allowlist, checked by the executor before any transport call.
+// ---------------------------------------------------------------------------------------------------------------------------
+describe('apply-host allowlist', () => {
+  it('the default list is the fixture suffix only', () => {
+    expect(DEFAULT_ALLOWED_HOSTS).toEqual(['*.fixture.invalid']);
+  });
+  it.each([
+    ['https://greenhouse.fixture.invalid/ok/1', true],
+    ['https://LEVER.Fixture.Invalid/ok/1', true],
+    ['https://boards.example.com/acme/1', false],
+    ['http://greenhouse.fixture.invalid/ok/1', false],
+    ['https://user:pw@a.fixture.invalid/', false],
+    ['https://fixture.invalid/', false],
+    ['https://a.fixture.invalid.evil.com/', false],
+    ['https://evil.com/a.fixture.invalid', false],
+    ['https://127.0.0.1/', false],
+    ['not a url', false],
+    ['', false],
+  ])('%s -> %s', (u, ok) => {
+    expect(applyHostAllowed(u)).toBe(ok);
+  });
+  it('exact hosts and wildcard suffixes both work; a wildcard never matches the bare domain', () => {
+    expect(applyHostAllowed('https://boards.example.com/x', ['boards.example.com'])).toBe(true);
+    expect(applyHostAllowed('https://api.boards.example.com/x', ['boards.example.com'])).toBe(false);
+    expect(applyHostAllowed('https://a.example.com/x', ['*.example.com'])).toBe(true);
+    expect(applyHostAllowed('https://example.com/x', ['*.example.com'])).toBe(false);
+    expect(applyHostAllowed('https://a.example.com/x', [])).toBe(false);
+  });
+  it('a host off the list ends as "finish on their site" and the transport is never called', async () => {
+    const t = new Recorder();
+    const out = await runSubmit({ applicationId: '33333333-3333-4333-8333-333333333333', platform: 'greenhouse', applyUrl: 'https://boards.example.com/acme/jobs/1' }, ports({ transport: t }));
+    expect(out).toMatchObject({ state: 'blocked_fallback', code: 'host_not_allowed', message: 'finish on their site', receipt: { sent: false } });
+    expect(t.sent).toEqual([]);
+  });
+  it('a malformed apply URL is blocked the same way', async () => {
+    const t = new Recorder();
+    const out = await runSubmit({ applicationId: '33333333-3333-4333-8333-333333333333', platform: 'lever', applyUrl: 'javascript:alert(1)' }, ports({ transport: t }));
+    expect(out).toMatchObject({ state: 'blocked_fallback', code: 'host_not_allowed' });
+    expect(t.sent).toEqual([]);
+  });
+  it('consent and the cap are still checked first (the allowlist adds a door, it does not move the others)', async () => {
+    const out = await runSubmit({ applicationId: '33333333-3333-4333-8333-333333333333', platform: 'lever', applyUrl: 'https://x.example.com/' }, ports({ gate: openGate({ hasConsent: async () => false }) }));
+    expect(out.code).toBe('no_consent');
+  });
+  it('a custom allowlist lets only its hosts through to the transport', async () => {
+    const t = new Recorder({ send: async () => ({ status: 404, headers: {}, body: 'nope' }) });
+    const out = await runSubmit({ applicationId: '33333333-3333-4333-8333-333333333333', platform: 'greenhouse', applyUrl: 'https://boards.example.com/acme/jobs/1' }, ports({ transport: t }), { allowedHosts: ['boards.example.com'] });
+    expect(out.code).toBe('form_not_found');
+    expect(t.sent).toHaveLength(1);
   });
 });

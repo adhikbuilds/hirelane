@@ -97,6 +97,7 @@ export function toFinish(o: SubmitOutcome): FinishWrite {
     reason: a.reason,
     answer: a.value,
     evidence: a.evidence,
+    suggestion: a.suggestion ?? null,
   }));
   return {
     state: o.state,

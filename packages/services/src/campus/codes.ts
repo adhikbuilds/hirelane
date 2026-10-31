@@ -34,10 +34,18 @@ export const campusCodeHmac = (keys: KeyProvider, code: string): Promise<string>
 
 const emailSchema = z.string().trim().toLowerCase().max(254).pipe(z.email());
 
-/** Trimmed, lower-cased address, or null. The same normalisation is used for the OTP, the account match and the roster. */
+/**
+ * Trimmed, lower-cased address with any +suffix removed, or null. The same normalisation is used for the OTP, the account
+ * match and the roster, so one student cannot mint many verified seats (a+1@, a+2@ ...) to inflate a k-anonymity cell.
+ */
 export function normalizeMailbox(raw: unknown): string | null {
   const r = emailSchema.safeParse(raw);
-  return r.success ? r.data : null;
+  if (!r.success) return null;
+  const at = r.data.lastIndexOf('@');
+  const local = r.data.slice(0, at);
+  const plus = local.indexOf('+');
+  const base = plus === -1 ? local : local.slice(0, plus);
+  return base === '' ? null : `${base}${r.data.slice(at)}`;
 }
 export const mailboxHmac = (keys: KeyProvider, normalized: string): Promise<string> => hmac(keys, MAILBOX_HMAC_PURPOSE, normalized);
 export const domainOf = (normalizedEmail: string): string => normalizedEmail.slice(normalizedEmail.lastIndexOf('@') + 1);

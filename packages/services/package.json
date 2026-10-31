@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "picks:eval": "vite-node src/picks/eval-cli.ts"
   },
   "dependencies": {
     "@hirelane/db": "workspace:^",

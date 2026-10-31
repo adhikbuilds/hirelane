@@ -2,7 +2,7 @@ import type { ServiceCtx } from '../ctx';
 import { ServiceError } from '../errors';
 import { parseInput } from '../schema';
 import { domainOf, mailboxHmac, normalizeMailbox } from './codes';
-import { CsvError, parseCsv } from './csv';
+import { CsvError, parseCsv, type ParsedCsv } from './csv';
 import { RosterImportInput } from './inputs';
 import { callIn } from './rpc';
 import { orNotFound, staffTx } from './tpo';
@@ -13,6 +13,34 @@ export const MAX_ROSTER_ROWS = 20_000;
 const EMAIL_HEADER = /^(e-?mail(?:[ _-]?(?:id|address))?|mail(?:[ _-]?id)?)$/i;
 const PLACED_HEADER = /^(placed|is[ _-]?placed|placement|placement[ _-]?status|status)$/i;
 const PLACED_VALUE = /^(1|y|yes|t|true|placed)$/i;
+
+/** Header names picked on the screen. `placed: null` means "this file has no placed column" even if a header looks like one. */
+export interface RosterColumns {
+  email?: string;
+  placed?: string | null;
+}
+
+/** Reads the file the same way for the preview and the import: size and row caps, the email column, the optional placed column. */
+export function readRosterCsv(bytes: Buffer, columns: RosterColumns = {}): { parsed: ParsedCsv; emailAt: number; placedAt: number } {
+  if (bytes.length === 0) throw new ServiceError('empty_file', 400);
+  if (bytes.length > MAX_ROSTER_BYTES) throw new ServiceError('file_too_large', 413);
+  let parsed: ParsedCsv;
+  try {
+    parsed = parseCsv(bytes.toString('utf8'), { maxRows: MAX_ROSTER_ROWS });
+  } catch (e) {
+    if (e instanceof CsvError) throw new ServiceError(e.code === 'too_many_rows' ? 'too_many_rows' : 'bad_csv', e.code === 'too_many_rows' ? 413 : 400);
+    throw e;
+  }
+  // A column the person chose on the screen wins; otherwise the usual header names are recognised.
+  const named = (want: string | null | undefined): number => (want ? parsed.header.findIndex((h) => h.trim().toLowerCase() === want.trim().toLowerCase()) : -1);
+  const emailAt = columns.email ? named(columns.email) : parsed.header.findIndex((h) => EMAIL_HEADER.test(h));
+  if (emailAt < 0) throw new ServiceError('missing_email_column', 400);
+  const placedAt = columns.placed === null ? -1 : columns.placed ? named(columns.placed) : parsed.header.findIndex((h) => PLACED_HEADER.test(h));
+  if (columns.placed && placedAt < 0) throw new ServiceError('missing_placed_column', 400);
+  return { parsed, emailAt, placedAt };
+}
+
+export const isPlacedValue = (v: string | undefined): boolean => PLACED_VALUE.test((v ?? '').trim());
 
 export interface RosterResult {
   rowsTotal: number;
@@ -33,19 +61,8 @@ export const MIN_ROSTER_ROWS = 10;
  * Parsed inline with byte and row caps (the HLD sketches a worker; a 1 MB cap makes that unnecessary for now).
  */
 export async function importRoster(ctx: ServiceCtx, input: unknown, bytes: Buffer): Promise<RosterResult> {
-  const { cohortId } = parseInput(RosterImportInput, input);
-  if (bytes.length === 0) throw new ServiceError('empty_file', 400);
-  if (bytes.length > MAX_ROSTER_BYTES) throw new ServiceError('file_too_large', 413);
-  let parsed;
-  try {
-    parsed = parseCsv(bytes.toString('utf8'), { maxRows: MAX_ROSTER_ROWS });
-  } catch (e) {
-    if (e instanceof CsvError) throw new ServiceError(e.code === 'too_many_rows' ? 'too_many_rows' : 'bad_csv', e.code === 'too_many_rows' ? 413 : 400);
-    throw e;
-  }
-  const emailAt = parsed.header.findIndex((h) => EMAIL_HEADER.test(h));
-  if (emailAt < 0) throw new ServiceError('missing_email_column', 400);
-  const placedAt = parsed.header.findIndex((h) => PLACED_HEADER.test(h));
+  const { cohortId, emailColumn, placedColumn } = parseInput(RosterImportInput, input);
+  const { parsed, emailAt, placedAt } = readRosterCsv(bytes, { ...(emailColumn ? { email: emailColumn } : {}), ...(placedColumn !== undefined ? { placed: placedColumn } : {}) });
 
   const byMailbox = new Map<string, { placed: boolean; d: string }>();
   let rejected = 0;
@@ -55,7 +72,7 @@ export async function importRoster(ctx: ServiceCtx, input: unknown, bytes: Buffe
       rejected++;
       continue;
     }
-    byMailbox.set(await mailboxHmac(ctx.keys, mail), { placed: placedAt >= 0 ? PLACED_VALUE.test((row[placedAt] ?? '').trim()) : false, d: domainOf(mail) });
+    byMailbox.set(await mailboxHmac(ctx.keys, mail), { placed: placedAt >= 0 ? isPlacedValue(row[placedAt]) : false, d: domainOf(mail) });
   }
   if (byMailbox.size === 0) throw new ServiceError('no_valid_rows', 400);
   // The domain travels with the hash so the database can keep only rows on the campus's registered domains (the hash alone

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createFileOutbox } from '../src/mail/file-outbox.js';
+import { createMailer } from '../src/mail/factory.js';
 import { renderCodeEmail } from '../src/mail/templates/code.js';
 
 const dirs: string[] = [];
@@ -101,5 +102,23 @@ describe('file outbox mailer', () => {
     }
     expect(seen.join('\n')).not.toContain('quiet@example.test');
     expect(seen.join('\n')).not.toContain('424242');
+  });
+});
+
+describe('createMailer', () => {
+  it('builds the file outbox outside production', async () => {
+    const d = await tmp();
+    const m = createMailer({ env: { NODE_ENV: 'development' }, dir: d });
+    await m.send({ to: 'a@example.test', subject: 'hi', text: 'x' });
+    expect((await readdir(d)).length).toBe(1);
+  });
+  it('refuses to construct the file outbox in production, so a missing transport is caught before the first send', () => {
+    expect(() => createMailer({ env: { NODE_ENV: 'production' } })).toThrow(/transport/);
+  });
+  it('in production uses an injected real transport', async () => {
+    const sent: string[] = [];
+    const m = createMailer({ env: { NODE_ENV: 'production' }, transport: { send: async (x) => (sent.push(x.to), { id: '1' }) } });
+    await m.send({ to: 'a@example.test', subject: 's', text: 't' });
+    expect(sent).toEqual(['a@example.test']);
   });
 });

@@ -297,6 +297,11 @@ export const RLS_TABLES: RlsTableSpec[] = [
   applySpec('application_answers', 'ten', 'user_id', { tenant: applyTenant }),
   applySpec('receipts', 'ten', 'user_id', { tenant: applyTenant }),
   applySpec('inbound_messages', 'ten', 'user_id', { tenant: applyTenant }),
+  // 0015 notifications. Preferences are the student's own; the unsubscribe-token hashes are written by the mail sweep only.
+  authSpec('notification_prefs', 'own', 'user_id', "INSERT INTO notification_prefs (user_id, kind, email) VALUES ($1, 'drive_published', true)", {
+    insertSql: "INSERT INTO notification_prefs (user_id, kind, email) VALUES ($1, 'drive_closing', false)",
+  }),
+  authSpec('notification_unsub', 'rev', 'user_id', "INSERT INTO notification_unsub (user_id, token_hash) VALUES ($1::uuid, md5($1::uuid::text) || md5($1::uuid::text || 'x'))"),
 ];
 
 /**
@@ -328,9 +333,19 @@ export const DEFINER_REGISTRY: Record<string, { appCallable: boolean }> = {
   // 0013: owner-only staff lifecycle (app-callable), and the roster applier run by the nightly snapshot job (owner only).
   tpo_remove_staff: { appCallable: true },
   tpo_transfer_ownership: { appCallable: true },
+  // 0014: reads that do not write (the GET views), and the pending-invite check that replaces claiming on every GET.
+  tpo_peek_outcomes: { appCallable: true },
+  tpo_naac_count: { appCallable: true },
+  tpo_has_pending_invite: { appCallable: true },
   campus_apply_roster: { appCallable: false },
   tpo_role: { appCallable: false },
+  erase_waitlist: { appCallable: false },
   tpo_campus_of_cohort: { appCallable: false },
+  // 0015: drive drafts and lifecycle for staff, and the token-proved unsubscribe (no session; the token hash is the proof).
+  tpo_create_drive: { appCallable: true },
+  tpo_announce_drive: { appCallable: true },
+  tpo_close_drive: { appCallable: true },
+  notify_unsubscribe: { appCallable: true },
   // 0012: the insert trigger that snapshots the job. Fires as a trigger only; nobody calls it.
   applications_before_insert: { appCallable: false },
 };

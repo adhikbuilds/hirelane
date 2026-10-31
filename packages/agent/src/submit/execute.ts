@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { applyHostAllowed } from './allowlist';
 import { detectBlock } from './challenge';
 import { readFormSpec } from './forms';
 import { buildMultipart } from './payload';
@@ -31,7 +32,18 @@ interface Built {
   resume: ResumeFile | null;
 }
 
-const needs = (f: FormField, reason: string, key = 'unknown'): BuiltAnswer => ({ fieldId: f.id, label: f.label, required: f.required, key, needsYou: true, reason, value: null, evidence: [] });
+const needs = (f: FormField, reason: string, key = 'unknown', suggestion: string | null = null): BuiltAnswer => ({ fieldId: f.id, label: f.label, required: f.required, key, needsYou: true, reason, value: null, evidence: [], suggestion });
+
+/** Free-text keys the engine can write from a template. */
+const PROSE_KEYS: ReadonlySet<string> = new Set(['why_company', 'why_role', 'about_yourself']);
+
+/**
+ * Owner decision (docs/apply.md, "Open before pilot" 1): prose the engine composed is never sent unseen. It is composed when the key is a
+ * free-text key, or when the evidence is the company line, and the student did not write it (no answer_bank evidence).
+ * Structured facts (name, email, marks, notice period) are not prose and still fill automatically.
+ */
+const isComposedProse = (key: string, evidence: { source: string }[]): boolean =>
+  !evidence.some((e) => e.source === 'answer_bank') && (PROSE_KEYS.has(key) || evidence.some((e) => e.source === 'company'));
 
 /** The part of a full name a first-name or last-name box wants, or null for any other field. */
 function namePart(f: FormField): 'first' | 'last' | null {
@@ -81,6 +93,10 @@ async function buildAnswers(spec: FormSpec, ports: SubmitPorts): Promise<Built> 
     // Nothing invented: an answer needs a value AND evidence, or it is the student's to give.
     if (asked.status !== 'filled' || !raw || asked.evidence.length === 0) {
       answers.push(needs(f, asked.status === 'filled' ? 'no_evidence' : (asked.reason ?? 'needs_you'), asked.key));
+      continue;
+    }
+    if (isComposedProse(asked.key, asked.evidence)) {
+      answers.push(needs(f, 'confirm_draft', asked.key, raw));
       continue;
     }
     let values: string[] | null;
@@ -161,6 +177,8 @@ export async function runSubmit(job: SubmitJob, ports: SubmitPorts, opts: Submit
 
   // 2. the form
   steps.push('form');
+  // The allowlist is the first door: a host that is not on it never reaches the transport.
+  if (!applyHostAllowed(job.applyUrl, opts.allowedHosts)) return blocked('host_not_allowed');
   let res: HttpResponse;
   try {
     res = await ports.transport.send({ method: 'GET', url: job.applyUrl, headers: { accept: 'application/json, text/html' } });

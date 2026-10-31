@@ -14,8 +14,9 @@ import { mkJob } from '../../../packages/db/test/apply-helpers';
 import { mkUser } from '../../../packages/db/test/auth-helpers';
 import { TEST_URL } from '../../../packages/db/test/helpers';
 import { EnvKeyProvider, LocalBlobStore, generateMasterKey, MASTER_KEY_ENV } from '../../../packages/vault/src/index';
-import { applyAnswerAad, applyEvidenceAad, bankAad, bankKeyForLabel, createApplyRepo, inboundAad, parseApplyPayload, submitJobKey, type ApplyRepo } from '../src/tasks/apply-common';
-import { answerPortFor, createApplyTasks, defaultTransport, submitApplication, sweepApplications, type Helpers } from '../src/tasks/apply-submit';
+import { applyAnswerAad, applyEvidenceAad, applySuggestionAad, bankAad, bankKeyForLabel, createApplyRepo, inboundAad, parseApplyPayload, submitJobKey, type ApplyRepo } from '../src/tasks/apply-common';
+import { answerPortFor, createApplyTasks, defaultTransport, submitApplication, toFinish, sweepApplications, type Helpers } from '../src/tasks/apply-submit';
+import { addressOf as scanAddressOf } from '../src/tasks/inbound-scan';
 import { createResumeVault, fileAad, type ResumeVault, type Run } from '../src/tasks/resume-common';
 import { taskList } from '../src/tasks/index';
 import { readFileSync } from 'node:fs';
@@ -95,8 +96,9 @@ async function mkStudent(o: { consent?: boolean; bank?: Record<string, string>; 
 }
 /** The apply address of a student made by mkStudent. */
 const addressOf = async (s: Student): Promise<string> => {
-  const r = (await c.query('SELECT handle, domain FROM apply_addresses WHERE user_id = $1', [s.id])).rows[0];
-  return `${r.handle}@${r.domain}`;
+  // The address employers receive carries the reply tag: it is the envelope-To that inbound:scan accepts.
+  const r = (await c.query('SELECT handle, domain, reply_handle FROM apply_addresses WHERE user_id = $1', [s.id])).rows[0];
+  return `${r.handle}+${r.reply_handle}@${r.domain}`;
 };
 
 /** A ready application whose undo window has closed. `scenario` picks the fixture employer's behaviour. */
@@ -192,7 +194,10 @@ describe('a clean fixture submit', () => {
       expect(await submitApplication(id, deps({ transport: spy }), helpers)).toBe('submitted');
       const body = sent.at(-1)!;
       const address = await addressOf(s);
-      expect(body, ats).toMatch(new RegExp(`name="(email|_systemfield_email)"\\r\\n\\r\\n${address.replace(/\./g, '\\.')}\\r\\n`));
+      const esc = address.replace(/[.+]/g, '\\$&');
+      expect(body, ats).toMatch(new RegExp(`name="(email|_systemfield_email)"\\r\\n\\r\\n${esc}\\r\\n`));
+      const [seen] = scanAddressOf([address]);
+      expect(seen, ats).toMatchObject({ tag: (await c.query('SELECT reply_handle FROM apply_addresses WHERE user_id = $1', [s.id])).rows[0].reply_handle.toLowerCase() });
       expect(body, ats).not.toContain(s.email);
       const email = (await answersOf(id)).find((r) => /email/i.test(r.label))!;
       expect(await vault.openJson(email.answer_enc, applyAnswerAad(s.id, email.id))).toBe(address);
@@ -281,11 +286,45 @@ describe('every block is "finish on their site"', () => {
     expect(await submitApplication(await mkApp(other), deps(), helpers)).toBe('submitted');
   });
 
-  it('a blocked attempt does not use up the cap', async () => {
+  // Owner decision 2026-10-31 (docs/apply.md "Open before pilot" 2) replaces the earlier rule "a blocked attempt does not use up the cap".
+  // A CAPTCHA, a login wall or a Needs-you answer is still an attempt on the employer's site, so it counts.
+  it('a blocked attempt uses up the cap (decision 2026-10-31)', async () => {
     const s = await mkStudent({ cap: 1 });
     const blocked = await mkApp(s, { scenario: 'captcha' });
     expect(await submitApplication(blocked, deps(), helpers)).toBe('blocked_fallback');
-    expect(await submitApplication(await mkApp(s), deps(), helpers)).toBe('submitted');
+    jobs.length = 0;
+    const next = await mkApp(s);
+    expect(await submitApplication(next, deps(), helpers)).toBe('rescheduled');
+    expect(await app(next)).toMatchObject({ status: 'ready', claimed_at: null });
+    expect(await receiptOf(next)).toBeUndefined();
+  });
+
+  it.each([
+    ['a CAPTCHA on the form', { scenario: 'captcha' }],
+    ['a login wall', { ats: 'lever', scenario: 'login' }],
+    ['a CAPTCHA that only appears on submit', { scenario: 'captcha-submit' }],
+  ] as const)('%s counts toward the cap; so does a Needs-you block', async (_n, over) => {
+    const s = await mkStudent({ cap: 1 });
+    expect(await submitApplication(await mkApp(s, over), deps(), helpers)).toBe('blocked_fallback');
+    expect(await submitApplication(await mkApp(s), deps(), helpers)).toBe('rescheduled');
+  });
+
+  it('a Needs-you block counts toward the cap', async () => {
+    const s = await mkStudent({ cap: 1 });
+    await c.query("DELETE FROM answer_bank WHERE user_id = $1 AND question_key = 'notice_period'", [s.id]);
+    expect(await submitApplication(await mkApp(s), deps(), helpers)).toBe('blocked_fallback');
+    expect(await submitApplication(await mkApp(s), deps(), helpers)).toBe('rescheduled');
+  });
+
+  it('a re-armed application is counted when it is claimed again, not twice', async () => {
+    const s = await mkStudent({ cap: 2 });
+    await c.query("DELETE FROM answer_bank WHERE user_id = $1 AND question_key = 'notice_period'", [s.id]);
+    const first = await mkApp(s);
+    expect(await submitApplication(first, deps(), helpers)).toBe('blocked_fallback');
+    const counted = async () => (await c.query("SELECT count(*)::int AS n FROM applications WHERE user_id = $1 AND status IN ('submitting','submitted','failed','blocked_fallback') AND claimed_at IS NOT NULL", [s.id])).rows[0].n;
+    expect(await counted()).toBe(1);
+    await c.query("UPDATE applications SET status = 'ready' WHERE id = $1", [first]); // the student's re-arm
+    expect(await counted()).toBe(0);
   });
 
   it('a CAPTCHA on the form', async () => {
@@ -318,12 +357,14 @@ describe('every block is "finish on their site"', () => {
     expect((await receiptOf(id)).sent).toBe(false);
   });
 
-  it('a real employer URL: refused by the default transport, no request, "finish on their site"', async () => {
+  // Since 2026-10-31 the executor's apply-host allowlist is the first door, so a real host ends as host_not_allowed (it used to reach the
+  // transport guard and end as live_disabled; that second door is still tested in packages/agent execute.test.ts).
+  it('a real employer URL: refused by the apply-host allowlist before any transport, no request, "finish on their site"', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const s = await mkStudent();
     const id = await mkApp(s, { url: 'https://boards.greenhouse.example.com/acme/jobs/1' });
     expect(await submitApplication(id, deps(), helpers)).toBe('blocked_fallback');
-    await blockedWith(id, 'live_disabled');
+    await blockedWith(id, 'host_not_allowed');
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -368,6 +409,59 @@ describe('the receipt never denies a real send', () => {
     expect(await submitApplication(id, deps({ repo: failingOnce() }), helpers)).toBe('blocked_fallback');
     expect(await app(id)).toMatchObject({ status: 'blocked_fallback', blocked_reason: 'captcha' });
     expect(await receiptOf(id)).toMatchObject({ sent: true, http_status: 403, result_code: 'captcha' });
+  });
+
+  // Decision 2026-10-31 (docs/apply.md "Open before pilot" 1): composed prose is never auto-submitted.
+  it('a "Why this role?" box is NOT filled from the template and sent: needs_you, nothing is POSTed, the draft waits for the student', async () => {
+    const s = await mkStudent();
+    const id = await mkApp(s);
+    const form = JSON.stringify({
+      id: 1,
+      title: 'Graduate Engineer',
+      questions: [
+        { label: 'First Name', required: true, fields: [{ name: 'first_name', type: 'input_text', values: [] }] },
+        { label: 'Email', required: true, fields: [{ name: 'email', type: 'input_text', values: [] }] },
+        { label: 'Why do you want this role?', required: true, fields: [{ name: 'q_why', type: 'textarea', values: [] }] },
+      ],
+    });
+    const sent: string[] = [];
+    const transport = { send: async (r: { method: string }) => (sent.push(r.method), { status: 200, headers: { 'content-type': 'application/json' }, body: form }) };
+    expect(await submitApplication(id, deps({ transport }), helpers)).toBe('blocked_fallback');
+    expect(sent).toEqual(['GET']);
+    expect(await app(id)).toMatchObject({ status: 'blocked_fallback', blocked_reason: 'needs_you' });
+    expect(await receiptOf(id)).toMatchObject({ sent: false, result_code: 'needs_you' });
+    const why = (await answersOf(id)).find((a) => a.field_id === 'q_why')!;
+    expect(why).toMatchObject({ needs_you: true, reason: 'confirm_draft', question_key: 'why_role', answer_enc: null });
+    const draft = (await vault.openJson(why.suggestion_enc, applySuggestionAad(s.id, why.id))) as string;
+    expect(draft).toMatch(/Graduate Engineer/);
+    // structured facts still auto-filled
+    expect((await answersOf(id)).filter((a) => !a.needs_you).map((a) => a.field_id).sort()).toEqual(['email', 'first_name']);
+  });
+
+  // Decision 2026-10-31 (docs/apply.md "Open before pilot" 1): a template draft is stored sealed, on a needs_you row, for the student to confirm.
+  it('a composed free-text draft is stored sealed as a suggestion on a needs_you row, never as the answer', async () => {
+    const s = await mkStudent();
+    const id = await mkApp(s);
+    const claim = await repo.claim(id);
+    if (claim.kind !== 'claimed') throw new Error('not claimed');
+    const draft = 'I am applying for the Engineer role at Acme. It fits my Intern experience at Beta, and I want to build on it.';
+    const outcome = {
+      state: 'blocked_fallback' as const,
+      code: 'needs_you',
+      message: 'finish on their site' as const,
+      steps: [],
+      answers: [{ fieldId: 'why', label: 'Why this role?', required: true, key: 'why_role', needsYou: true, reason: 'confirm_draft', value: null, evidence: [], suggestion: draft }],
+      receipt: { answersHash: 'a'.repeat(64), resumeId: null, resumeVersion: null, platform: 'greenhouse' as const, resultCode: 'needs_you', sent: false, httpStatus: null, at: new Date() },
+    };
+    const write = toFinish(outcome);
+    expect(write.answers[0]).toMatchObject({ needsYou: true, answer: null, suggestion: draft });
+    await repo.finish(claim.app, write);
+    const row = (await answersOf(id))[0]!;
+    expect(row).toMatchObject({ needs_you: true, reason: 'confirm_draft', answer_enc: null, evidence_enc: null });
+    expect(row.suggestion_enc.includes(Buffer.from('Engineer role'))).toBe(false);
+    expect(await vault.openJson(row.suggestion_enc, applySuggestionAad(s.id, row.id))).toBe(draft);
+    await expect(vault.openJson(row.suggestion_enc, applySuggestionAad(randomUUID(), row.id))).rejects.toThrow();
+    expect(await app(id)).toMatchObject({ status: 'blocked_fallback', blocked_reason: 'needs_you' });
   });
 
   it('two answers with one field id (a form that repeats a field) do not break finish()', async () => {
@@ -453,6 +547,23 @@ describe('purpose limitation: sensitive documents and answers', () => {
     expect(await submitApplication(id, deps({ transport: { send: (r) => (sent.push(r.method), transport.send(r)) } }), helpers)).toBe('blocked_fallback');
     expect(await app(id)).toMatchObject({ status: 'blocked_fallback', blocked_reason: 'sensitive_resume', fallback_note: 'finish on their site' });
     expect(await receiptOf(id)).toMatchObject({ sent: false, result_code: 'sensitive_resume' });
+    expect(sent).toEqual([]);
+  });
+
+  it('a confirmed VERSION whose ROOT carries the extractor findings is still blocked (sensitive_kinds live on the root)', async () => {
+    const s = await mkStudent();
+    const root = (await c.query('SELECT id, blob_key FROM resumes WHERE user_id = $1', [s.id])).rows[0];
+    await c.query("UPDATE resumes SET sensitive_kinds = ARRAY['pan'], is_default = false WHERE id = $1", [root.id]);
+    await c.query(
+      `INSERT INTO resumes (id, user_id, parent_id, source, mime, size_bytes, file_hmac, blob_key, parse_status, confirmed_at, is_default, skills, parsed_version)
+       VALUES ($1, $2, $3, 'upload', 'application/pdf', 25, $4, $5, 'confirmed', now(), true, ARRAY['python'], 3)`,
+      [randomUUID(), s.id, root.id, `hmac-v-${root.id}`, root.blob_key],
+    );
+    const id = await mkApp(s);
+    const sent: string[] = [];
+    const transport = defaultTransport();
+    expect(await submitApplication(id, deps({ transport: { send: (r) => (sent.push(r.method), transport.send(r)) } }), helpers)).toBe('blocked_fallback');
+    expect(await app(id)).toMatchObject({ status: 'blocked_fallback', blocked_reason: 'sensitive_resume' });
     expect(sent).toEqual([]);
   });
 
@@ -602,6 +713,7 @@ describe('contracts', () => {
   it('the AAD strings equal the services side (packages/services/src/apply/aad.ts pins the same literals)', () => {
     expect(applyAnswerAad('U', 'R')).toBe('applyans:U:R');
     expect(applyEvidenceAad('U', 'R')).toBe('applyev:U:R');
+    expect(applySuggestionAad('U', 'R')).toBe('applysug:U:R');
     expect(inboundAad('U', 'R')).toBe('inbound:U:R');
     expect(bankAad('U', 'R')).toBe('answer:U:R');
   });

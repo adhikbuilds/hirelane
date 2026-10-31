@@ -4,7 +4,7 @@ import { mapPgError, notFound } from '../errors';
 import { openJson } from '../seal';
 import { parseInput } from '../schema';
 import { readAddressIn } from './address';
-import { applyAnswerAad, inboundAad } from './aad';
+import { applyAnswerAad, applySuggestionAad, inboundAad } from './aad';
 import { ApplicationIdInput, ListApplicationsInput } from './inputs';
 
 export const FALLBACK_MESSAGE = 'Finish on their site';
@@ -101,7 +101,7 @@ export async function getApplication(ctx: ServiceCtx, input: unknown) {
       const row = (await c.query(`${SUMMARY_SQL} WHERE a.id = $1 AND a.user_id = $2`, [id, ctx.userId])).rows[0];
       if (!row) throw notFound();
       const answers = [];
-      for (const a of (await c.query('SELECT id, field_id, question_key, label, required, needs_you, reason, answer_enc, evidence_sources FROM application_answers WHERE application_id = $1 AND user_id = $2 ORDER BY needs_you DESC, label, id', [id, ctx.userId])).rows) {
+      for (const a of (await c.query('SELECT id, field_id, question_key, label, required, needs_you, reason, answer_enc, suggestion_enc, evidence_sources FROM application_answers WHERE application_id = $1 AND user_id = $2 ORDER BY needs_you DESC, label, id', [id, ctx.userId])).rows) {
         answers.push({
           fieldId: a.field_id as string,
           questionKey: (a.question_key as string | null) ?? null,
@@ -110,6 +110,8 @@ export async function getApplication(ctx: ServiceCtx, input: unknown) {
           needsYou: a.needs_you === true,
           reason: (a.reason as string | null) ?? null,
           answer: a.answer_enc ? ((await openJson(ctx, applyAnswerAad(ctx.userId, a.id), a.answer_enc)) as string) : null,
+          // A draft the engine composed: never sent, shown so the student can confirm or edit it (docs/apply.md "Open before pilot" 1).
+          suggestion: a.suggestion_enc ? ((await openJson(ctx, applySuggestionAad(ctx.userId, a.id), a.suggestion_enc)) as string) : null,
           sources: a.evidence_sources as string[],
         });
       }

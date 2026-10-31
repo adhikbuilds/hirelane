@@ -52,3 +52,15 @@ describe('mailbox normalisation and hashing (shared by OTP, account match and ro
     expect(domainOf('a@b.example.edu')).toBe('b.example.edu');
   });
 });
+
+describe('mailbox canonicalisation (Sybil seats)', () => {
+  it('strips +suffix so a+1@ and a+2@ are the same proven mailbox', async () => {
+    expect(normalizeMailbox('Asha.K+1@College.edu')).toBe('asha.k@college.edu');
+    expect(normalizeMailbox('asha.k+anything+more@college.edu')).toBe('asha.k@college.edu');
+    const keys = new EnvKeyProvider({ HIRELANE_MASTER_KEY: generateMasterKey() });
+    expect(await mailboxHmac(keys, normalizeMailbox('a+1@c.edu')!)).toBe(await mailboxHmac(keys, normalizeMailbox('a+2@c.edu')!));
+  });
+  it('rejects a mailbox whose local part is only a suffix', () => {
+    expect(normalizeMailbox('+tag@college.edu')).toBeNull();
+  });
+});

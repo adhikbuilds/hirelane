@@ -37,6 +37,13 @@ describe('deleteAccount', () => {
     expect((await c.query('SELECT 1 FROM consents WHERE user_id = $1', [other.id])).rowCount).toBe(1);
   });
 
+  it('also erases the waitlist row for the same email (case-insensitive) and keeps others', async () => {
+    const u = await mkUser(c);
+    await c.query("INSERT INTO waitlist (email, consent_at) VALUES ($1, now()), ('someone-else@example.test', now())", [u.email.toUpperCase()]);
+    await deleteAccount(c, u.id);
+    expect((await c.query('SELECT 1 FROM waitlist WHERE lower(email) = lower($1)', [u.email])).rowCount).toBe(0);
+    expect((await c.query("SELECT 1 FROM waitlist WHERE email = 'someone-else@example.test'")).rowCount).toBe(1);
+  });
   it('reports false for an unknown user and does not throw', async () => {
     const r = await deleteAccount(c, '00000000-0000-4000-8000-000000000001', T0);
     expect(r.deleted).toBe(false);

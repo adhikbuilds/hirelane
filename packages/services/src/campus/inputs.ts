@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { idSchema } from '../schema';
+import { isRealDay } from './ist';
 
 export const SHARE_LEVELS = ['aggregate', 'outcomes', 'full'] as const;
 export type ShareLevel = (typeof SHARE_LEVELS)[number];
@@ -42,15 +43,24 @@ export const CohortCreateInput = z.strictObject({
 });
 export const CampusScopeInput = z.strictObject({ campusId });
 export const CohortStatsInput = z.strictObject({ cohortId: idSchema, metric: z.enum(CAMPUS_METRICS).optional() });
+const driveDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(isRealDay, 'not a calendar date');
+const driveNote = z.string().trim().max(2000);
 export const PublishDriveInput = z.strictObject({
   cohortId: idSchema,
   title: z.string().trim().min(1).max(200),
   noticeText: z.string().trim().min(1).max(20_000),
   link: z.string().trim().url().max(500).refine((u) => /^https?:\/\//i.test(u), 'http(s) only').nullable().optional(),
+  /** Closing date, YYYY-MM-DD in India. The console fills it from the notice and the TPO checks it. */
+  deadline: driveDay.nullable().optional(),
+  /** Free text: "Aptitude test, then two interviews". No scheduling. */
+  rounds: driveNote.nullable().optional(),
+  /** Free text: "Marksheets, resume, college ID". */
+  documents: driveNote.nullable().optional(),
 });
 export const OutcomesListInput = z.strictObject({ campusId, cohortId: idSchema.optional() });
 export const NaacExportInput = z.strictObject({ campusId, passoutYear: z.number().int().min(2000).max(2100).optional() });
-export const RosterImportInput = z.strictObject({ cohortId: idSchema });
+/** emailColumn / placedColumn are header names chosen on the import screen; placedColumn null means the file has none. */
+export const RosterImportInput = z.strictObject({ cohortId: idSchema, emailColumn: z.string().trim().min(1).max(100).optional(), placedColumn: z.string().trim().min(1).max(100).nullable().optional() });
 export const StaffMemberInput = z.strictObject({ campusId, memberId: idSchema });
 export const TransferOwnershipBody = z.strictObject({ campusId });
 export const InviteInput = z.strictObject({ campusId, email: z.string().min(3).max(254) });

@@ -23,6 +23,8 @@ export async function deleteAccount(q: Queryable, userId: string, now: Date = ne
     // Files go BEFORE the rows: once the users row cascades away, nothing can find the sealed originals again.
     // If this throws, the whole delete rolls back and the caller can retry the erasure.
     if (hooks.purgeBlobs) await hooks.purgeBlobs(userId);
+    // The waitlist keeps a plain email with no FK to users; erase it by lower(email) in the same transaction.
+    await q.query('SELECT erase_waitlist($1)', [userId]);
     const r = await q.query('DELETE FROM users WHERE id = $1', [userId]);
     await q.query('COMMIT');
     return { deleted: (r.rowCount ?? 0) > 0, sessionsRevoked };

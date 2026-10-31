@@ -14,7 +14,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import type { Task, TaskList } from 'graphile-worker';
-import { createFileOutbox } from '../../../../packages/agent/src/mail/file-outbox';
+import { createMailer } from '../../../../packages/agent/src/mail/factory';
 import type { Mailer } from '../../../../packages/agent/src/mail/mailer';
 import { authservIdFor } from '../../../../packages/agent/src/apply-mode';
 import { inboundAad } from './apply-common';
@@ -302,7 +302,7 @@ export function createInboundTasks(over: Partial<ScanDeps> = {}): TaskList {
     await scanInbox(
       {
         repo: over.repo ?? (repo ??= createInboundRepo()),
-        mailer: over.mailer ?? createFileOutbox(),
+        mailer: over.mailer ?? createMailer(),
         dir: over.dir ?? defaultInboxDir(),
         now: over.now ?? (() => new Date()),
       },

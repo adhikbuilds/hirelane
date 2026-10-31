@@ -10,6 +10,8 @@ import { createResumeStuckTasks } from './resume-stuck.js';
 import { createCampusStatsTasks } from './campus-stats.js';
 import { createApplyTasks } from './apply-submit.js';
 import { createInboundTasks } from './inbound-scan.js';
+import { createHousekeepingTasks } from './housekeeping.js';
+import { createNotifyTasks } from './notify-sweep.js';
 import { applyMode, assertApplyDomain } from '../../../../packages/agent/src/apply-mode';
 
 // Startup guard: with auto-apply on, a production worker without a real apply domain must not start (addresses are permanent).
@@ -27,4 +29,6 @@ export const taskList: TaskList = {
   ...createCampusStatsTasks(),
   ...createApplyTasks(),
   ...createInboundTasks(),
+  ...createHousekeepingTasks(),
+  ...createNotifyTasks(),
 };

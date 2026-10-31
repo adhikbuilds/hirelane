@@ -134,6 +134,8 @@ export interface SubmitOptions {
    * 'required': only an unanswered required question blocks; optional ones are left blank. Not used by the worker.
    */
   blockOn?: 'all' | 'required';
+  /** Hosts the executor may ask the transport for (see allowlist.ts). Default: the fixture suffix only. */
+  allowedHosts?: readonly string[];
 }
 
 export interface BuiltAnswer {
@@ -145,6 +147,11 @@ export interface BuiltAnswer {
   reason: string | null;
   value: string | null;
   evidence: EvidenceRef[];
+  /**
+   * A draft the engine composed (a template answer). It is NEVER sent: the answer is needs_you with reason 'confirm_draft', and the
+   * student confirms or edits the draft before it can go anywhere.
+   */
+  suggestion?: string | null;
 }
 
 export type OutcomeState = 'submitted' | 'blocked_fallback' | 'failed';

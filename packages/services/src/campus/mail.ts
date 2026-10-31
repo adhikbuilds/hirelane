@@ -1,4 +1,4 @@
-import { createFileOutbox, renderCodeEmail } from '@hirelane/agent';
+import { createMailer, renderCodeEmail } from '@hirelane/agent';
 import type { CampusMailDeps } from './membership';
 
 /**
@@ -7,7 +7,7 @@ import type { CampusMailDeps } from './membership';
  * address and the code are never logged.
  */
 export function fileOutboxCampusMail(): CampusMailDeps {
-  const mailer = createFileOutbox();
+  const mailer = createMailer();
   return {
     sendCode: async (to, code) => {
       const { subject, text } = renderCodeEmail({ code, purpose: 'campus_email', ttlMinutes: 10 });

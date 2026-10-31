@@ -1,5 +1,5 @@
 import { randomInt } from 'node:crypto';
-import { assertApplyDomain } from '@hirelane/agent';
+import { applyAddressOf, assertApplyDomain } from '@hirelane/agent';
 import type { UserClient } from '../db';
 
 /** Where employer replies arrive. The fixture default never resolves on the internet, so production must set HIRELANE_APPLY_DOMAIN (it throws otherwise). */
@@ -36,7 +36,7 @@ export interface ApplyAddress {
   dailyCap: number;
 }
 const shape = (r: { handle: string; domain: string; reply_handle: string; daily_cap: number }): ApplyAddress => ({
-  address: `${r.handle}@${r.domain}`,
+  address: applyAddressOf({ handle: r.handle, replyHandle: r.reply_handle, domain: r.domain }),
   handle: r.handle,
   domain: r.domain,
   replyHandle: r.reply_handle,

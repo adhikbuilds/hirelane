@@ -6,7 +6,7 @@ import { parseInput } from '../schema';
 import { CampusIdInput, OutcomeInput } from './inputs';
 import { membershipIn } from './membership';
 import { callIn } from './rpc';
-import { orNotFound, resolveCampus, staffTx } from './tpo';
+import { orNotFound, resolveCampus, staffReadTx, staffTx } from './tpo';
 import { OutcomesListInput } from './inputs';
 
 export const MAX_LETTER_BYTES = 2 * 1024 * 1024;
@@ -81,8 +81,24 @@ export async function attachLetter(ctx: ServiceCtx, input: unknown, bytes: Buffe
   return { id, hasLetter: true };
 }
 
-/** TPO: the outcomes of students at share level outcomes or full. Each student returned is logged, and the log is visible to them. */
+/**
+ * TPO, GET view: the outcomes of students at share level outcomes or full, with the student's name and email withheld. Writes
+ * nothing (READ ONLY transaction), and because no student is identified here, no access-log row is owed. The identified list
+ * is `revealOutcomes`, an explicit action that logs.
+ */
 export async function listOutcomes(ctx: ServiceCtx, input: unknown = {}) {
+  const i = parseInput(OutcomesListInput, input);
+  return staffReadTx(ctx, async (c) => {
+    const campus = await resolveCampus(c, i.campusId);
+    return { outcomes: orNotFound(await callIn<unknown[] | null>(c, 'tpo_peek_outcomes', [campus, i.cohortId ?? null])) };
+  });
+}
+
+/**
+ * TPO, explicit action (POST): the same list WITH names (and emails at share level full). Each student returned is logged in
+ * the same transaction (`outcomes_list`), and the log is visible to that student. This is the only way a student is named.
+ */
+export async function revealOutcomes(ctx: ServiceCtx, input: unknown = {}) {
   const i = parseInput(OutcomesListInput, input);
   return staffTx(ctx, async (c) => {
     const campus = await resolveCampus(c, i.campusId);

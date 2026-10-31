@@ -69,8 +69,17 @@ describe('LocalBlobStore', () => {
       await rm(outside, { recursive: true, force: true });
     }
   });
-  it('reads its root from HIRELANE_STORAGE_DIR, defaulting to ./storage', () => {
+  it('reads its root from HIRELANE_STORAGE_DIR', () => {
     expect(localBlobStoreFromEnv({ HIRELANE_STORAGE_DIR: root }).root).toBe(resolve(root));
-    expect(localBlobStoreFromEnv({}).root).toBe(resolve('./storage'));
+  });
+  it('outside production the default is <workspace root>/storage from any cwd, so web and runner share one folder', () => {
+    const repo = resolve(import.meta.dirname, '../../..');
+    expect(localBlobStoreFromEnv({}, resolve(repo, 'apps/web')).root).toBe(resolve(repo, 'storage'));
+    expect(localBlobStoreFromEnv({}, resolve(repo, 'workers/runner')).root).toBe(resolve(repo, 'storage'));
+  });
+  it('in production an unset or relative HIRELANE_STORAGE_DIR fails closed', () => {
+    expect(() => localBlobStoreFromEnv({ NODE_ENV: 'production' })).toThrow(VaultError);
+    expect(() => localBlobStoreFromEnv({ NODE_ENV: 'production', HIRELANE_STORAGE_DIR: './storage' })).toThrow(VaultError);
+    expect(localBlobStoreFromEnv({ NODE_ENV: 'production', HIRELANE_STORAGE_DIR: root }).root).toBe(resolve(root));
   });
 });

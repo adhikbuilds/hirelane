@@ -3,10 +3,11 @@ import type { ServiceCtx } from '../ctx';
 import { withUserTx } from '../db';
 import { mapPgError } from '../errors';
 import { parseInput } from '../schema';
+import { istDay } from './ist';
 import { PublishDriveInput } from './inputs';
 import { membershipIn } from './membership';
 import { callIn } from './rpc';
-import { orNotFound, resolveCampus, staffTx } from './tpo';
+import { orNotFound, resolveCampus, staffReadTx, staffTx } from './tpo';
 
 const num = (v: unknown): number | undefined => (v === null || v === undefined ? undefined : Number(v));
 
@@ -34,11 +35,16 @@ export interface StudentDrive {
   title: string;
   link: string | null;
   noticeText: string;
-  scamRisk: 'none' | 'low' | 'medium' | 'high';
-  scamFlags: unknown[];
+  /** Closing date (YYYY-MM-DD, India) the TPO set, or null when the notice named none. */
+  deadline: string | null;
+  /** Free text from the TPO: the rounds, and the documents to bring. */
+  rounds: string | null;
+  documents: string | null;
   publishedAt: string;
   verdict: 'eligible' | 'unknown';
   reasons: string[];
+  /** Always set by listMyDrives; optional so older callers and fixtures still type-check. */
+  rules?: { text: string; status: 'pass' | 'unknown' }[];
 }
 
 /**
@@ -52,7 +58,14 @@ export async function listMyDrives(ctx: ServiceCtx): Promise<{ placed: boolean; 
       const m = await membershipIn(c, ctx.userId);
       if (!m) return { placed: false, drives: [] };
       if (m.placed) return { placed: true, drives: [] };
-      const rows = (await c.query('SELECT id, title, link, notice_text, criteria, scam_flags, scam_risk, published_at FROM drives ORDER BY published_at DESC, id LIMIT 100')).rows;
+      // Scam flags are for staff: the columns are not granted to a student session, and are not selected here.
+      const rows = (
+        await c.query(
+          `SELECT id, title, link, notice_text, criteria, published_at, deadline::text AS deadline, rounds, documents FROM drives
+            WHERE deadline IS NULL OR deadline >= $1::date ORDER BY published_at DESC, id LIMIT 100`,
+          [istDay(ctx.now())],
+        )
+      ).rows;
       const profile = profileFromRow((await c.query('SELECT * FROM eligibility_profiles WHERE user_id = $1', [ctx.userId])).rows[0]);
       const cgpaRule = asCgpaRule(m.campus.cgpaRule);
       const drives: StudentDrive[] = [];
@@ -65,11 +78,13 @@ export async function listMyDrives(ctx: ServiceCtx): Promise<{ placed: boolean; 
           title: r.title,
           link: r.link ?? null,
           noticeText: r.notice_text,
-          scamRisk: r.scam_risk,
-          scamFlags: r.scam_flags,
+          deadline: r.deadline ?? null,
+          rounds: r.rounds ?? null,
+          documents: r.documents ?? null,
           publishedAt: (r.published_at as Date).toISOString(),
           verdict: res.overall === 'pass' ? 'eligible' : 'unknown',
           reasons: res.verdicts.map((v) => v.reason),
+          rules: res.verdicts.map((v) => ({ text: v.reason, status: v.status === 'pass' ? ('pass' as const) : ('unknown' as const) })),
         });
       }
       return { placed: false, drives };
@@ -90,14 +105,28 @@ export async function publishDrive(ctx: ServiceCtx, input: unknown) {
   const scam = detectScamSignals(i.noticeText, { url: i.link ?? null });
   const flags = scam.signals.map((s) => ({ id: s.id, severity: s.severity, quote: s.quote.slice(0, 200), source: s.source }));
   const id = await staffTx(ctx, async (c) =>
-    orNotFound(await callIn<string | null>(c, 'tpo_publish_drive', [i.cohortId, i.title, i.link ?? null, i.noticeText, JSON.stringify(criteria), JSON.stringify(flags), scam.risk])),
+    orNotFound(
+      await callIn<string | null>(c, 'tpo_create_drive', [
+        i.cohortId,
+        i.title,
+        i.link ?? null,
+        i.noticeText,
+        JSON.stringify(criteria),
+        JSON.stringify(flags),
+        scam.risk,
+        i.deadline ?? null,
+        i.rounds || null,
+        i.documents || null,
+        true,
+      ]),
+    ),
   );
   return { id, criteria, scamRisk: scam.risk, scamFlags: flags };
 }
 
 export async function listDrives(ctx: ServiceCtx, input: unknown = {}) {
   const campusId = (input as { campusId?: string } | null)?.campusId;
-  return staffTx(ctx, async (c) => {
+  return staffReadTx(ctx, async (c) => {
     const id = await resolveCampus(c, campusId);
     return { drives: orNotFound(await callIn<unknown[] | null>(c, 'tpo_list_drives', [id])) };
   });
@@ -106,6 +135,6 @@ export async function listDrives(ctx: ServiceCtx, input: unknown = {}) {
 /** Eligible / unknown / ineligible counts for a drive from the nightly snapshot, with the same suppression as cohort stats. */
 export async function driveCounts(ctx: ServiceCtx, input: unknown) {
   const { id } = parseInput(IdOnly, input);
-  return staffTx(ctx, async (c) => orNotFound(await callIn<{ day: string | null; metrics: { metric: string; value: number | null; suppressed: boolean }[] } | null>(c, 'tpo_drive_counts', [id])));
+  return staffReadTx(ctx, async (c) => orNotFound(await callIn<{ day: string | null; metrics: { metric: string; value: number | null; suppressed: boolean }[] } | null>(c, 'tpo_drive_counts', [id])));
 }
 import { CampusIdInput as IdOnly } from './inputs';

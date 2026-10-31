@@ -7,29 +7,55 @@ import { CampusScopeInput, CohortCreateInput, CohortStatsInput, InviteInput, Sta
 import { callIn } from './rpc';
 
 /**
- * The TPO side. A staff session needs a tpo_members row: every function here runs in one transaction that first claims
- * any pending invite addressed to the caller's verified mailbox, then calls a SECURITY DEFINER function. Those answer NULL
- * for anyone who is not staff of the campus, and NULL is a 404, so a student, a stranger and a staff member of another
- * campus all see the same thing. No function here reads a table directly.
+ * The TPO side. A staff session needs a tpo_members row. Every function here runs in one transaction and calls a SECURITY
+ * DEFINER function. Those answer NULL for anyone who is not staff of the campus, and NULL is a 404, so a student, a stranger
+ * and a staff member of another campus all see the same thing. No function here reads a table directly.
+ *
+ * Decision 2026-10-31 (docs/apply.md "Open before pilot" 8): reads are side-effect free. A read runs in a READ ONLY
+ * transaction (`staffReadTx`), so it cannot write a row even by mistake. Claiming an invite is its own explicit action
+ * (`claimStaffInvites`, POST /api/v1/tpo/claim), and `tpoMe` only reports that an invite is waiting.
  */
 export type StaffClient = UserClient;
 
-async function claimIn(ctx: ServiceCtx, c: UserClient): Promise<void> {
+/** The caller's verified mailbox hash, or null when the account has no verified address. */
+async function verifiedMailboxIn(ctx: ServiceCtx, c: UserClient): Promise<string | null> {
   const u = (await c.query('SELECT email, email_verified_at FROM users WHERE id = $1', [ctx.userId])).rows[0];
-  if (!u || u.email_verified_at == null) return;
+  if (!u || u.email_verified_at == null) return null;
   const mail = normalizeMailbox(String(u.email));
-  if (mail) await callIn<number>(c, 'tpo_claim_invites', [await mailboxHmac(ctx.keys, mail)]);
+  return mail ? mailboxHmac(ctx.keys, mail) : null;
 }
 
+const isWriteRoleRefusal = (e: unknown): boolean =>
+  typeof e === 'object' && e !== null && (e as { code?: unknown }).code === '42501' && String((e as { message?: unknown }).message ?? '').includes('tpo_write_role_required');
+
+/** A staff call that may write (a mutation, or a logged disclosure). Never claims an invite. */
 export async function staffTx<T>(ctx: ServiceCtx, fn: (c: StaffClient) => Promise<T>): Promise<T> {
   try {
-    return await withUserTx(ctx, async (c) => {
-      await claimIn(ctx, c);
-      return fn(c);
-    });
+    return await withUserTx(ctx, fn);
   } catch (e) {
+    // A member of the campus without a write role (owner or officer) is told so; a stranger still gets a 404 from the NULL.
+    if (isWriteRoleRefusal(e)) throw new ServiceError('forbidden', 403);
     throw mapPgError(e);
   }
+}
+
+/** A staff read. The transaction is READ ONLY: a function that tried to write would fail instead of writing. */
+export async function staffReadTx<T>(ctx: ServiceCtx, fn: (c: StaffClient) => Promise<T>): Promise<T> {
+  return staffTx(ctx, async (c) => {
+    await c.query('SET TRANSACTION READ ONLY');
+    return fn(c);
+  });
+}
+
+/**
+ * The one place an invite is claimed. The invitee calls this after signing in (POST /api/v1/tpo/claim). It needs a verified
+ * account email that matches the invite. Idempotent: a second call claims nothing.
+ */
+export async function claimStaffInvites(ctx: ServiceCtx): Promise<{ claimed: number }> {
+  return staffTx(ctx, async (c) => {
+    const h = await verifiedMailboxIn(ctx, c);
+    return { claimed: h ? await callIn<number>(c, 'tpo_claim_invites', [h]) : 0 };
+  });
 }
 
 export interface StaffMembership {
@@ -55,14 +81,23 @@ export const orNotFound = <T>(v: T | null): T => {
   return v;
 };
 
-/** Who am I as staff. Empty for everyone else; not an error, so the console can tell a student from a TPO. */
-export async function tpoMe(ctx: ServiceCtx): Promise<{ campuses: StaffMembership[] }> {
-  return staffTx(ctx, async (c) => ({ campuses: await callIn<StaffMembership[]>(c, 'tpo_memberships') }));
+/**
+ * Who am I as staff. Empty for everyone else; not an error, so the console can tell a student from a TPO. Writes nothing:
+ * `pendingInvite` says an invite for my verified mailbox is waiting, and the console then calls `claimStaffInvites`.
+ */
+export async function tpoMe(ctx: ServiceCtx): Promise<{ campuses: StaffMembership[]; pendingInvite: boolean }> {
+  return staffReadTx(ctx, async (c) => {
+    const h = await verifiedMailboxIn(ctx, c);
+    return {
+      campuses: await callIn<StaffMembership[]>(c, 'tpo_memberships'),
+      pendingInvite: h ? (await callIn<boolean>(c, 'tpo_has_pending_invite', [h])) === true : false,
+    };
+  });
 }
 
 export async function listCohorts(ctx: ServiceCtx, input: unknown = {}) {
   const { campusId } = parseInput(CampusScopeInput, input);
-  return staffTx(ctx, async (c) => {
+  return staffReadTx(ctx, async (c) => {
     const id = await resolveCampus(c, campusId);
     return { cohorts: orNotFound(await callIn<unknown[] | null>(c, 'tpo_list_cohorts', [id])) as Cohort[] };
   });
@@ -92,7 +127,7 @@ export async function createCohort(ctx: ServiceCtx, input: unknown): Promise<{ i
  */
 export async function cohortStats(ctx: ServiceCtx, input: unknown): Promise<{ day: string | null; metrics: { metric: CampusMetric; value: number | null; suppressed: boolean }[] }> {
   const { cohortId, metric } = parseInput(CohortStatsInput, input);
-  const r = await staffTx(ctx, async (c) => orNotFound(await callIn<{ day: string | null; metrics: { metric: CampusMetric; value: number | null; suppressed: boolean }[] } | null>(c, 'tpo_cohort_stats', [cohortId])));
+  const r = await staffReadTx(ctx, async (c) => orNotFound(await callIn<{ day: string | null; metrics: { metric: CampusMetric; value: number | null; suppressed: boolean }[] } | null>(c, 'tpo_cohort_stats', [cohortId])));
   return metric ? { day: r.day, metrics: r.metrics.filter((m) => m.metric === metric) } : r;
 }
 
@@ -109,7 +144,7 @@ export async function inviteStaff(ctx: ServiceCtx, input: unknown): Promise<{ st
 
 export async function listStaff(ctx: ServiceCtx, input: unknown = {}) {
   const { campusId } = parseInput(CampusScopeInput, input);
-  return staffTx(ctx, async (c) => {
+  return staffReadTx(ctx, async (c) => {
     const id = await resolveCampus(c, campusId);
     return { staff: orNotFound(await callIn<{ id: string; role: 'owner' | 'staff'; claimed: boolean; createdAt: string; expiresAt: string | null; expired: boolean }[] | null>(c, 'tpo_list_staff', [id])) };
   });

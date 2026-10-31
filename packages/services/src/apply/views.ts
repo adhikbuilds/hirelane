@@ -33,6 +33,8 @@ export const AnswerLineSchema = z.strictObject({
   needsYou: z.boolean(),
   reason: z.string().nullable(),
   answer: z.string().nullable(),
+  /** A draft the engine composed from a template. It is never sent: the student confirms or edits it first. Null when there is none. */
+  suggestion: z.string().nullable(),
   /** "source:field" pairs the answer rests on. Never the value. */
   sources: z.array(z.string()),
 });

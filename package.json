@@ -35,7 +35,14 @@
     "enrich:run": "pnpm --filter @hirelane/runner enrich:run",
     "report:coverage": "vite-node scripts/report-coverage.ts --",
     "bench:board": "vite-node scripts/bench-board.ts",
-    "budget": "vite-node scripts/js-budget.ts"
+    "budget": "vite-node scripts/js-budget.ts",
+    "ops": "vite-node scripts/ops/main.ts --",
+    "ops:campus-create": "vite-node scripts/ops/main.ts -- campus create",
+    "ops:domain-add": "vite-node scripts/ops/main.ts -- domain add",
+    "ops:domain-remove": "vite-node scripts/ops/main.ts -- domain remove",
+    "ops:cgpa-rule": "vite-node scripts/ops/main.ts -- cgpa-rule set",
+    "ops:owner-invite": "vite-node scripts/ops/main.ts -- owner-invite",
+    "ops:platform-switch": "vite-node scripts/ops/main.ts -- switch set"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

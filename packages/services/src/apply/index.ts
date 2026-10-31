@@ -1,4 +1,4 @@
-export { applyAnswerAad, applyEvidenceAad, inboundAad } from './aad';
+export { applyAnswerAad, applyEvidenceAad, applySuggestionAad, inboundAad } from './aad';
 export { applyDomain, ensureAddressIn, makeHandle, readAddressIn, type ApplyAddress } from './address';
 export * from './inputs';
 export * from './views';

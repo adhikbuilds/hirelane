@@ -4,15 +4,18 @@
  * CONTRACTS the services layer must match (packages/services/src/apply/aad.ts; a test on each side pins the literals):
  *   - application_answers.answer_enc AAD .... `applyans:<user id>:<answer row id>`
  *   - application_answers.evidence_enc AAD .. `applyev:<user id>:<answer row id>`
+ *   - application_answers.suggestion_enc AAD  `applysug:<user id>:<answer row id>`  (sealed JSON string: a composed draft, needs_you only)
  *   - inbound_messages.excerpt_enc AAD ...... `inbound:<user id>:<message row id>`  (sealed JSON { subject, excerpt })
  *   - answer_bank answers ................... `answer:<user id>:<row id>` (services/aad.ts answerAad), sealed JSON string
  * Payloads are `{ applicationId }` only. Logs carry ids and codes only: never names, answers, URLs or error messages.
  */
 import { createHash, randomUUID } from 'node:crypto';
+import { applyAddressOf } from '../../../../packages/agent/src/apply-address';
 import { adminRun, defaultVault, type Queryable, type ResumeVault, type Run } from './resume-common';
 
 export const applyAnswerAad = (userId: string, id: string): string => `applyans:${userId}:${id}`;
 export const applyEvidenceAad = (userId: string, id: string): string => `applyev:${userId}:${id}`;
+export const applySuggestionAad = (userId: string, id: string): string => `applysug:${userId}:${id}`;
 export const inboundAad = (userId: string, id: string): string => `inbound:${userId}:${id}`;
 export const bankAad = (userId: string, id: string): string => `answer:${userId}:${id}`;
 
@@ -51,6 +54,8 @@ export interface AnswerRowWrite {
   reason: string | null;
   answer: string | null;
   evidence: { source: string; field: string }[];
+  /** A draft the engine composed (free-text template). Stored sealed on a needs_you row; never sent. */
+  suggestion?: string | null;
 }
 export interface ReceiptWrite {
   answersHash: string;
@@ -171,8 +176,10 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
           const tz = typeof info['tz'] === 'string' ? info['tz'] : KOLKATA;
           const n = (
             await c.query(
+              // Decision 2026-10-31 (docs/apply.md "Open before pilot" 2): a blocked attempt (CAPTCHA, login, needs_you, ...) is an attempt
+              // on the employer's site like any other, so it counts toward the daily cap.
               `SELECT count(*)::int AS n FROM applications
-                WHERE user_id = $1 AND status IN ('submitting', 'submitted', 'failed')
+                WHERE user_id = $1 AND status IN ('submitting', 'submitted', 'failed', 'blocked_fallback')
                   AND claimed_at >= (date_trunc('day', now() AT TIME ZONE $2::text) AT TIME ZONE $2::text)`,
               [userId, tz],
             )
@@ -206,7 +213,7 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
       run(async (c) => {
         const q = async (sql: string, p: unknown[]) => (await c.query(sql, p)).rows;
         const u = (await q('SELECT display_name FROM users WHERE id = $1', [app.userId]))[0];
-        const addr = (await q('SELECT handle, domain FROM apply_addresses WHERE user_id = $1', [app.userId]))[0];
+        const addr = (await q('SELECT handle, domain, reply_handle FROM apply_addresses WHERE user_id = $1', [app.userId]))[0];
         const consent = (await q("SELECT granted FROM consents WHERE user_id = $1 AND kind = 'auto_apply' ORDER BY at DESC, id DESC LIMIT 1", [app.userId]))[0];
         const bank: StudentFacts['bank'] = [];
         for (const r of await q('SELECT id, question_key, answer_enc, source FROM answer_bank WHERE user_id = $1 AND NOT sensitive ORDER BY question_key', [app.userId])) {
@@ -216,10 +223,19 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
         const rule = (await q('SELECT c.cgpa_rule FROM cohort_members m JOIN campuses c ON c.id = m.campus_id WHERE m.user_id = $1', [app.userId]))[0];
         const countries = app.jobId ? ((await q('SELECT countries FROM jobs WHERE id = $1', [app.jobId]))[0]?.['countries'] as string[] | undefined) ?? [] : [];
         const resumeId = app.resumeId ?? ((await q('SELECT id FROM resumes WHERE user_id = $1 AND is_default AND deleted_at IS NULL', [app.userId]))[0]?.['id'] as string | undefined) ?? null;
-        const resume = resumeId ? (await q('SELECT parse_status, skills, sensitive_kinds FROM resumes WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL AND purged_at IS NULL', [resumeId, app.userId]))[0] : undefined;
+        const resume = resumeId ? (
+              await q(
+                // sensitive_kinds are written on the ROOT row by the extractor; confirmed versions carry the default '{}'. Read the root's, and require it live.
+                `SELECT r.parse_status, r.skills, COALESCE(p.sensitive_kinds, r.sensitive_kinds) AS sensitive_kinds
+                   FROM resumes r LEFT JOIN resumes p ON p.id = r.parent_id AND p.user_id = r.user_id
+                  WHERE r.id = $1 AND r.user_id = $2 AND r.deleted_at IS NULL AND r.purged_at IS NULL
+                    AND (r.parent_id IS NULL OR (p.deleted_at IS NULL AND p.purged_at IS NULL))`,
+                [resumeId, app.userId],
+              )
+            )[0] : undefined;
         return {
           fullName: (u?.['display_name'] as string | null) ?? null,
-          applyAddress: addr ? `${String(addr['handle'])}@${String(addr['domain'])}` : null,
+          applyAddress: addr ? applyAddressOf({ handle: String(addr['handle']), replyHandle: String(addr['reply_handle']), domain: String(addr['domain']) }) : null,
           autoApply: consent?.['granted'] === true,
           eligibility: eligibilityFromRow((await q('SELECT * FROM eligibility_profiles WHERE user_id = $1', [app.userId]))[0]),
           workAuthorizations: (await q('SELECT country, status FROM work_authorizations WHERE user_id = $1', [app.userId])).map((r) => ({
@@ -267,8 +283,8 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
             const rowId = randomUUID();
             const filled = !a.needsYou;
             await c.query(
-              `INSERT INTO application_answers (id, application_id, user_id, field_id, label, question_key, required, needs_you, reason, answer_enc, evidence_enc, evidence_sources)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+              `INSERT INTO application_answers (id, application_id, user_id, field_id, label, question_key, required, needs_you, reason, answer_enc, evidence_enc, evidence_sources, suggestion_enc)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
               [
                 rowId,
                 app.id,
@@ -282,6 +298,7 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
                 filled ? await vault.sealJson(a.answer, applyAnswerAad(app.userId, rowId)) : null,
                 filled ? await vault.sealJson(a.evidence, applyEvidenceAad(app.userId, rowId)) : null,
                 filled ? a.evidence.map((e) => `${e.source}:${e.field}`.slice(0, 120)) : [],
+                !filled && a.suggestion ? await vault.sealJson(a.suggestion.slice(0, 2000), applySuggestionAad(app.userId, rowId)) : null,
               ],
             );
           }

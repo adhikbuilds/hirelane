@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { lstat, mkdir, open, readFile, realpath, rename, rm, stat } from 'node:fs/promises';
-import { dirname, join, resolve, sep } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 import { BlobNotFoundError, VaultError } from './errors.js';
 
 /** Opaque byte storage. Callers store already sealed bytes; the store never sees keys. */
@@ -112,7 +113,27 @@ export class LocalBlobStore implements BlobStore {
   }
 }
 
-/** Root from HIRELANE_STORAGE_DIR, default ./storage (gitignored). */
-export function localBlobStoreFromEnv(env: Record<string, string | undefined> = process.env): LocalBlobStore {
-  return new LocalBlobStore(env[STORAGE_DIR_ENV]?.trim() || './storage');
+/** `<workspace root>/storage` (found by walking up to pnpm-workspace.yaml), so the web app and the runner agree whatever their cwd. */
+function defaultStorageDir(cwd: string): string {
+  let dir = resolve(cwd);
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) return join(dir, 'storage');
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return join(resolve(cwd), 'storage');
+}
+
+/**
+ * Root from HIRELANE_STORAGE_DIR. In production it must be set to an absolute path (fail closed: a cwd-relative default would
+ * differ between web and runner). Elsewhere it defaults to <workspace root>/storage (gitignored).
+ */
+export function localBlobStoreFromEnv(env: Record<string, string | undefined> = process.env, cwd: string = process.cwd()): LocalBlobStore {
+  const dir = env[STORAGE_DIR_ENV]?.trim();
+  if (env['NODE_ENV'] === 'production') {
+    if (!dir || !isAbsolute(dir)) throw new VaultError(`${STORAGE_DIR_ENV} must be set to an absolute path in production`);
+    return new LocalBlobStore(dir);
+  }
+  return new LocalBlobStore(dir || defaultStorageDir(cwd));
 }
