@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import {
   cohortStats,
   driveCounts,
+  driveInbox,
   getMe,
   getMyCampus,
   listApplications,
@@ -9,7 +10,7 @@ import {
   listDrives,
   listInbox,
   listMyDrives,
-  listOutcomes,
+  revealOutcomes,
   listResumes,
   tpoMe,
   type Cohort,
@@ -20,6 +21,7 @@ import { withPageCtx } from "@/lib/api/action";
 import type { CampusOverview, OfferRow, ProgrammeRow } from "@/lib/sample/campus";
 import type { DriveItem, TrackerItem } from "@/lib/sample/loop";
 import type { HomeData } from "@/lib/sample/home";
+import { toDriveInbox, type DriveInboxData } from "./campus-drives";
 import { campusIsEmpty, toCampusOverview, toOfferRows, toProgrammeRows, type CampusInput, type DriveRow, type OutcomeRow, type Stats } from "./campus";
 import { toDriveItems } from "./drives";
 import { firstNameOf, homeIsEmpty, toHomeData } from "./home";
@@ -120,16 +122,33 @@ export function loadCampusStudents(): Promise<Screen<{ college: string; rows: Pr
   });
 }
 
-/** Console Outcomes. Reading the list logs each student returned, so this is the only loader that does it. Dev-only: OutcomesPage hard-codes its placed total. */
+/** Console Outcomes. Revealing the list logs each student returned, so this is the only loader that does it. Dev-only: OutcomesPage hard-codes its placed total. */
 export function loadCampusOutcomes(): Promise<Screen<{ college: string; offers: OfferRow[]; outgoing: number }>> {
   return resolveScreen(env, {
     prodReady: false,
     read: async (ctx) => {
       const base = await staffCampus(ctx);
       if (!base) return { ...FORBIDDEN, data: null as never };
-      const { outcomes } = await listOutcomes(ctx, { campusId: base.campusId });
+      // The screen names students, so it uses the explicit, logged call (decision 2026-10-31: the plain list names nobody and logs nothing).
+      const { outcomes } = await revealOutcomes(ctx, { campusId: base.campusId });
       const offers = toOfferRows(outcomes as OutcomeRow[]);
       return { data: { college: base.campusName, offers, outgoing: base.cohorts.reduce((a, c) => a + c.rosterSize, 0) }, empty: offers.length === 0 && base.cohorts.length === 0 };
+    },
+  });
+}
+
+/**
+ * Console drive inbox (A-4 and A-5): every drive of the campus with its status (draft, live, closed), deadline, rounds,
+ * documents, scam flags (staff only) and reach (qualify plus could-not-check, k >= 10, hidden figures stay hidden).
+ * Production-ready: it reads only the drive services and invents nothing. A student or a stranger gets the standard 404.
+ */
+export function loadCampusDrives(now: () => Date = () => new Date()): Promise<Screen<DriveInboxData>> {
+  return resolveScreen(env, {
+    read: async (ctx) => {
+      const base = await staffCampus(ctx);
+      if (!base) return { ...FORBIDDEN, data: null as never };
+      const { drives } = await driveInbox(ctx, { campusId: base.campusId });
+      return { data: toDriveInbox({ campusName: base.campusName, cohorts: base.cohorts, drives, now: now() }), empty: drives.length === 0 };
     },
   });
 }

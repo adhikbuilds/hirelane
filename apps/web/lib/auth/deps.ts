@@ -1,4 +1,4 @@
-import { createFileOutbox, renderCodeEmail } from "@hirelane/agent";
+import { createMailer, renderCodeEmail } from "@hirelane/agent";
 import type { EmailCodeDeps } from "./email-code";
 import { defaultAuthDeps } from "./session";
 
@@ -7,7 +7,7 @@ import { defaultAuthDeps } from "./session";
  * The outbox refuses to run when NODE_ENV=production, so a real transport must be chosen before launch.
  */
 export function defaultEmailCodeDeps(): EmailCodeDeps {
-  const mailer = createFileOutbox();
+  const mailer = createMailer();
   return {
     ...defaultAuthDeps(),
     sendCode: async (to, code, purpose) => {

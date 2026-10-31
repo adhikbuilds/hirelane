@@ -3,8 +3,8 @@ import type { DriveItem } from "@/lib/sample/loop";
 import { dateLabel, daysBetween, dayKey } from "./ist";
 
 /**
- * A drive stays listed this many days after it was published when its notice names no closing date. The services keep
- * no deadline column, so this is a display policy, not a fact; the headline says when it applies.
+ * A drive stays listed this many days after it was published when it has no closing date (none set by the TPO, none in the
+ * notice). That is a display policy, not a fact; the headline says when it applies.
  */
 export const UNDATED_WINDOW_DAYS = 30;
 
@@ -33,12 +33,14 @@ const dayAsDate = (key: string): Date => new Date(`${key}T06:30:00Z`); // noon I
 
 /**
  * The student's drive inbox as Drives-tab cards. Nothing is invented: the verdict and every rule line come from the
- * engine's own reasons; CTC has no source, so it is null. A drive whose notice closed before today is dropped.
+ * engine's own reasons; CTC has no source, so it is null. The closing date is the one the TPO set; a drive published
+ * before that field existed falls back to a date the notice states, then to the display window. A drive that closed
+ * before today is dropped. Scam flags are for staff and never reach this list, so there is no scam card here.
  */
 export function toDriveItems(drives: StudentDrive[], now: Date): DriveItem[] {
   const out: DriveItem[] = [];
   for (const d of drives) {
-    const stated = parseDeadline(d.noticeText, now);
+    const stated = d.deadline ?? parseDeadline(d.noticeText, now);
     const published = new Date(d.publishedAt);
     let daysLeft: number;
     let deadlineLabel: string;
@@ -51,11 +53,9 @@ export function toDriveItems(drives: StudentDrive[], now: Date): DriveItem[] {
       if (daysLeft < 0) continue;
       deadlineLabel = "No date in the notice";
     }
-    const scam = d.scamRisk === "high";
     const n = d.reasons.length;
-    const headline = scam
-      ? "This notice has signs of a scam"
-      : d.verdict === "eligible"
+    const headline =
+      d.verdict === "eligible"
         ? n === 0
           ? "The notice states no rules we could read"
           : `You meet all ${n} ${n === 1 ? "rule" : "rules"}`
@@ -67,7 +67,7 @@ export function toDriveItems(drives: StudentDrive[], now: Date): DriveItem[] {
       ctc: null,
       deadlineLabel,
       daysLeft,
-      status: scam ? "scam" : d.verdict === "eligible" ? "eligible" : "check",
+      status: d.verdict === "eligible" ? "eligible" : "check",
       headline: stated ? headline : `${headline}. The notice has no closing date, so check it.`,
       rules: d.reasons.map((text) => ({ text, status: d.verdict === "eligible" ? ("pass" as const) : ("unknown" as const) })),
     });

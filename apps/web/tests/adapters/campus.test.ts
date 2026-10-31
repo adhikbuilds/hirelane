@@ -12,7 +12,7 @@ const base: CampusInput = {
   drives: [],
   counts: {},
 };
-const drive = (o: Partial<DriveRow> = {}): DriveRow => ({ id: "d1", cohortId: "c1", title: "Process Associate", link: "https://www.careers.example.test/job/1", status: "published", scamRisk: "none", criteria: [{ type: "min_score", pct: 55, throughout: true, levels: [], evidence: [] }, { type: "no_active_backlogs", evidence: [] }], publishedAt: "2026-10-29T00:00:00.000Z", ...o });
+const drive = (o: Partial<DriveRow> = {}): DriveRow => ({ id: "d1", cohortId: "c1", title: "Process Associate", link: "https://www.careers.example.test/job/1", status: "live", scamRisk: "none", criteria: [{ type: "min_score", pct: 55, throughout: true, levels: [], evidence: [] }, { type: "no_active_backlogs", evidence: [] }], publishedAt: "2026-10-29T00:00:00.000Z", ...o });
 
 describe("metricTotal", () => {
   it("sums across cohorts only when every cell is visible", () => {
@@ -69,6 +69,10 @@ describe("toCampusOverview", () => {
     const o = toCampusOverview({ ...base, drives: [drive(), drive({ id: "d2", status: "closed", link: null })], counts: { d1: stats({ drive_eligible: 45, drive_unknown: 15 }), d2: stats({ drive_eligible: null }) } });
     expect(o.drives[0]).toMatchObject({ company: "careers.example.test", role: "Process Associate", rules: "55% throughout, no active backlogs", eligible: 45, applied: 0, status: "open" });
     expect(o.drives[1]).toMatchObject({ company: "Pasted by you", eligible: 0, status: "closed", rules: "55% throughout, no active backlogs" });
+    // a draft is not announced yet: it is not in the overview, and its missing count is not a hidden group
+    const withDraft = toCampusOverview({ ...base, drives: [drive(), drive({ id: "d3", status: "draft" })], counts: { d1: stats({ drive_eligible: 45, drive_unknown: 15 }) } });
+    expect(withDraft.drives).toHaveLength(1);
+    expect(withDraft.hiddenGroups).toBe(o.hiddenGroups - 1);
     expect(o.hiddenGroups).toBe(2); // grad_below_60 + d2
   });
   it("copes with a malformed link and unreadable criteria", () => {

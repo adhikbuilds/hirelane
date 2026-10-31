@@ -9,7 +9,7 @@ const resume = (o: Partial<ResumeSummary> = {}): ResumeSummary => ({
   healthPassed: 6, healthTotal: 9, sensitiveKinds: [], skills: [], confirmedAt: null, isDefault: true, createdAt: "2026-10-01T00:00:00.000Z", updatedAt: "2026-10-01T00:00:00.000Z", ...o,
 });
 const drive = (o: Partial<StudentDrive> = {}): StudentDrive => ({
-  id: "d1", title: "Process Associate", link: null, noticeText: "Apply by 31 Oct", scamRisk: "none", scamFlags: [], publishedAt: "2026-10-29T01:10:00.000Z", verdict: "eligible", reasons: ["a", "b"], ...o,
+  id: "d1", title: "Process Associate", link: null, noticeText: "Apply by 31 Oct", deadline: null, rounds: null, documents: null, publishedAt: "2026-10-29T01:10:00.000Z", verdict: "eligible", reasons: ["a", "b"], ...o,
 });
 const app = (o: Partial<ApplicationSummary> = {}): ApplicationSummary => ({
   id: "a1", status: "submitted", company: "Zenoti", title: "T", platform: "lever", undoUntil: "2026-10-28T00:00:00.000Z", canUndo: false, blockedReason: null, fallback: null, needsYouCount: 0, lastReply: null,

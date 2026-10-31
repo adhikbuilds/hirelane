@@ -1,5 +1,6 @@
 import { APPLY_ROUTE_ONLY } from "../openapi-apply";
 import { CAMPUS_ROUTE_ONLY } from "../openapi-campus";
+import { PICKS_ROUTE_ONLY } from "../openapi-picks";
 /**
  * Every resume and eligibility server action and the /api/v1 operation (operationId in lib/openapi-v1.ts) that does
  * the same thing. The parity test fails when an exported action is missing here or its twin is not in the v1 document.
@@ -30,7 +31,8 @@ export const ACTION_EXEMPT: Record<string, Record<string, string>> = {
   "app/(auth)/signin/actions.ts": { sendEmailCode: "sign-in ceremony, runs before any session exists; Android signs in through its own auth endpoints (C3)" },
   "app/(auth)/signin/code/actions.ts": { verifyCode: "sign-in ceremony, runs before any session exists" },
   "app/(auth)/welcome/actions.ts": { acceptSignup: "sign-up ceremony, bound to the pending-signup cookie", declineSignup: "sign-up ceremony", getPendingSignup: "sign-up ceremony read" },
+  "app/unsubscribe/actions.ts": { confirmUnsubscribe: "one-click link in an email, proven by the token in the link; there is no session (the same service backs it, POST-only)" },
   "app/jobs/actions.ts": { loadMoreJobs: "public board reads for the web UI; the public API covers the same data", loadJobPreview: "public board read", suggestJobs: "public board read" },
 };
 /** Routes with no action twin by design (uploads are a route handler, PLAN Amendment B section 2; reads go through lib/api/page.ts). */
-export const ROUTE_ONLY = ["uploadResume", "downloadResume", "listResumes", "getResume", "getEligibility", "getMe", "exportMe", ...CAMPUS_ROUTE_ONLY, ...APPLY_ROUTE_ONLY];
+export const ROUTE_ONLY = ["uploadResume", "downloadResume", "listResumes", "getResume", "getEligibility", "getMe", "exportMe", ...CAMPUS_ROUTE_ONLY, ...APPLY_ROUTE_ONLY, ...PICKS_ROUTE_ONLY];

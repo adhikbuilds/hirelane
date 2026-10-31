@@ -9,8 +9,9 @@ const drive = (over: Partial<StudentDrive> = {}): StudentDrive => ({
   title: "Process Associate",
   link: null,
   noticeText: "Eligibility: 55% throughout. Apply by 31 Oct.",
-  scamRisk: "none",
-  scamFlags: [],
+  deadline: null,
+  rounds: null,
+  documents: null,
   publishedAt: "2026-10-27T05:00:00.000Z",
   verdict: "eligible",
   reasons: ["10th: 71% meets 55%", "12th: 58% meets 55%"],
@@ -47,9 +48,19 @@ describe("toDriveItems", () => {
     expect(d!.rules.every((r) => r.status === "unknown")).toBe(true);
     expect(d!.headline).toBe("We couldn't check every rule");
   });
-  it("a high scam risk becomes the scam card", () => {
-    expect(toDriveItems([drive({ scamRisk: "high" })], NOW)[0]!.status).toBe("scam");
-    expect(toDriveItems([drive({ scamRisk: "medium" })], NOW)[0]!.status).toBe("eligible");
+  it("scam flags are staff-only: a student's drive has no scam field, and no card is ever a scam card", () => {
+    const d = drive();
+    expect(Object.keys(d).join(",")).not.toMatch(/scam/i);
+    expect(toDriveItems([d, drive({ id: "b", verdict: "unknown" })], NOW).every((x) => x.status !== "scam")).toBe(true);
+  });
+  it("uses the closing date the TPO set over a date in the notice, and counts it down", () => {
+    const [d] = toDriveItems([drive({ deadline: "2026-11-05", noticeText: "Apply by 31 Oct" })], NOW);
+    expect(d).toMatchObject({ daysLeft: 7, deadlineLabel: "Thu 5 Nov" });
+    expect(d!.headline).not.toContain("no closing date");
+  });
+  it("a set deadline that has passed drops the drive; one closing today stays", () => {
+    expect(toDriveItems([drive({ deadline: "2026-10-28" })], NOW)).toEqual([]);
+    expect(toDriveItems([drive({ deadline: "2026-10-29" })], NOW)[0]!.daysLeft).toBe(0);
   });
   it("drops a drive whose notice closed before today, keeps one closing today", () => {
     expect(toDriveItems([drive({ noticeText: "Apply by 28 Oct" })], NOW)).toEqual([]);

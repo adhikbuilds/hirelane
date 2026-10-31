@@ -24,6 +24,7 @@ import { z } from "zod";
 import { ConsentInput, ConsentResult, DeleteMeInput, DeleteMeResult } from "./http/me-inputs";
 import { APPLY_OPERATIONS } from "./openapi-apply";
 import { CAMPUS_OPERATIONS } from "./openapi-campus";
+import { PICKS_OPERATIONS } from "./openapi-picks";
 import type { V1Operation } from "./openapi-types";
 
 type Json = Record<string, any>;
@@ -71,7 +72,7 @@ const BASE_OPERATIONS: V1Operation[] = [
 ];
 
 /** Resume, builder, eligibility and account operations first, then the campus back end (lib/openapi-campus.ts). */
-export const V1_OPERATIONS: V1Operation[] = [...BASE_OPERATIONS, ...CAMPUS_OPERATIONS, ...APPLY_OPERATIONS];
+export const V1_OPERATIONS: V1Operation[] = [...BASE_OPERATIONS, ...CAMPUS_OPERATIONS, ...APPLY_OPERATIONS, ...PICKS_OPERATIONS];
 
 const jsonSchema = (s: z.ZodType, io: "input" | "output", omit: string[] = []): Json => {
   const out = z.toJSONSchema(s, { io, unrepresentable: "any", target: "draft-2020-12" }) as Json;

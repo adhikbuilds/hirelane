@@ -166,7 +166,7 @@ describe("consent", () => {
     expect(on.status).toBe(200);
     const settings = S.ApplySettingsSchema.parse(on.json);
     expect(settings.autoApply).toBe(true);
-    expect(settings.applyAddress).toMatch(/^rohan\.mehta\.[a-z2-9]{3}@apply\.example\.test$/);
+    expect(settings.applyAddress).toMatch(/^rohan\.mehta\.[a-z2-9]{3}\+[a-z0-9]{12}@apply\.example\.test$/);
     const off = await call(R.consent.PUT, "PUT", "/api/v1/apply/consent", as(u, { body: { granted: false } }));
     expect(S.ApplySettingsSchema.parse(off.json)).toMatchObject({ autoApply: false, applyAddress: settings.applyAddress });
     const again = await call(R.consent.GET, "GET", "/api/v1/apply/consent", as(u));
@@ -379,8 +379,8 @@ describe("tracker, detail and inbox", () => {
     const d = S.ApplicationDetailSchema.parse(r.json);
     expect(d.application).toMatchObject({ id, status: "blocked_fallback" });
     expect(d.answers).toEqual([
-      { fieldId: "q9", questionKey: null, label: "Why us?", required: true, needsYou: true, reason: "We have no line about the company", answer: null, sources: [] },
-      { fieldId: "question_1002", questionKey: "notice_period", label: "What is your notice period?", required: true, needsYou: false, reason: null, answer: "30 days", sources: ["answer_bank:notice_period"] },
+      { fieldId: "q9", questionKey: null, label: "Why us?", required: true, needsYou: true, reason: "We have no line about the company", answer: null, suggestion: null, sources: [] },
+      { fieldId: "question_1002", questionKey: "notice_period", label: "What is your notice period?", required: true, needsYou: false, reason: null, answer: "30 days", suggestion: null, sources: ["answer_bank:notice_period"] },
     ]);
     expect(d.receipt).toMatchObject({ platform: "greenhouse", resultCode: "needs_you", sent: false, httpStatus: null });
     expect(d.applyAddress).toMatch(/@apply\.example\.test$/);
@@ -388,6 +388,28 @@ describe("tracker, detail and inbox", () => {
     const foreign = await call(R.one.GET, "GET", `/api/v1/apply/applications/${id}`, as(b), { id });
     expect([foreign.status, foreign.json.code]).toEqual([404, "not_found"]);
     expect((await call(R.one.GET, "GET", `/api/v1/apply/applications/${randomUUID()}`, as(a), { id: randomUUID() })).status).toBe(404);
+  });
+
+  it("a free-text draft the engine composed is shown to its owner as a suggestion (needs_you, never an answer), and to nobody else", async () => {
+    const a = await mkWho();
+    const b = await mkWho();
+    const id = (await swipe(a, (await mkJob(client)).jobId)).json.application.id as string;
+    await expire(id);
+    await client.query("UPDATE applications SET status = 'submitting' WHERE id = $1", [id]);
+    const rowId = randomUUID();
+    const draft = "I am applying for the Engineer role at Acme. It fits my Intern experience at Beta, and I want to build on it.";
+    await client.query(
+      "INSERT INTO application_answers (id, application_id, user_id, field_id, label, question_key, required, needs_you, reason, suggestion_enc) VALUES ($1, $2, $3, 'why', 'Why this role?', 'why_role', true, true, 'confirm_draft', $4)",
+      [rowId, id, a.id, await seal(keys, Buffer.from(JSON.stringify(draft)), { aad: S.applySuggestionAad(a.id, rowId) })],
+    );
+    await client.query("INSERT INTO receipts (application_id, user_id, answers_hash, platform, result_code, sent) VALUES ($1, $2, repeat('a', 64), 'greenhouse', 'needs_you', false)", [id, a.id]);
+    await client.query("UPDATE applications SET status = 'blocked_fallback', blocked_reason = 'needs_you', fallback_note = 'finish on their site' WHERE id = $1", [id]);
+    const d = S.ApplicationDetailSchema.parse((await call(R.one.GET, "GET", `/api/v1/apply/applications/${id}`, as(a), { id })).json);
+    expect(d.answers).toEqual([{ fieldId: "why", questionKey: "why_role", label: "Why this role?", required: true, needsYou: true, reason: "confirm_draft", answer: null, suggestion: draft, sources: [] }]);
+    const stored = (await client.query("SELECT suggestion_enc FROM application_answers WHERE id = $1", [rowId])).rows[0].suggestion_enc as Buffer;
+    expect(stored.includes(Buffer.from("Engineer role"))).toBe(false); // sealed at rest
+    const foreign = await call(R.one.GET, "GET", `/api/v1/apply/applications/${id}`, as(b), { id });
+    expect(foreign.status).toBe(404);
   });
 
   it("the inbox opens the sealed excerpt, the detail lists the matched messages, and 'read' clears the unread count", async () => {
@@ -456,6 +478,82 @@ describe("the answer bank", () => {
     const ctx = (await import("../lib/http/ctx")).serviceCtxFor(u.id);
     const out = (await S.exportMe(ctx)) as { answerBank: { questionKey: string; answer: unknown }[] };
     expect(out.answerBank).toEqual([expect.objectContaining({ questionKey: "expected_ctc", answer: "6 LPA" })]);
+  });
+});
+
+describe("the access export covers every user-owned table", () => {
+  // Tables with a user column that are deliberately NOT in the export, each with the reason.
+  const EXCLUDED: Record<string, string> = {
+    sessions: "credential material, not personal data held about the student",
+    otp_challenges: "hashed one-time-code state, expires in minutes",
+    join_attempts: "abuse-control counters holding hashed identifiers",
+    idempotency_keys: "transient replay cache, purged after 24 h",
+    auth_identities: "sign-in provider links; the provider and email are in `user`",
+    notification_unsub: "hash of an unsubscribe token; the effect is in notificationPrefs",
+    campus_otp_bindings: "single-use proof state for the college-email join",
+    cohort_imports: "staff import audit, actor is staff",
+    tpo_members: "staff roles",
+    product_events: "pseudonymous product analytics without content",
+    drives: "staff-authored; a student's own result is in driveChecks",
+    feature_flags: "operator switches, not data about the student",
+  };
+  // export key -> table(s) it covers
+  const COVERS: Record<string, string[]> = {
+    profile: ["profiles"],
+    eligibility: ["eligibility_profiles"],
+    workAuthorizations: ["work_authorizations"],
+    resumes: ["resumes"],
+    answerBank: ["answer_bank"],
+    consents: ["consents"],
+    fileAccessLog: ["file_access_log"],
+    applications: ["applications", "application_answers", "receipts"],
+    applyAddress: ["apply_addresses"],
+    inboundMessages: ["inbound_messages"],
+    notifications: ["notifications"],
+    notificationPrefs: ["notification_prefs"],
+    outcomes: ["outcomes"],
+    driveChecks: ["drive_checks"],
+    cohortMemberships: ["cohort_members"],
+    collegeAccessLog: ["tpo_access_log"],
+  };
+
+  it("fails if a table with a user_id or subject_user_id column is neither exported nor excluded with a reason", async () => {
+    const tables = (
+      await client.query(
+        `SELECT DISTINCT table_name FROM information_schema.columns
+          WHERE table_schema = 'public' AND column_name IN ('user_id', 'subject_user_id', 'actor_id', 'created_by')
+            AND table_name IN (SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE')`,
+      )
+    ).rows.map((r) => r.table_name as string);
+    const known = new Set([...Object.keys(EXCLUDED), ...Object.values(COVERS).flat()]);
+    expect(tables.filter((t) => !known.has(t)).sort()).toEqual([]);
+    for (const t of Object.keys(EXCLUDED)) expect(Object.values(COVERS).flat(), t).not.toContain(t);
+  });
+
+  it("returns every export key, opens sealed columns, and includes applications, receipts, inbound mail and notifications", async () => {
+    const u = await mkWho();
+    const job = await mkJob(client);
+    const id = (await swipe(u, job.jobId)).json.application.id as string;
+    await finishAs(id, u.id, "submitted");
+    const mid = randomUUID();
+    const body = await seal(keys, Buffer.from(JSON.stringify({ subject: "Interview invitation", excerpt: "Are you free on Tuesday?" })), { aad: `inbound:${u.id}:${mid}` });
+    await client.query(
+      "INSERT INTO inbound_messages (id, user_id, application_id, message_id, employer, from_domain, kind, matched_by, excerpt_enc, received_at) VALUES ($1, $2, $3, 'm-x', 'Acme', 'acme.example.test', 'interview', 'domain', $4, now())",
+      [mid, u.id, id, body],
+    );
+    await client.query("INSERT INTO notifications (user_id, kind, title, application_id, inbound_id) VALUES ($1, 'employer_message', 'Acme: interview invite', $2, $3)", [u.id, id, mid]);
+    const ctx = (await import("../lib/http/ctx")).serviceCtxFor(u.id);
+    const out = (await S.exportMe(ctx)) as Record<string, any>;
+    for (const k of Object.keys(COVERS)) expect(out, k).toHaveProperty(k);
+    expect(out.applications).toHaveLength(1);
+    expect(out.applications[0]).toMatchObject({ id, status: "submitted" });
+    const filled = out.applications[0].answers.find((a: { fieldId: string }) => a.fieldId === "question_1002");
+    expect(filled).toMatchObject({ label: "What is your notice period?", answer: "30 days" });
+    expect(out.applications[0].receipts.length).toBeGreaterThan(0);
+    expect(out.inboundMessages).toEqual([expect.objectContaining({ id: mid, employer: "Acme", subject: "Interview invitation", excerpt: "Are you free on Tuesday?" })]);
+    expect(out.notifications).toEqual([expect.objectContaining({ title: "Acme: interview invite" })]);
+    expect(out.applyAddress).toMatchObject({ address: expect.stringMatching(/@apply\.example\.test$/) });
+    expect(JSON.stringify(out)).not.toMatch(/answer_enc|excerpt_enc|evidence_enc|suggestion_enc|letter_enc/);
   });
 });
 
@@ -566,5 +664,36 @@ describe("no network, no LLM", () => {
     await call(R.list.GET, "GET", "/api/v1/apply/applications", as(u));
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
+  });
+});
+
+describe("swipe rate limit (decision 2026-10-31): a bucket of its own per student", () => {
+  it("allows 20 swipes a minute, then 429 with Retry-After; another student is not affected; other writes are not counted in it", async () => {
+    const a = await mkWho();
+    const b = await mkWho();
+    const jobs = await Promise.all(Array.from({ length: 21 }, () => mkJob(client)));
+    const codes: number[] = [];
+    for (const j of jobs) codes.push((await swipe(a, j.jobId)).status);
+    expect(codes.slice(0, 20).every((c) => c === 201)).toBe(true);
+    expect(codes[20]).toBe(429);
+    const limited = await swipe(a, (await mkJob(client)).jobId);
+    expect(limited.json.code).toBe("rate_limited");
+    expect(Number(limited.res.headers.get("retry-after"))).toBeGreaterThan(0);
+    expect(limited.res.headers.get("ratelimit-limit")).toBe("20");
+    // the refused swipe created nothing
+    expect((await client.query("SELECT count(*)::int AS n FROM applications WHERE user_id = $1", [a.id])).rows[0].n).toBe(20);
+    expect((await swipe(b, (await mkJob(client)).jobId)).status).toBe(201);
+    // the bucket is the swipe's own: the general write budget (40 a minute) is untouched by 20 swipes
+    const rows = (await client.query("SELECT bucket, count FROM rate_limits WHERE bucket LIKE $1", [`v1:%:${a.id}`])).rows.map((r) => r.bucket as string);
+    expect(rows).toContain(`v1:apply-swipe:${a.id}`);
+    expect(rows).not.toContain(`v1:write:${a.id}`);
+  });
+
+  it("a new window opens after the minute", async () => {
+    const a = await mkWho();
+    for (let i = 0; i < 20; i++) await swipe(a, (await mkJob(client)).jobId);
+    expect((await swipe(a, (await mkJob(client)).jobId)).status).toBe(429);
+    await client.query("UPDATE rate_limits SET window_start = window_start - interval '2 minutes' WHERE bucket = $1", [`v1:apply-swipe:${a.id}`]);
+    expect((await swipe(a, (await mkJob(client)).jobId)).status).toBe(201);
   });
 });

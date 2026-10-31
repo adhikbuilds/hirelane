@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import "../../app/campus.css";
 import "../../app/account.css";
-import "../../app/student.css";
+import "../../app/student-legacy.css";
 
 const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
 
@@ -17,22 +17,23 @@ const TABS: { id: StudentTab; label: string; href: string; d: string }[] = [
   { id: "me", label: "Me", href: "/you", d: "M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" },
 ];
 
-/** Student app frame, direction A: calm chrome, colour only on role cards. Server component. */
+/** The previous student frame, kept for the screens not yet rebuilt (resume, network, recap, role pages). New screens use AppShell.tsx.
+ * Student app frame, direction A: calm chrome, colour only on role cards. Server component. */
 export function StudentShell({ active, initials, children }: { active: StudentTab; initials: string; children: ReactNode }) {
   return (
-    <div className={`st ${publicSans.variable} ${publicSans.className}`}>
-      <header className="st-top">
-        <Link href="/home" className="st-brand">
+    <div className={`stl ${publicSans.variable} ${publicSans.className}`}>
+      <header className="stl-top">
+        <Link href="/home" className="stl-brand">
           hire<b>lane</b>
         </Link>
-        <Link href="/you" className="st-me" aria-label="Your profile">
+        <Link href="/you" className="stl-me" aria-label="Your profile">
           {initials}
         </Link>
       </header>
-      <main className="st-main" id="main-app">
+      <main className="stl-main" id="main-app">
         {children}
       </main>
-      <nav className="st-tabs" aria-label="App">
+      <nav className="stl-tabs" aria-label="App">
         <ul>
           {TABS.map((t) => (
             <li key={t.id}>

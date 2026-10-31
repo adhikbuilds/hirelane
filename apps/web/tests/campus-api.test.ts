@@ -86,6 +86,8 @@ const routes = async () => ({
   myOutcomes: await import("../app/api/v1/campus/outcomes/route"),
   letter: await import("../app/api/v1/campus/outcomes/[id]/letter/route"),
   tpoMe: await import("../app/api/v1/tpo/me/route"),
+  claim: await import("../app/api/v1/tpo/claim/route"),
+  reveal: await import("../app/api/v1/tpo/outcomes/reveal/route"),
   cohorts: await import("../app/api/v1/tpo/cohorts/route"),
   stats: await import("../app/api/v1/tpo/cohorts/[id]/stats/route"),
   roster: await import("../app/api/v1/tpo/cohorts/[id]/roster/route"),
@@ -196,9 +198,13 @@ describe("campus routes: wrapper rules", () => {
 
   it("every campus and TPO operation is in the v1 OpenAPI document, and the document names the security scheme", async () => {
     const doc = (await call(R.openapi.GET, "GET", "/api/v1/openapi.json", { who: null })).json;
-    for (const p of ["/api/v1/campus/join", "/api/v1/campus/join/email/verify", "/api/v1/tpo/cohorts/{id}/stats", "/api/v1/tpo/export/naac", "/api/v1/tpo/staff", "/api/v1/tpo/staff/{id}", "/api/v1/tpo/staff/{id}/transfer-ownership"]) expect(doc.paths[p], p).toBeDefined();
+    for (const p of ["/api/v1/campus/join", "/api/v1/campus/join/email/verify", "/api/v1/tpo/cohorts/{id}/stats", "/api/v1/tpo/export/naac", "/api/v1/tpo/claim", "/api/v1/tpo/outcomes/reveal", "/api/v1/tpo/staff", "/api/v1/tpo/staff/{id}", "/api/v1/tpo/staff/{id}/transfer-ownership"]) expect(doc.paths[p], p).toBeDefined();
     expect(doc.paths["/api/v1/tpo/cohorts/{id}/roster"].post.requestBody.content["text/csv"]).toBeDefined();
-    expect(doc.paths["/api/v1/tpo/export/naac"].get.responses["200"].content["text/csv"]).toBeDefined();
+    // Decision 2026-10-31: the CSV is an explicit action (POST); the GET is a preview with no student named.
+    expect(doc.paths["/api/v1/tpo/export/naac"].post.responses["200"].content["text/csv"]).toBeDefined();
+    expect(doc.paths["/api/v1/tpo/export/naac"].get.responses["200"].content["application/json"]).toBeDefined();
+    expect(doc.paths["/api/v1/tpo/outcomes/{id}/letter"].get).toBeUndefined();
+    expect(doc.paths["/api/v1/tpo/outcomes/{id}/letter"].post).toBeDefined();
   });
 });
 
@@ -363,6 +369,8 @@ describe("the TPO door: staff only, one answer for everyone else", () => {
         call(R.drives.GET, "GET", `/api/v1/tpo/drives?campusId=${w.campusId}`, as(who)),
         call(R.outcomes.GET, "GET", `/api/v1/tpo/outcomes?campusId=${w.campusId}`, as(who)),
         call(R.naac.GET, "GET", `/api/v1/tpo/export/naac?campusId=${w.campusId}`, as(who)),
+        call(R.naac.POST, "POST", `/api/v1/tpo/export/naac?campusId=${w.campusId}`, as(who)),
+        call(R.reveal.POST, "POST", "/api/v1/tpo/outcomes/reveal", as(who, { body: { campusId: w.campusId } })),
         call(R.staff.GET, "GET", `/api/v1/tpo/staff?campusId=${w.campusId}`, as(who)),
         call(R.cohorts.POST, "POST", "/api/v1/tpo/cohorts", as(who, { body: { campusId: w.campusId, passoutYear: 2027, programme: "MBA" } })),
         call(R.drives.POST, "POST", "/api/v1/tpo/drives", as(who, { body: { cohortId: w.cohortId, title: "x", noticeText: "y" } })),
@@ -371,7 +379,7 @@ describe("the TPO door: staff only, one answer for everyone else", () => {
       ];
       for (const r of await Promise.all(checks)) expect([r.status, r.json.code]).toEqual([404, "not_found"]);
     }
-    expect((await call(R.tpoMe.GET, "GET", "/api/v1/tpo/me", as(student))).json).toEqual({ campuses: [] });
+    expect((await call(R.tpoMe.GET, "GET", "/api/v1/tpo/me", as(student))).json).toEqual({ campuses: [], pendingInvite: false });
   });
 
   it("staff of a campus sees it, and with one membership the campus need not be named", async () => {
@@ -411,10 +419,19 @@ describe("the TPO door: staff only, one answer for everyone else", () => {
     if (!done.ok) throw new Error("signup failed");
     const invitee: Who = { id: done.userId, token: done.session.token, email: addr };
 
-    // Before any TPO call there is no seat; the first TPO call claims the invite.
-    expect((await client.query("SELECT user_id FROM tpo_members WHERE campus_id = $1 AND email_hmac <> ALL($2::text[]) AND user_id IS NULL", [w.campusId, [`staff-${owner.id}`]])).rowCount).toBe(1);
+    // Decision 2026-10-31: GETs write nothing. Reading /tpo/me reports the waiting invite; only POST /tpo/claim takes the seat.
+    const open = () => client.query("SELECT user_id FROM tpo_members WHERE campus_id = $1 AND email_hmac <> ALL($2::text[]) AND user_id IS NULL", [w.campusId, [`staff-${owner.id}`]]);
+    expect((await open()).rowCount).toBe(1);
+    const waiting = S.TpoMeSchema.parse((await call(R.tpoMe.GET, "GET", "/api/v1/tpo/me", as(invitee))).json);
+    expect(waiting).toEqual({ campuses: [], pendingInvite: true });
+    expect((await call(R.cohorts.GET, "GET", "/api/v1/tpo/cohorts", as(invitee))).status).toBe(404); // a read does not claim
+    expect((await open()).rowCount).toBe(1);
+    const claimed = await call(R.claim.POST, "POST", "/api/v1/tpo/claim", as(invitee));
+    expect([claimed.status, claimed.json]).toEqual([200, { claimed: 1 }]);
+    expect((await call(R.claim.POST, "POST", "/api/v1/tpo/claim", as(invitee))).json).toEqual({ claimed: 0 }); // idempotent
+    expect((await open()).rowCount).toBe(0);
     const me = S.TpoMeSchema.parse((await call(R.tpoMe.GET, "GET", "/api/v1/tpo/me", as(invitee))).json);
-    expect(me.campuses).toEqual([{ campusId: w.campusId, campusName: expect.any(String), role: "staff" }]);
+    expect(me).toEqual({ campuses: [{ campusId: w.campusId, campusName: expect.any(String), role: "staff" }], pendingInvite: false });
     // A staff (not owner) cannot invite or list staff.
     expect((await call(R.staff.POST, "POST", "/api/v1/tpo/staff", as(invitee, { body: { email: "z@example.test" } }))).status).toBe(404);
     expect((await call(R.staff.GET, "GET", "/api/v1/tpo/staff", as(invitee))).status).toBe(404);
@@ -476,7 +493,76 @@ describe("the TPO door: staff only, one answer for everyone else", () => {
     const owner = await mkStaff(w, "owner");
     const mallory = await mkWho({ verified: false, email: `mallory-${randomUUID().slice(0, 6)}@example.test` });
     await call(R.staff.POST, "POST", "/api/v1/tpo/staff", as(owner, { body: { email: mallory.email } }));
-    expect((await call(R.tpoMe.GET, "GET", "/api/v1/tpo/me", as(mallory))).json).toEqual({ campuses: [] });
+    expect((await call(R.tpoMe.GET, "GET", "/api/v1/tpo/me", as(mallory))).json).toEqual({ campuses: [], pendingInvite: false });
+    expect((await call(R.claim.POST, "POST", "/api/v1/tpo/claim", as(mallory))).json).toEqual({ claimed: 0 });
+  });
+});
+
+describe("write roles (decision 2026-10-31): roster import and drive publishing are owner-or-officer only, no viewer role", () => {
+  const csv = (w: World) => ["email", ...Array.from({ length: 10 }, (_, i) => `s${i}-${randomUUID().slice(0, 6)}@${w.domain}`)].join("\n");
+
+  it("an owner and an officer (the staff seat) can import and publish", async () => {
+    for (const role of ["owner", "staff"] as const) {
+      const w = await mkCampus();
+      const who = await mkStaff(w, role);
+      const imp = await call(R.roster.POST, "POST", `/api/v1/tpo/cohorts/${w.cohortId}/roster`, as(who, { raw: csv(w), type: "text/csv" }), { id: w.cohortId });
+      expect([role, imp.status]).toEqual([role, 200]);
+      const pub = await call(R.drives.POST, "POST", "/api/v1/tpo/drives", as(who, { body: { cohortId: w.cohortId, title: "D", noticeText: NOTICE } }));
+      expect([role, pub.status]).toEqual([role, 201]);
+      // The roster tests below read these tables without a campus filter, so leave no rows behind.
+      await client.query("DELETE FROM cohort_imports WHERE campus_id = $1", [w.campusId]);
+      await client.query("DELETE FROM cohort_roster WHERE campus_id = $1", [w.campusId]);
+    }
+  });
+
+  it("a seat with any other role is refused with 403 forbidden (not a 404: they are staff here), writes nothing, and can still read", async () => {
+    const w = await mkCampus();
+    const viewer = await mkStaff(w, "staff");
+    const dropCheck = "ALTER TABLE tpo_members DROP CONSTRAINT tpo_members_role";
+    try {
+      await client.query(dropCheck);
+      await client.query("UPDATE tpo_members SET role = 'viewer' WHERE user_id = $1", [viewer.id]);
+      const imp = await call(R.roster.POST, "POST", `/api/v1/tpo/cohorts/${w.cohortId}/roster`, as(viewer, { raw: csv(w), type: "text/csv" }), { id: w.cohortId });
+      expect([imp.status, imp.json.code]).toEqual([403, "forbidden"]);
+      const pub = await call(R.drives.POST, "POST", "/api/v1/tpo/drives", as(viewer, { body: { cohortId: w.cohortId, title: "D", noticeText: NOTICE } }));
+      expect([pub.status, pub.json.code]).toEqual([403, "forbidden"]);
+      expect((await client.query("SELECT count(*)::int AS n FROM cohort_roster WHERE cohort_id = $1", [w.cohortId])).rows[0].n).toBe(0);
+      expect((await client.query("SELECT count(*)::int AS n FROM drives WHERE cohort_id = $1", [w.cohortId])).rows[0].n).toBe(0);
+      expect((await call(R.cohorts.GET, "GET", "/api/v1/tpo/cohorts", as(viewer))).status).toBe(200);
+    } finally {
+      await client.query("UPDATE tpo_members SET role = 'staff' WHERE role = 'viewer'");
+      await client.query("ALTER TABLE tpo_members ADD CONSTRAINT tpo_members_role CHECK (role IN ('owner', 'staff'))");
+    }
+  });
+
+  it("GET routes write no row: no access-log rows, no member changes, no import or roster rows", async () => {
+    const w = await mkCampus();
+    const staff = await mkStaff(w, "staff");
+    const owner = await mkStaff(w, "owner");
+    const st = await mkStudent(w, { share: "outcomes" });
+    await client.query("INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer, package_lpa) VALUES ($1, $2, $3, 'offer', 'Acme', 5)", [st.id, w.campusId, w.cohortId]);
+    const snapshot = async () =>
+      JSON.stringify(
+        (
+          await client.query(
+            `SELECT (SELECT count(*) FROM tpo_access_log) AS log, (SELECT count(*) FROM tpo_members) AS members, (SELECT count(*) FROM tpo_members WHERE user_id IS NULL) AS open,
+                    (SELECT count(*) FROM cohort_roster) AS roster, (SELECT count(*) FROM cohort_imports) AS imports, (SELECT count(*) FROM drives) AS drives, (SELECT count(*) FROM outcomes WHERE verification = 'tpo_verified') AS verified`,
+          )
+        ).rows[0],
+      );
+    const before = await snapshot();
+    for (const [h, path] of [
+      [R.tpoMe.GET, "/api/v1/tpo/me"],
+      [R.cohorts.GET, "/api/v1/tpo/cohorts"],
+      [R.drives.GET, "/api/v1/tpo/drives"],
+      [R.outcomes.GET, "/api/v1/tpo/outcomes"],
+      [R.naac.GET, "/api/v1/tpo/export/naac"],
+      [R.staff.GET, "/api/v1/tpo/staff"],
+    ] as const) {
+      const r = await call(h as never, "GET", path, as(path.endsWith("staff") ? owner : staff));
+      expect([path, r.status]).toEqual([path, 200]);
+    }
+    expect(await snapshot()).toBe(before);
   });
 });
 
@@ -543,6 +629,13 @@ describe("drive inbox: parse, publish, deliver", () => {
     expect((await inbox(outsider)).drives).toEqual([]);
     const reasons = (await inbox(pass)).drives[0]!.reasons.join(" ");
     expect(reasons).toMatch(/12th|backlog/i);
+    // Each rule carries its own status: a passing drive shows only passes, and an unknown drive never marks a rule it passed as unknown.
+    const passRules = (await inbox(pass)).drives[0]!.rules;
+    expect(passRules.map((r) => r.text)).toEqual((await inbox(pass)).drives[0]!.reasons);
+    expect(passRules.every((r) => r.status === "pass")).toBe(true);
+    const unkRules = (await inbox(unknown)).drives[0]!.rules;
+    expect(unkRules.some((r) => r.status === "unknown")).toBe(true);
+    expect(unkRules.every((r) => r.status === "pass" || r.status === "unknown")).toBe(true);
 
     expect(fetchSpy.mock.calls.filter(([u]) => String(u).includes("acme") || String(u).includes("bit.ly"))).toEqual([]);
     fetchSpy.mockRestore();
@@ -588,7 +681,17 @@ describe("outcomes: report, share, verify, letters, export", () => {
       expect(r.status).toBe(201);
       expect(S.OutcomeSchema.parse(r.json)).toMatchObject({ verification: "student_reported", employer });
     }
-    const seen = S.TpoOutcomesSchema.parse((await call(R.outcomes.GET, "GET", "/api/v1/tpo/outcomes", as(staff))).json).outcomes;
+    // Decision 2026-10-31: the GET names nobody and writes nothing; so the students' logs are still empty after it.
+    const redacted = await call(R.outcomes.GET, "GET", "/api/v1/tpo/outcomes", as(staff));
+    expect(S.TpoOutcomesSchema.parse(redacted.json).outcomes.map((o) => o.employer).sort()).toEqual(["Full Co", "Shared Co"]);
+    expect(S.TpoOutcomesSchema.parse(redacted.json).outcomes.every((o) => o.studentName === null && o.studentEmail === null)).toBe(true);
+    expect(redacted.text).not.toContain("Asha Test");
+    expect(redacted.text).not.toContain(full.email);
+    expect(S.AccessLogSchema.parse((await call(R.log.GET, "GET", "/api/v1/campus/access-log", as(out))).json).entries).toEqual([]);
+    // Naming a student is an explicit action, and it is logged for each student named.
+    const named = await call(R.reveal.POST, "POST", "/api/v1/tpo/outcomes/reveal", as(staff, { body: {} }));
+    expect(named.status).toBe(200);
+    const seen = S.TpoOutcomesSchema.parse(named.json).outcomes;
     expect(seen.map((o) => o.employer).sort()).toEqual(["Full Co", "Shared Co"]);
     expect(seen.find((o) => o.employer === "Shared Co")).toMatchObject({ studentName: "Asha Test", studentEmail: null, memberVerified: true });
     expect(seen.find((o) => o.employer === "Full Co")!.studentEmail).toBe(full.email);
@@ -627,7 +730,9 @@ describe("outcomes: report, share, verify, letters, export", () => {
     const stored = (await client.query("SELECT letter_enc FROM outcomes WHERE id = $1", [id])).rows[0].letter_enc as Buffer;
     expect(stored.includes(Buffer.from("synthetic offer"))).toBe(false); // sealed, not plaintext
 
-    const get = () => call(R.tpoLetter.GET, "GET", `/api/v1/tpo/outcomes/${id}/letter`, as(staff), { id });
+    // Decision 2026-10-31: viewing the letter is an explicit action (POST): the view is logged for the student in the same call.
+    const get = () => call(R.tpoLetter.POST, "POST", `/api/v1/tpo/outcomes/${id}/letter`, as(staff), { id });
+    expect((R.tpoLetter as Record<string, unknown>)["GET"]).toBeUndefined();
     expect((await get()).status).toBe(404); // no consent yet
     await client.query("INSERT INTO consents (user_id, kind, granted, doc_version) VALUES ($1, 'offer_letter_tpo', true, 'v1')", [u.id]);
     const ok = await get();
@@ -640,7 +745,7 @@ describe("outcomes: report, share, verify, letters, export", () => {
     const otherId = (await report(other, { kind: "offer", employer: "Other Co" })).json.id as string;
     await client.query("UPDATE outcomes SET letter_enc = $2, letter_mime = 'application/pdf' WHERE id = $1", [otherId, stored]);
     await client.query("INSERT INTO consents (user_id, kind, granted, doc_version) VALUES ($1, 'offer_letter_tpo', true, 'v1')", [other.id]);
-    const swapped = await call(R.tpoLetter.GET, "GET", `/api/v1/tpo/outcomes/${otherId}/letter`, as(staff), { id: otherId });
+    const swapped = await call(R.tpoLetter.POST, "POST", `/api/v1/tpo/outcomes/${otherId}/letter`, as(staff), { id: otherId });
     expect([swapped.status, swapped.json.code]).toEqual([500, "unreadable_record"]);
     // Withdrawing the consent closes it again.
     await client.query("INSERT INTO consents (user_id, kind, granted, doc_version) VALUES ($1, 'offer_letter_tpo', false, 'v1')", [u.id]);
@@ -673,7 +778,13 @@ describe("outcomes: report, share, verify, letters, export", () => {
     await report(ok, { kind: "interview", employer: "Interview Only" });
     await report(code, { kind: "offer", employer: "Unverified Seat Co" });
     await report(private_, { kind: "offer", employer: "Private Co" });
-    const res = await call(R.naac.GET, "GET", `/api/v1/tpo/export/naac?passoutYear=2026`, as(staff));
+    // The GET is a preview: a count and the headers, no student named, nothing logged.
+    const preview = await call(R.naac.GET, "GET", `/api/v1/tpo/export/naac?passoutYear=2026`, as(staff));
+    expect(S.NaacPreviewSchema.parse(preview.json)).toMatchObject({ rows: 1, header: [...S.NAAC_HEADER] });
+    expect(preview.text).not.toContain("HYPERLINK");
+    expect(S.AccessLogSchema.parse((await call(R.log.GET, "GET", "/api/v1/campus/access-log", as(ok))).json).entries).toEqual([]);
+    // The file is an explicit action (POST), audited per student in the same call.
+    const res = await call(R.naac.POST, "POST", `/api/v1/tpo/export/naac?passoutYear=2026`, as(staff));
     expect(res.status).toBe(200);
     expect(res.res.headers.get("content-type")).toMatch(/^text\/csv/);
     expect(res.res.headers.get("content-disposition")).toMatch(/^attachment; filename="naac-5\.2\.1-2026-\d{4}-\d{2}-\d{2}\.csv"$/);

@@ -214,6 +214,17 @@ describe("v1 wrapper", () => {
     expect([c.status, c.json.code]).toEqual([422, "idempotency_key_reuse"]);
   });
 
+  it("the stored replay body is sealed: no response value is readable in idempotency_keys", async () => {
+    const key = `sealed-${randomUUID()}`;
+    const a = await call(R.elig.PUT, "PUT", "/api/v1/eligibility", { body: { values: ELIG }, idem: key });
+    expect(a.status).toBe(200);
+    const row = (await client.query("SELECT response FROM idempotency_keys WHERE key = $1", [key])).rows[0];
+    expect(row.response.state).toBe("done");
+    expect(row.response.body).toBeUndefined();
+    expect(typeof row.response.sealed).toBe("string");
+    expect(JSON.stringify(row.response)).not.toContain(JSON.stringify(a.json).slice(1, 40));
+  });
+
   it("an unknown failure is a bare 500 with no message", async () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     await client.query("ALTER TABLE eligibility_profiles RENAME TO eligibility_profiles_x");

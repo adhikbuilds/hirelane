@@ -17,7 +17,8 @@ export interface DriveRow {
   cohortId: string;
   title: string;
   link: string | null;
-  status: "published" | "closed";
+  /** draft: not yet announced to students. The overview lists live and closed drives only. */
+  status: "draft" | "live" | "closed";
   scamRisk: string;
   criteria: unknown[];
   publishedAt: string;
@@ -140,7 +141,7 @@ export function toCampusOverview(i: CampusInput): CampusOverview {
   const days = i.cohorts.map((c) => i.stats[c.id]?.day).filter((d): d is string => !!d).sort();
   const latest = days.at(-1);
 
-  const drives: CampusOverview["drives"] = i.drives.map((d) => {
+  const drives: CampusOverview["drives"] = i.drives.filter((d) => d.status !== "draft").map((d) => {
     const cell = i.counts[d.id]?.metrics.find((m) => m.metric === "drive_eligible");
     if (!cell || cell.suppressed || cell.value == null) hidden += 1;
     const rules = d.criteria.map(describeCriterion).filter(Boolean).join(", ");
