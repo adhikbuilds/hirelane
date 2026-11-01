@@ -10,7 +10,7 @@
 import { applyCgpaRule, invertCgpaRule } from './cgpa';
 import { branchesRelated, canonBranch, canonDegree } from './criteria';
 import type { CgpaRule, Criterion, CriterionVerdict, EligibilityProfileInput, EligibilityResult, LevelVerdict, VerdictLevel, VerdictStatus } from './types';
-import { toCgpaRule, type UniversityRule } from './university';
+import { resolveUniversityRule, type UniversityRule } from './university';
 
 export interface EvaluateOptions {
   /** The campus rule (campuses.cgpa_rule). Always wins over a university rule. */
@@ -19,6 +19,10 @@ export interface EvaluateOptions {
   universityRule?: UniversityRule | null;
   /** The student or the campus confirmed the university rule. Needed when the row is not verified. */
   universityRuleConfirmed?: boolean;
+  /** The student's scheme ("2022"), for universities whose formula depends on it (VTU). Never derived from the passout year. */
+  universityScheme?: string | null;
+  /** The student's admission year, the other way to pick a scheme. */
+  admissionYear?: number | null;
 }
 
 type Field = keyof EligibilityProfileInput;
@@ -76,7 +80,10 @@ export function resolveConversion(opts: EvaluateOptions): Resolved {
   if (campus && campus.kind === 'linear' && isNum(campus.a) && isNum(campus.b)) return { conv: { rule: campus, who: "your campus's rule" }, missing: '' };
   const u = opts.universityRule;
   if (u) {
-    if (u.verified || opts.universityRuleConfirmed === true) return { conv: { rule: toCgpaRule(u), who: `${u.short}'s rule` }, missing: '' };
+    // A disputed rule or a missing scheme is unknown even when the student confirmed the rule: confirming cannot supply a scheme.
+    const res = resolveUniversityRule(u, { scheme: opts.universityScheme ?? null, admissionYear: opts.admissionYear ?? null });
+    if (!res.ok) return { conv: null, missing: res.reason };
+    if (u.verified || opts.universityRuleConfirmed === true) return { conv: { rule: res.rule, who: `${u.short}'s rule` }, missing: '' };
     return { conv: null, missing: `${u.short}'s rule (${u.formula}) is not confirmed yet. Confirm it to see if you meet this` };
   }
   return { conv: null, missing: 'We need your university\'s CGPA to % rule. Pick your university or ask your campus' };
@@ -252,7 +259,7 @@ export function evaluateEligibility(
   opts: EvaluateOptions = { cgpaRule: null },
 ): EligibilityResult {
   const confirmed = !!profile && (profile as { confirmed?: unknown }).confirmed === true;
-  const o: EvaluateOptions = { cgpaRule: opts?.cgpaRule ?? null, universityRule: opts?.universityRule ?? null, universityRuleConfirmed: opts?.universityRuleConfirmed === true };
+  const o: EvaluateOptions = { cgpaRule: opts?.cgpaRule ?? null, universityRule: opts?.universityRule ?? null, universityRuleConfirmed: opts?.universityRuleConfirmed === true, universityScheme: opts?.universityScheme ?? null, admissionYear: opts?.admissionYear ?? null };
   const verdicts: CriterionVerdict[] = criteria.map((criterion) => {
     if (!confirmed) return { criterion, status: 'unknown', reason: 'Your profile is not confirmed yet. Confirm it to check this' };
     const part = evalOne(criterion, profile as EligibilityProfileInput, o);

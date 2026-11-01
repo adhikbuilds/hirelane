@@ -164,6 +164,21 @@ describe('answerFrom', () => {
     const unconfirmed = answerFrom(INPUT.profile, INPUT.answerBank, INPUT.resumeFacts, INPUT.company, { universityRule: findUniversityRule('rgpv') });
     expect(unconfirmed.percentage.status).toBe('needs_you');
   });
+  it('a VTU percentage is never filled without a scheme; with one it follows that scheme', () => {
+    const vtu = findUniversityRule('vtu');
+    const none = answerFrom(INPUT.profile, INPUT.answerBank, INPUT.resumeFacts, INPUT.company, { universityRule: vtu, universityRuleConfirmed: true });
+    expect(none.percentage.status).toBe('needs_you');
+    expect(none.percentage.reason).toContain('which VTU scheme');
+    const s22 = answerFrom(INPUT.profile, INPUT.answerBank, INPUT.resumeFacts, INPUT.company, { universityRule: vtu, universityRuleConfirmed: true, universityScheme: '2022' });
+    expect(s22.percentage.value).toBe('81.0%');
+    const s18 = answerFrom(INPUT.profile, INPUT.answerBank, INPUT.resumeFacts, INPUT.company, { universityRule: vtu, universityRuleConfirmed: true, admissionYear: 2018 });
+    expect(s18.percentage.value).toBe('73.5%');
+  });
+  it('a disputed Mumbai rule is never used to fill a percentage', () => {
+    const s = answerFrom(INPUT.profile, INPUT.answerBank, INPUT.resumeFacts, INPUT.company, { universityRule: findUniversityRule('mumbai'), universityRuleConfirmed: true });
+    expect(s.percentage.status).toBe('needs_you');
+    expect(s.percentage.reason).toContain('Use the percentage on your marksheet');
+  });
   it('a stated percentage is answered directly', () => {
     const s = answerFrom({ ...INPUT.profile, eligibility: { grad_score: 72.5, grad_scale: 100, confirmed: true } }, [], INPUT.resumeFacts, INPUT.company);
     expect(s.percentage.value).toBe('72.5%');

@@ -6,26 +6,101 @@ import { callIn } from './rpc';
 import { orNotFound, resolveCampus, staffReadTx, staffTx } from './tpo';
 
 /**
- * NAAC criterion 5.2.1 shaped columns. [unverified] The headers follow the public description of 5.2.1 (year of placement,
- * student placed, programme graduated from, employer, package at appointment) plus a Verification column of our own. They
- * have NOT been checked against the NAAC manual for the current cycle; do that before a college files with it.
+ * Which NAAC manual this file follows. Affiliated colleges (Revised Accreditation Framework, Jan 2023): criterion 5.2.1 is
+ * "placement of outgoing students and students progressing to higher education", so one file holds both parts. The universities
+ * manual lists placement separately as 5.2.2 and is NOT what this file follows.
+ */
+export const NAAC_MANUAL =
+  'Follows the NAAC manual for affiliated colleges (RAF 2023): criterion 5.2.1 combines placement of outgoing students and students progressing to higher education. The universities manual lists placement separately as 5.2.2 and is not followed here';
+
+/**
+ * Placement part of 5.2.1. [unverified] The columns follow the public description of the template (year, student placed,
+ * programme graduated from, employer with contact details, pay package at appointment) plus a Verification column of our own.
+ * They have NOT been checked against the official data template for the current cycle; do that before a college files with it.
  */
 export const NAAC_HEADER = [
-  'Year of placement',
+  'Year',
   'Name of the student placed',
   'Program graduated from',
   'Name of the employer',
+  'Employer contact details',
   'Pay package at appointment (LPA)',
   'Verification',
 ] as const;
 
-interface NaacRow {
+/** Higher-education part of 5.2.1 (students progressing to higher education). Same caveat as NAAC_HEADER. */
+export const NAAC_HIGHER_ED_HEADER = ['Name of the student', 'Program graduated from', 'Name of the institution joined', 'Name of the programme admitted to', 'Verification'] as const;
+
+export interface NaacRow {
   year: number;
   student: string;
   programme: string;
   employer: string;
+  /** Only when the student shared it. null otherwise: the cell stays blank. */
+  employerContact: string | null;
   packageLpa: number | null;
   verification: 'student_reported' | 'tpo_verified';
+}
+
+export interface NaacHigherEdRow {
+  student: string;
+  programme: string;
+  institution: string;
+  admittedTo: string;
+  verification: 'student_reported' | 'tpo_verified';
+}
+
+const text = (v: unknown): string => (typeof v === 'string' ? v : '');
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const ver = (v: unknown): 'student_reported' | 'tpo_verified' => (v === 'tpo_verified' ? 'tpo_verified' : 'student_reported');
+
+/**
+ * What the database function returned, as the two parts. The function today returns a plain array of offers (no contact, no
+ * higher education); an object `{ placements, higherEd }` carries both. Anything else reads as empty. The consent filter
+ * (verified members at share level outcomes or full) is applied in the database, never here.
+ */
+export function readNaacPayload(raw: unknown): { placements: NaacRow[]; higherEd: NaacHigherEdRow[] } {
+  const placementsIn = Array.isArray(raw) ? raw : isObj(raw) && Array.isArray(raw.placements) ? raw.placements : [];
+  const higherIn = isObj(raw) && Array.isArray(raw.higherEd) ? raw.higherEd : [];
+  const placements = placementsIn.filter(isObj).map((r) => {
+    const contact = text(r.employerContact).trim();
+    return {
+      year: typeof r.year === 'number' ? r.year : 0,
+      student: text(r.student),
+      programme: text(r.programme),
+      employer: text(r.employer),
+      employerContact: contact === '' ? null : contact,
+      packageLpa: typeof r.packageLpa === 'number' ? r.packageLpa : null,
+      verification: ver(r.verification),
+    };
+  });
+  const higherEd = higherIn.filter(isObj).map((r) => ({ student: text(r.student), programme: text(r.programme), institution: text(r.institution), admittedTo: text(r.admittedTo), verification: ver(r.verification) }));
+  return { placements, higherEd };
+}
+
+const label = (v: 'student_reported' | 'tpo_verified') => (v === 'tpo_verified' ? 'TPO-verified' : 'student-reported');
+
+/**
+ * The file: comment lines (each one CSV cell starting "# ") that state the manual, then Part A (placement) and Part B (higher
+ * education), each with its own header row. Every cell is formula-safe. Comment text is fixed, never student data.
+ */
+export function buildNaacCsv(placements: readonly NaacRow[], higherEd: readonly NaacHigherEdRow[]): string {
+  const note = (t: string) => toCsv([`# ${t}`], []);
+  return [
+    note(NAAC_MANUAL),
+    note('The columns follow the public description of the template and have not been checked against the official data template for the current cycle'),
+    note('Employer contact details are blank unless the student shared it'),
+    note('Part A: placement of outgoing students'),
+    toCsv(
+      NAAC_HEADER,
+      placements.map((r) => [r.year, r.student, r.programme, r.employer, (r.employerContact ?? '').trim(), r.packageLpa === null ? '' : r.packageLpa, label(r.verification)]),
+    ),
+    note(higherEd.length === 0 ? 'Part B: students progressing to higher education. There are no higher-education records shared by students yet' : 'Part B: students progressing to higher education'),
+    toCsv(
+      NAAC_HIGHER_ED_HEADER,
+      higherEd.map((r) => [r.student, r.programme, r.institution, r.admittedTo, label(r.verification)]),
+    ),
+  ].join('');
 }
 
 /**
@@ -43,19 +118,17 @@ export async function previewNaac(ctx: ServiceCtx, input: unknown = {}): Promise
 }
 
 /**
- * The export, an explicit action (POST): offers by verified members who chose outcomes or full. The database logs one access
+ * The export, an explicit action (POST): offers (and, when the database returns them, higher-education records) by verified members who chose outcomes or full. The database logs one access
  * row per student in the same call, so the student can see the export. Labelled "student-reported" or "TPO-verified". Cells are formula-safe.
  */
 export async function exportNaac(ctx: ServiceCtx, input: unknown = {}): Promise<{ filename: string; csv: string; rows: number }> {
   const i = parseInput(NaacExportInput, input);
   const rows = await staffTx(ctx, async (c) => {
     const campus = await resolveCampus(c, i.campusId);
-    return orNotFound(await callIn<NaacRow[] | null>(c, 'tpo_naac_rows', [campus, i.passoutYear ?? null]));
+    return orNotFound(await callIn<unknown>(c, 'tpo_naac_rows', [campus, i.passoutYear ?? null]));
   });
-  const csv = toCsv(
-    NAAC_HEADER,
-    rows.map((r) => [r.year, r.student, r.programme, r.employer, r.packageLpa === null ? '' : r.packageLpa, r.verification === 'tpo_verified' ? 'TPO-verified' : 'student-reported']),
-  );
+  const { placements, higherEd } = readNaacPayload(rows);
+  const csv = buildNaacCsv(placements, higherEd);
   const stamp = ctx.now().toISOString().slice(0, 10);
-  return { filename: `naac-5.2.1-${i.passoutYear ?? 'all'}-${stamp}.csv`, csv, rows: rows.length };
+  return { filename: `naac-5.2.1-${i.passoutYear ?? 'all'}-${stamp}.csv`, csv, rows: placements.length + higherEd.length };
 }

@@ -60,6 +60,9 @@ export interface AnswerOptions {
   country?: string;
   universityRule?: UniversityRule | null;
   universityRuleConfirmed?: boolean;
+  /** Scheme or admission year, for universities whose formula depends on it (VTU). */
+  universityScheme?: string | null;
+  admissionYear?: number | null;
   campusRule?: { kind: 'linear'; a: number; b: number } | null;
 }
 

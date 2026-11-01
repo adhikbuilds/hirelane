@@ -86,7 +86,7 @@ export type { EducationParse } from './resume/education';
 export { verhoeffValid, verhoeffCheckDigit } from './resume/verhoeff';
 export { detectSensitive, maskSensitive } from './resume/sensitive';
 export { assessTextLayer } from './resume/text-layer';
-export { parseCriteria, evaluateEligibility, applyCgpaRule, invertCgpaRule, canonDegree, canonBranch, universityRules, findUniversityRule, toCgpaRule } from './eligibility';
+export { parseCriteria, evaluateEligibility, applyCgpaRule, invertCgpaRule, canonDegree, canonBranch, universityRules, findUniversityRule, toCgpaRule, resolveUniversityRule } from './eligibility';
 export type { EvaluateOptions, UniversityRule } from './eligibility';
 export type { LevelVerdict, VerdictLevel } from './eligibility/types';
 export { normalizeDate, normalizeDateRange, normalizeMarks, parseScoreText, validateScore, PCT_MISMATCH_TOLERANCE } from './resume/normalize';

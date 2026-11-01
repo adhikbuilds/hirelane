@@ -142,7 +142,7 @@ function academic(profile: AnswerProfile, o: AnswerOptions): Pick<AnswerSet, 'pc
         percentage = filled('percentage', v2, [{ source: 'profile', field: 'grad_pct_equiv', value: v2 }]);
       } else if (scale === 10) {
         const campus: CgpaRule = o.campusRule ?? null;
-        const { conv, missing } = resolveConversion({ cgpaRule: campus, universityRule: o.universityRule ?? null, universityRuleConfirmed: o.universityRuleConfirmed === true });
+        const { conv, missing } = resolveConversion({ cgpaRule: campus, universityRule: o.universityRule ?? null, universityRuleConfirmed: o.universityRuleConfirmed === true, universityScheme: o.universityScheme ?? null, admissionYear: o.admissionYear ?? null });
         const pct = conv ? applyCgpaRule(score, conv.rule as NonNullable<CgpaRule>) : null;
         if (conv && pct !== null) {
           const v2 = `${fmt1(round1(pct))}%`;

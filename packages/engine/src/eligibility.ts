@@ -4,5 +4,5 @@ export { evaluateEligibility } from './eligibility/evaluate';
 export type { EvaluateOptions } from './eligibility/evaluate';
 export { applyCgpaRule, invertCgpaRule } from './eligibility/cgpa';
 export { canonDegree, canonBranch } from './eligibility/criteria';
-export { universityRules, findUniversityRule, toCgpaRule } from './eligibility/university';
+export { universityRules, findUniversityRule, toCgpaRule, resolveUniversityRule } from './eligibility/university';
 export type { UniversityRule } from './eligibility/university';

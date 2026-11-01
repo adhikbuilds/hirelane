@@ -24,3 +24,4 @@ playwright-report/
 docs/design/refs/
 docs/design/plan-viewer.html
 docs/design/mocks/shots/
+.DS_Store

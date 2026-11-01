@@ -501,6 +501,9 @@ export interface ScoreOptions {
   /** The student's university rule (data/cgpa-rules.json) and whether they confirmed it. */
   universityRule?: UniversityRule | null;
   universityRuleConfirmed?: boolean;
+  /** Scheme or admission year, for universities whose formula depends on it (VTU). */
+  universityScheme?: string | null;
+  admissionYear?: number | null;
 }
 
 export interface JobScore {
@@ -528,7 +531,7 @@ export function scoreForProfile(job: ParsedJob, profile: ProfileFit, eligibility
       if (years >= r.yearsMin) matched++;
     }
   }
-  const eligibility = evaluateEligibility(job.criteria, eligibilityProfile, { cgpaRule: opts.cgpaRule ?? null, universityRule: opts.universityRule ?? null, universityRuleConfirmed: opts.universityRuleConfirmed === true });
+  const eligibility = evaluateEligibility(job.criteria, eligibilityProfile, { cgpaRule: opts.cgpaRule ?? null, universityRule: opts.universityRule ?? null, universityRuleConfirmed: opts.universityRuleConfirmed === true, universityScheme: opts.universityScheme ?? null, admissionYear: opts.admissionYear ?? null });
   const worthwhile = isWorthwhile({
     job: {
       fresher: job.fresher.fresher,
