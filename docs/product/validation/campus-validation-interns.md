@@ -33,7 +33,7 @@ What you'll do:
 - Share what students in your college actually struggle with when applying off campus
 
 What you'll get:
-- [Stipend: ₹____ fixed, plus ₹____ for each completed and written-up conversation]
+- ₹[____] for each completed placement officer conversation with its one-page summary (paid within a week of the summary)
 - A certificate and a letter of recommendation
 - Direct work with the founder on a real product
 
@@ -55,5 +55,5 @@ Time: about 3–5 hours a week for 4 weeks.
 - Write the summary into the results table in `tpo-interview-script.md` within 24 hours.
 
 ## Paying and tracking
-- Pay a small fixed stipend plus a per-conversation amount, released once you receive the written summary.
+- Owner decision (1 Nov): pay **per conversation only**, with no fixed stipend. Release each payment once you receive the written summary, and say this clearly in the posting.
 - Track every intern in one sheet: name, college, TPO contacted (date), meeting held (date), summary received, paid.
