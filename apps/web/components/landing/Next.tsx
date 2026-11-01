@@ -10,8 +10,8 @@ const fmt = (n: number) => n.toLocaleString("en-IN");
 
 /**
  * Landing, motion edition (owner-approved concept, 2026-10-29): no screenshots. The hero tells one application's
- * story in CSS: a notice types in, its rules lift out and tick against the student's marks, a role card is swiped
- * right and stamped Applied, a reply pings. Every animation ends on a readable final frame under reduced motion.
+ * story in CSS: a notice types in, its rules lift out and tick against the student's marks, a role card gets Apply
+ * tapped and is stamped Applied, a reply pings. Every animation ends on a readable final frame under reduced motion.
  */
 export function NextLanding({ counts }: { counts: NextCounts }) {
   return (
@@ -39,7 +39,7 @@ export function NextLanding({ counts }: { counts: NextCounts }) {
       <section className="nx-hero">
         <div className="nx-hero-copy">
           <h1>Off-campus jobs, matched to your marks.</h1>
-          <p>Hirelane reads every rule in a drive notice, checks it against your marks, and applies the moment you swipe right.</p>
+          <p>Hirelane reads every rule in a drive notice, checks it against your marks, and applies the moment you tap Apply.</p>
           <div className="nx-ctas">
             <Link href="/signin" className="nx-btn nx-btn-lg">
               Get started, free
@@ -56,7 +56,7 @@ export function NextLanding({ counts }: { counts: NextCounts }) {
           ) : null}
         </div>
 
-        <div className="nx-story" aria-label="How one application goes: a drive notice is read, its rules are checked against your marks, you swipe right and it's applied, and a reply arrives.">
+        <div className="nx-story" aria-label="How one application goes: a drive notice is read, its rules are checked against your marks, you tap Apply and it's applied, and a reply arrives.">
           <div className="nx-notice" aria-hidden="true">
             <span className="nx-notice-from">Placement cell, forwarded</span>
             <p>
@@ -129,7 +129,7 @@ export function NextLanding({ counts }: { counts: NextCounts }) {
 
       <section className="nx-feature" data-flip>
         <div>
-          <h2>Swipe right. It&apos;s applied.</h2>
+          <h2>Tap Apply. It&apos;s applied.</h2>
           <p>Your answers come from your resume and the questions you answered once. Hirelane fills the employer&apos;s form and submits it with your Hirelane address. If a site blocks us, you finish it in one tap.</p>
         </div>
         <div className="nx-demo nx-stack" aria-hidden="true">

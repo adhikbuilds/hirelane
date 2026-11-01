@@ -30,10 +30,10 @@ const ok = <T,>(data: T) => ({ ok: true, status: 200, data, error: null });
 const fail = (status: number, error: string) => ({ ok: false, status, data: null, error });
 
 describe("Home", () => {
-  it("leads with the deck, then Needs you, drives, resume, marks, week and paste: each row goes somewhere", () => {
+  it("leads with the feed, then Needs you, drives, resume, marks, week and paste: each row goes somewhere", () => {
     const { container } = render(<HomeA data={SAMPLE_HOME} />);
     expect(screen.getByText("Good morning, Rahul")).toBeTruthy();
-    expect(container.querySelector(".st-deck")).toBeTruthy();
+    expect(container.querySelector(".st-feed-list")).toBeTruthy();
     const panel = container.querySelector(".st-rp")!;
     const links = within(panel as HTMLElement).getAllByRole("link");
     const hrefs = links.map((a) => a.getAttribute("href"));
@@ -243,11 +243,11 @@ describe("Paste", () => {
 });
 
 describe("Onboarding", () => {
-  it("step 4: turning on swipe records the consent, then goes to the college step", async () => {
+  it("step 4: turning on Apply records the consent, then goes to the college step", async () => {
     api.putJson.mockResolvedValue(ok({ autoApply: true }));
     render(<ApplyStep pilot address="rahul.k3x@apply.hirelane.in" sample={false} />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Swipe right, and we apply.");
-    await userEvent.click(screen.getByRole("button", { name: "Turn on swipe to apply" }));
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Tap Apply, and we apply.");
+    await userEvent.click(screen.getByRole("button", { name: "Turn on Apply" }));
     expect(api.putJson).toHaveBeenCalledWith("/api/v1/apply/consent", { granted: true });
     await waitFor(() => expect(nav.push).toHaveBeenCalledWith("/welcome/college"));
   });
@@ -261,7 +261,7 @@ describe("Onboarding", () => {
   it("step 4: before the pilot the copy says ready, and a failed save stays on the step", async () => {
     api.putJson.mockResolvedValue(fail(500, "internal_error"));
     render(<ApplyStep pilot={false} address={null} sample={false} />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Swipe right, and it’s ready.");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Tap Get it ready, and it’s ready.");
     expect(screen.getByText(/You press submit on their site/)).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Use my Hirelane address" }));
     await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("didn’t save"));

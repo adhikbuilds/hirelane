@@ -10,26 +10,20 @@ export const GLYPH: Record<RuleStatus, { mark: string; cls: string }> = {
 
 /**
  * The one coloured surface in the app (DESIGN.md 4.4). Fields in order: company, role, pay exactly as stated, the fit line,
- * freshness; everything else is behind "Details". Presentational: the deck owns gestures and passes the stamps in.
+ * freshness; everything else is behind "Details". Presentational: the feed owns the buttons and which card is open.
  */
 export function RoleCard({
   card,
   open,
   onToggle,
-  stampLabel,
-  articleRef,
-  handlers,
 }: {
   card: CardData;
   open: boolean;
   onToggle: () => void;
-  stampLabel: string;
-  articleRef?: React.Ref<HTMLElement>;
-  handlers?: React.HTMLAttributes<HTMLElement>;
 }) {
   const allPass = card.rules.length > 0 && card.rules.every((r) => r.status === "pass");
   return (
-    <article ref={articleRef} className={`st-rc st-${card.tone}${open ? " st-open" : ""}`} aria-label={`${card.role} at ${card.company}`} {...handlers}>
+    <article className={`st-rc st-${card.tone}${open ? " st-open" : ""}`} aria-label={`${card.role} at ${card.company}`}>
       <div className="st-rc-co">
         <span className="st-rc-logo" aria-hidden="true">
           {card.initial}
@@ -113,12 +107,6 @@ export function RoleCard({
             The day, the rounds and the full posting
           </a>
         ) : null}
-      </div>
-      <div className="st-stamp" aria-hidden="true">
-        {stampLabel}
-      </div>
-      <div className="st-stamp st-skip" aria-hidden="true">
-        Skip
       </div>
     </article>
   );

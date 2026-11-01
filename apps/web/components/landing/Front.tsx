@@ -25,7 +25,7 @@ export function StudentsPage({ demo, result }: { demo: DemoInput | null; result:
 
       <section className="fr-sub-hero">
         <h1 className="cpl-h1">For students: jobs you can actually get.</h1>
-        <p className="cpl-lede">Try the eligibility check below. Sign in to check your resume and swipe roles picked for your marks.</p>
+        <p className="cpl-lede">Try the eligibility check below. Sign in to check your resume and see roles picked for your marks.</p>
         <Link className="cp-btn" href="/signin">
           Sign in, free
         </Link>
@@ -86,7 +86,7 @@ export function StudentsPage({ demo, result }: { demo: DemoInput | null; result:
             <span>See what a company&apos;s hiring software sees, and fix it.</span>
           </li>
           <li>
-            <b>Swipe roles you qualify for</b>
+            <b>See roles you qualify for</b>
             <span>Every rule is read: percentage, backlogs, batch, branch.</span>
           </li>
           <li>

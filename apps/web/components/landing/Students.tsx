@@ -4,7 +4,7 @@ import { Button } from "@/components/shadcn/button";
 
 const STEPS = [
   { n: "1", title: "Check your resume", text: "See what a company's hiring software sees, and fix it in minutes. Or build one from 8 short questions." },
-  { n: "2", title: "See roles you qualify for", text: "We read every rule: 60% throughout, backlogs, batch, branch. You only swipe jobs you can actually apply to." },
+  { n: "2", title: "See roles you qualify for", text: "We read every rule: 60% throughout, backlogs, batch, branch. You only see jobs you can actually apply to." },
   { n: "3", title: "Apply on the company's site", text: "Your answers are ready to copy. You press submit; we track the reply." },
 ];
 

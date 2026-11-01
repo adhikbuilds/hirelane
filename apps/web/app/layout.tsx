@@ -18,7 +18,7 @@ const overpass = localFont({
 
 export const metadata: Metadata = {
   title: { default: "hirelane", template: "%s | hirelane" },
-  description: "Open jobs read straight from public company boards, with pay shown only when stated. Swipe-and-fill applications open with early access.",
+  description: "Open jobs read straight from public company boards, with pay shown only when stated. Applications sent from Hirelane open with early access.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

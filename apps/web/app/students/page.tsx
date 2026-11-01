@@ -4,7 +4,7 @@ import { StudentsPage, type DemoInput } from "@/components/landing/Front";
 
 export const metadata: Metadata = {
   title: "For students",
-  description: "Check if you qualify for a drive in seconds, then swipe roles picked for your marks. Free for students.",
+  description: "Check if you qualify for a drive in seconds, then see roles picked for your marks. Free for students.",
 };
 
 const num = (v: string | undefined, max: number) => {

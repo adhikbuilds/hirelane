@@ -27,7 +27,7 @@ export interface Chrome {
   badge: number;
 }
 
-/** Pre-pilot (HIRELANE_AUTO_APPLY off, the production default) the copy says "ready" and a right swipe applies nothing. */
+/** Pre-pilot (HIRELANE_AUTO_APPLY off, the production default) the copy says "ready" and Apply applies nothing. */
 export const pilotOn = (): boolean => applyMode() !== "off";
 
 const initialOf = (name: string): string => (name[0] ?? "?").toUpperCase();

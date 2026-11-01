@@ -13,7 +13,7 @@ const Bars = ({ on }: { on: number }) => (
   </div>
 );
 
-/** Step 4 of 5: the student chooses whether a right swipe applies for them. Either answer moves on; it can be changed any time. */
+/** Step 4 of 5: the student chooses whether tapping Apply applies for them. Either answer moves on; it can be changed any time. */
 export function ApplyStep({ pilot, address, sample }: { pilot: boolean; address: string | null; sample: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"on" | "off" | null>(null);
@@ -36,13 +36,13 @@ export function ApplyStep({ pilot, address, sample }: { pilot: boolean; address:
   return (
     <div className="st-au-main">
       <div>
-        <h1 className="st-au-h">{pilot ? "Swipe right, and we apply." : "Swipe right, and it’s ready."}</h1>
+        <h1 className="st-au-h">{pilot ? "Tap Apply, and we apply." : "Tap Get it ready, and it’s ready."}</h1>
         <p className="st-au-sub">Step 4 of 5. You can change this any time in Settings.</p>
       </div>
       <div className="st-au-card-w">
         <div className="st-au-card">
           <Bars on={4} />
-          <h2>{pilot ? "When you swipe right, Hirelane applies for you." : "When you swipe right, Hirelane gets your application ready."}</h2>
+          <h2>{pilot ? "When you tap Apply, Hirelane applies for you." : "When you tap Get it ready, Hirelane gets your application ready."}</h2>
           <p>
             {pilot
               ? "Hirelane fills in the company’s form from your resume and your answers, and sends it from your Hirelane address. Replies come to your inbox here. If a site blocks us, you finish it there with everything ready. You’ll see a receipt for every application."
@@ -50,7 +50,7 @@ export function ApplyStep({ pilot, address, sample }: { pilot: boolean; address:
           </p>
           {address ? <div className="st-au-addr">{address}</div> : <p className="st-au-note">Your Hirelane address is made when you continue.</p>}
           <button type="button" className="st-au-btn" disabled={busy !== null} onClick={() => void choose(true)}>
-            {pilot ? "Turn on swipe to apply" : "Use my Hirelane address"}
+            {pilot ? "Turn on Apply" : "Use my Hirelane address"}
           </button>
           <button type="button" className="st-au-btn st-o" disabled={busy !== null} onClick={() => void choose(false)}>
             I’ll submit myself

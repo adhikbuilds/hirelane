@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { HomeView } from "@/lib/student/types";
 import { CopyButton } from "./CopyButton";
-import { Deck } from "./Deck";
+import { Feed } from "./Feed";
 import { RowLink, StudentShell } from "./AppShell";
 
 const countLine = (d: HomeView) =>
@@ -23,7 +23,7 @@ const countLine = (d: HomeView) =>
     </>
   );
 
-/** Student Home, direction A (approved): the deck is the page, and one ruled panel holds everything that needs or leads somewhere. */
+/** Student Home, direction A (approved): the feed is the page, and one ruled panel holds everything that needs or leads somewhere. */
 export function HomeA({ data }: { data: HomeView }) {
   const needs = data.codes.length + data.finish.length;
   const replies = data.week.replies;
@@ -35,7 +35,7 @@ export function HomeA({ data }: { data: HomeView }) {
         {data.sample ? <p className="st-sample">Sample student. Real numbers appear once picks are live.</p> : null}
       </div>
       <div className="st-home">
-        <Deck cards={data.cards} variant="home" autoApply={data.autoApply} address={data.applyAddress} network={!data.sample && data.pilot} />
+        <Feed cards={data.cards} variant="home" autoApply={data.autoApply} address={data.applyAddress} network={!data.sample && data.pilot} />
 
         <div className="st-panel st-rp st-rows">
           {needs > 0 ? (

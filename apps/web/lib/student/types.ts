@@ -175,7 +175,7 @@ export interface HomeView {
   newCount: number;
   badge: number;
   autoApply: boolean;
-  /** Whether a right swipe really applies (the pilot is on). */
+  /** Whether Apply really applies (the pilot is on). */
   pilot: boolean;
   applyAddress: string | null;
   codes: NeedsCode[];

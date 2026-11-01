@@ -12,7 +12,7 @@ export type Employers = string[];
 const fmt = (n: number) => n.toLocaleString("en-IN");
 
 const STEPS = [
-  { k: "Swipe", title: "Swipe roles you qualify for", text: "Every pick is checked against your marks: percentage, backlogs, batch, branch." },
+  { k: "Pick", title: "Pick roles you qualify for", text: "Every pick is checked against your marks: percentage, backlogs, batch, branch." },
   { k: "Check", title: "Check your answers", text: "We will fill the employer's questions from your resume. Anything we can't know, we ask." },
   { k: "Open", title: "Open the employer's form", text: "Answers ready to copy, resume ready to attach, on the company's own site." },
   { k: "Submit", title: "You press submit", text: "Hirelane never applies for you. Replies land in your tracker." },
@@ -81,7 +81,7 @@ export function MainLanding({ counts, employers }: { counts: SiteCounts; employe
           </figure>
           <figure className="site-phone">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/marketing/student-phone.png" alt="The student app on a phone: three new roles you qualify for, and a role card you can swipe" />
+            <img src="/marketing/student-phone.png" alt="The student app on a phone: three new roles you qualify for, and a role card with Skip, Save and Apply" />
           </figure>
         </div>
       </section>
@@ -119,7 +119,7 @@ export function MainLanding({ counts, employers }: { counts: SiteCounts; employe
       ) : null}
 
       <section className="site-section" aria-labelledby="apply-h">
-        <h2 id="apply-h">How applying works: swipe to submitted, no retyping.</h2>
+        <h2 id="apply-h">How applying works: pick to submitted, no retyping.</h2>
         <ol className="site-flow">
           {STEPS.map((s, i) => (
             <li key={s.k} style={{ animationDelay: `${i * 1.5}s` }}>
@@ -176,7 +176,7 @@ export function MainLanding({ counts, employers }: { counts: SiteCounts; employe
           </article>
           <article className="site-row" data-flip>
             <div>
-              <h3>Swipe roles picked for your marks</h3>
+              <h3>Roles picked for your marks</h3>
               <p>Every card shows pay in rupees, the rules you meet, the must-haves you match, and who you already know at the company.</p>
             </div>
             <figure className="site-frame site-frame-narrow">

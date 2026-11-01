@@ -788,14 +788,25 @@ describe("outcomes: report, share, verify, letters, export", () => {
     expect(res.status).toBe(200);
     expect(res.res.headers.get("content-type")).toMatch(/^text\/csv/);
     expect(res.res.headers.get("content-disposition")).toMatch(/^attachment; filename="naac-5\.2\.1-2026-\d{4}-\d{2}-\d{2}\.csv"$/);
-    const rows = S.parseCsv(res.text);
+    // The file opens with comment lines naming the manual, then Part A (placement) and Part B (higher education).
+    const lines = res.text.split("\r\n").filter((l) => l !== "");
+    const isComment = (l: string) => /^"?# /.test(l);
+    expect(lines.filter(isComment).join("\n")).toContain("RAF 2023");
+    expect(lines.filter(isComment).join("\n")).toContain("5.2.1");
+    const body = lines.filter((l) => !isComment(l));
+    const partB = body.findIndex((l) => l.startsWith(S.NAAC_HIGHER_ED_HEADER[0]));
+    expect(partB).toBeGreaterThan(0);
+    const rows = S.parseCsv(body.slice(0, partB).join("\r\n"));
     expect(rows.header).toEqual([...S.NAAC_HEADER]);
+    expect(S.parseCsv(body.slice(partB).join("\r\n")).header).toEqual([...S.NAAC_HIGHER_ED_HEADER]);
     expect(rows.rows).toHaveLength(1);
     const row = rows.rows[0]!;
+    expect(row[0]).toMatch(/^20\d{2}$/);
     expect(row[1]).toBe(`'=HYPERLINK("http://evil.example.test","click")`);
     expect(row[3]).toBe("'+cmd|' /C calc'!A0");
-    expect([row[2], row[4], row[5]]).toEqual(["B.Tech CSE", "6.25", "student-reported"]);
-    for (const line of res.text.split("\r\n").slice(1)) expect(line).not.toMatch(/^"?[=+\-@]/);
+    expect(row[4]).toBe(""); // no employer contact is stored yet, so the cell stays blank
+    expect([row[2], row[5], row[6]]).toEqual(["B.Tech CSE", "6.25", "student-reported"]);
+    for (const line of body.slice(1, partB)) expect(line).not.toMatch(/^"?[=+\-@]/);
     expect(res.text).not.toContain("Unverified Seat Co");
     expect(res.text).not.toContain("Private Co");
     expect(S.AccessLogSchema.parse((await call(R.log.GET, "GET", "/api/v1/campus/access-log", as(ok))).json).entries.map((e) => e.action)).toEqual(["naac_export"]);

@@ -184,7 +184,7 @@ export function toTrackerView(apps: ApplicationSummary[], inbox: InboundView[], 
     { id: "needs", label: "Needs you", rows: needs, empty: "Nothing is waiting on you." },
     { id: "replies", label: "Replies", rows: replies, empty: "Replies from employers show here." },
     { id: "interview", label: "Interview", rows: interview, empty: "When an employer asks for an interview, it moves here." },
-    { id: "applied", label: "Applied", rows: applied, empty: "Swipe right on a pick and it shows here." },
+    { id: "applied", label: "Applied", rows: applied, empty: "Tap Apply on a pick and it shows here." },
     { id: "offer", label: "Offer", rows: offers, empty: "Offers you record show here, with who can see them." },
   ];
   const messages = inbox.map((m) => messageOf(m, now));
@@ -295,7 +295,7 @@ export interface HomeInput {
   drives: StudentDrive[];
   resumes: ResumeSummary[];
   settings: Pick2<ApplySettings, "autoApply" | "applyAddress">;
-  /** The pilot is on: a right swipe really applies. Otherwise it only marks the role ready. */
+  /** The pilot is on: Apply really applies. Otherwise it only marks the role ready. */
   pilot?: boolean;
   now: Date;
 }

@@ -13,7 +13,7 @@ const walk = (dir: string, out: string[] = []): string[] => {
   }
   return out;
 };
-const NEW_SHELL = ["components/student/AppShell.tsx", "components/student/Deck.tsx", "components/student/RoleCard.tsx", "components/student/HomeA.tsx", "components/student/DrivesView.tsx", "components/student/TrackerView.tsx", "components/student/FinishView.tsx", "components/student/PasteForm.tsx", "components/student/Onboarding.tsx", "components/student/OutcomeButtons.tsx", "components/student/CopyButton.tsx", "components/student/Icon.tsx"];
+const NEW_SHELL = ["components/student/AppShell.tsx", "components/student/Feed.tsx", "components/student/RoleCard.tsx", "components/student/HomeA.tsx", "components/student/DrivesView.tsx", "components/student/TrackerView.tsx", "components/student/FinishView.tsx", "components/student/PasteForm.tsx", "components/student/Onboarding.tsx", "components/student/OutcomeButtons.tsx", "components/student/CopyButton.tsx", "components/student/Icon.tsx"];
 const NEW_PAGES = ["app/(app)/home/page.tsx", "app/(app)/picks/page.tsx", "app/(app)/drives/page.tsx", "app/(app)/tracker/page.tsx", "app/(app)/tracker/[id]/page.tsx", "app/(app)/paste/page.tsx", "app/(app)/welcome/apply/page.tsx", "app/(app)/welcome/college/page.tsx"];
 const SOURCES = [...NEW_SHELL, ...NEW_PAGES, "lib/student/map.ts", "lib/student/sample.ts"];
 const read = (f: string) => readFileSync(join(ROOT, f), "utf8");

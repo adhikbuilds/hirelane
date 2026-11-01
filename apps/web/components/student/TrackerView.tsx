@@ -183,7 +183,7 @@ export function TrackerPanes({ view, selected, message, tab, sample, detail = fa
           ) : (
             <>
               <h2>Nothing here yet</h2>
-              <p className="st-ink2">Swipe right on a pick and the application shows here, with its receipt and any reply.</p>
+              <p className="st-ink2">Tap Apply on a pick and the application shows here, with its receipt and any reply.</p>
               <div>
                 <Link className="st-btn st-p" style={{ ["--h" as string]: "44px" }} href="/picks">
                   See today’s picks
