@@ -22,7 +22,7 @@ export function toTrackerItems(apps: ApplicationSummary[], now: Date): TrackerIt
   for (const a of apps) {
     if (a.status === "undone") continue;
     const created = new Date(a.createdAt);
-    const steps: Step[] = [{ at: stepTime(created, now), text: "You swiped right", done: true }];
+    const steps: Step[] = [{ at: stepTime(created, now), text: "You applied", done: true }];
     let state: TrackerItem["state"] = "handed_off";
 
     if (a.status === "ready" || a.status === "submitting") {

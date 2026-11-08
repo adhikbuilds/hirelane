@@ -8,7 +8,11 @@ export type DashBy = "programme" | "blocker" | "drive";
 const WEEKS = ["Aug 4", "Aug 11", "Aug 18", "Aug 25", "Sep 1", "Sep 8", "Sep 15", "Sep 22", "Sep 29", "Oct 6", "Oct 13", "Oct 20"];
 const APPS = [41, 52, 38, 61, 73, 66, 58, 84, 97, 88, 112, 126];
 const REPLIES = [3, 5, 4, 8, 9, 11, 7, 13, 16, 14, 19, 23];
-const DRIVE_WEEKS: Record<number, string> = { 4: "Bank drive closed", 8: "Mass recruiter drive closed", 11: "Process Associate drive closed" };
+const DRIVE_WEEKS: Record<number, string> = {
+  4: "Bank drive closed",
+  8: "Mass recruiter drive closed",
+  11: "Process Associate drive closed",
+};
 
 function WeeklyBars() {
   const W = 640;
@@ -50,31 +54,103 @@ function WeeklyBars() {
   );
 }
 
-const ACT = [
-  { n: 82, text: "eligible students haven't applied to Process Associate, closing Saturday", cta: "Remind them", href: "/campus/drives" },
-  { n: 46, text: "students haven't opened Hirelane in 7 days", cta: "Send a nudge", href: "#" },
-  { n: 27, text: "students can't be checked for CGPA drives", cta: "Set the CGPA rule", href: "/campus/settings" },
-  { n: 9, text: "offer letters are waiting for you", cta: "Verify offers", href: "/campus/outcomes" },
+const SAMPLE_ACT = [
+  {
+    n: 82,
+    text: "eligible students haven't applied to Process Associate, closing Saturday",
+    cta: "Remind them",
+    href: "/campus/drives",
+  },
+  {
+    n: 46,
+    text: "students haven't opened Hirelane in 7 days",
+    cta: "Send a nudge",
+    href: "#",
+  },
+  {
+    n: 27,
+    text: "students can't be checked for CGPA drives",
+    cta: "Set the CGPA rule",
+    href: "/campus/settings",
+  },
+  {
+    n: 9,
+    text: "offer letters are waiting for you",
+    cta: "Verify offers",
+    href: "/campus/outcomes",
+  },
 ];
 
-const PROGRAMME_ROWS = [
+interface ProgRow {
+  name: string;
+  /** Null when the group is hidden (under 10): printed as "hidden", never as 0. */
+  count: number | null;
+  offers: number | null;
+  dot: string;
+}
+const SAMPLE_PROGRAMMES: ProgRow[] = [
   { name: "B.Com (General)", count: 56, offers: 14, dot: "a" },
   { name: "BBA", count: 33, offers: 8, dot: "b" },
   { name: "B.Com (Computer Applications)", count: 25, offers: 8, dot: "c" },
   { name: "Smaller programmes (2, combined)", count: 4, offers: 1, dot: "d" },
 ];
 
+/** What to do this week, from the figures the console actually has. Nothing here is a made-up number. */
+function actFor(data: CampusOverview): { n: number; text: string; cta: string; href: string }[] {
+  const out: { n: number; text: string; cta: string; href: string }[] = [];
+  for (const b of data.stuck.slice(0, 3))
+    out.push({
+      n: b.students,
+      text: b.blocker.charAt(0).toLowerCase() + b.blocker.slice(1),
+      cta: "Students",
+      href: "/campus/students",
+    });
+  if (data.drives.length === 0)
+    out.push({
+      n: 0,
+      text: "No drive is published yet",
+      cta: "Add a drive",
+      href: "/campus/drives",
+    });
+  return out;
+}
+
 /** Placement console overview in the dark analytics register the owner picked (2026-10-29). No client JS. */
 export function CampusDash({ data, by }: { data: CampusOverview; by: DashBy }) {
   const joined = data.funnel[0]?.count ?? 0;
-  const stops = data.funnel.slice(0, -1).map((f, i) => ({ label: `Stopped before ${data.funnel[i + 1]!.label.toLowerCase()}`, n: f.count - data.funnel[i + 1]!.count }));
+  const stops = data.funnel.slice(0, -1).map((f, i) => ({
+    label: `Stopped before ${data.funnel[i + 1]!.label.toLowerCase()}`,
+    n: f.count - data.funnel[i + 1]!.count,
+  }));
   const stopTotal = stops.reduce((a, b) => a + b.n, 0);
+  const sample = data.sample;
+  const prog: ProgRow[] = sample
+    ? SAMPLE_PROGRAMMES
+    : (data.programmes ?? []).map((p, i) => ({
+        name: p.name,
+        count: p.joined,
+        offers: p.offers,
+        dot: "abcd"[i % 4]!,
+      }));
+  const act = sample ? SAMPLE_ACT : actFor(data);
   const rows =
     by === "blocker"
-      ? data.stuck.map((b) => ({ name: b.blocker, value: b.students, note: b.action }))
+      ? data.stuck.map((b) => ({
+          name: b.blocker,
+          value: b.students,
+          note: b.action,
+        }))
       : by === "drive"
-        ? data.drives.map((d) => ({ name: `${d.role}, ${d.company}`, value: d.applied, note: `${d.eligible} eligible, closes ${d.deadline}` }))
-        : PROGRAMME_ROWS.map((p) => ({ name: p.name, value: p.count, note: `${p.offers < 10 ? "under 10" : p.offers} offers` }));
+        ? data.drives.map((d) => ({
+            name: `${d.role}, ${d.company}`,
+            value: d.applied,
+            note: `${d.eligible} eligible, closes ${d.deadline}`,
+          }))
+        : prog.map((p) => ({
+            name: p.name,
+            value: p.count ?? 0,
+            note: p.count === null ? "hidden: fewer than 10 students" : `${p.offers === null || p.offers < 10 ? "under 10" : p.offers} offers`,
+          }));
   const rowMax = Math.max(1, ...rows.map((r) => r.value));
   const rowTotal = rows.reduce((a, b) => a + b.value, 0);
 
@@ -102,48 +178,60 @@ export function CampusDash({ data, by }: { data: CampusOverview; by: DashBy }) {
         <div>
           <p className="dk-hero">{data.offCampusOffers.total}</p>
           <p className="dk-hero-sub">
-            off-campus offers, {data.offCampusOffers.verified} verified by you <span>from {joined} students who joined</span>
+            {sample ? (
+              <>
+                off-campus offers, {data.offCampusOffers.verified} verified by you <span>from {joined} students who joined</span>
+              </>
+            ) : (
+              <>
+                off-campus offers reported by students <span>from {joined} students who joined. Verify them in Outcomes.</span>
+              </>
+            )}
           </p>
           <ul className="dk-break">
-            {PROGRAMME_ROWS.map((p) => (
+            {prog.map((p) => (
               <li key={p.name}>
                 <span className="dk-dot" data-c={p.dot} aria-hidden="true" />
                 <span>
-                  <b>{p.name}</b> <small>{p.count} applied</small>
-                  <em>{pct(p.offers, data.offCampusOffers.total)}% of offers</em>
+                  <b>{p.name}</b> <small>{p.count === null ? "hidden" : sample ? `${p.count} applied` : `${p.count} joined`}</small>
+                  {p.offers !== null && p.offers >= 10 ? <em>{pct(p.offers, data.offCampusOffers.total)}% of offers</em> : null}
                 </span>
-                <strong>{p.offers < 10 ? "under 10" : p.offers}</strong>
+                <strong>{p.offers === null || p.offers < 10 ? "under 10" : p.offers}</strong>
               </li>
             ))}
           </ul>
         </div>
         <div className="dk-right">
-          <div className="dk-row-head">
-            <h2 className="dk-h">Applications and replies per week</h2>
-            <ul className="dk-key" aria-hidden="true">
-              <li>
-                <span className="dk-sq" data-c="0" />
-                Applications
-              </li>
-              <li>
-                <span className="dk-sq" data-c="1" />
-                Replies
-              </li>
-              <li>
-                <span className="dk-mk" />
-                Drive closed
-              </li>
-            </ul>
-          </div>
-          <p className="dk-sub">
-            Replies are {Math.round((REPLIES[11]! / APPS[11]!) * 100)}% of applications this week, up from {Math.round((REPLIES[0]! / APPS[0]!) * 100)}% in August. Hover a week for counts.
-          </p>
-          <WeeklyBars />
+          {sample ? (
+            <>
+              <div className="dk-row-head">
+                <h2 className="dk-h">Applications and replies per week</h2>
+                <ul className="dk-key" aria-hidden="true">
+                  <li>
+                    <span className="dk-sq" data-c="0" />
+                    Applications
+                  </li>
+                  <li>
+                    <span className="dk-sq" data-c="1" />
+                    Replies
+                  </li>
+                  <li>
+                    <span className="dk-mk" />
+                    Drive closed
+                  </li>
+                </ul>
+              </div>
+              <p className="dk-sub">
+                Replies are {Math.round((REPLIES[11]! / APPS[11]!) * 100)}% of applications this week, up from {Math.round((REPLIES[0]! / APPS[0]!) * 100)}% in August. Hover a week for counts.
+              </p>
+              <WeeklyBars />
+            </>
+          ) : null}
           <h2 className="dk-h dk-act-h">Act this week</h2>
           <ul className="dk-act">
-            {ACT.map((a) => (
+            {act.map((a) => (
               <li key={a.cta}>
-                <b>{a.n}</b>
+                <b>{a.n > 0 ? a.n : ""}</b>
                 <span>{a.text}</span>
                 <Link href={a.href}>{a.cta}</Link>
               </li>
@@ -161,7 +249,7 @@ export function CampusDash({ data, by }: { data: CampusOverview; by: DashBy }) {
             <div key={f.label}>
               <dt>{f.label}</dt>
               <dd>{f.count}</dd>
-              <Link href="#">{f.action}</Link>
+              {sample ? <Link href="#">{f.action}</Link> : <span>{f.action}</span>}
             </div>
           ))}
         </dl>

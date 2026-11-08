@@ -1,3 +1,4 @@
+import { devPagesOpen } from "@/lib/dev-gate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { evaluateEligibility, parseCriteria } from "@hirelane/engine";
@@ -11,7 +12,7 @@ Eligibility: B.Com / BBA, 2025 or 2026 passout. Minimum 55% in 10th, 12th and gr
 
 /** Dev-only: both outcomes of paste-a-job. Eligibility uses the real engine on sample text. */
 export default function PastePreview() {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (!devPagesOpen()) notFound();
   const result = evaluateEligibility(parseCriteria(LEGIT), { pct_10: 71, secondary_kind: "12th", pct_secondary: 58, degree: "B.Com", grad_pct_equiv: 64, grad_conversion: "direct", passout_year: 2025, active_backlogs: 0, confirmed: true }, { cgpaRule: null });
   return (
     <StudentShell active="home" initials="R">

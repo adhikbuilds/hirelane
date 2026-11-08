@@ -102,6 +102,7 @@ export function buildOpenApiV1(origin: string): Json {
     const o: Json = {
       operationId: op.operationId,
       summary: op.summary,
+      ...(op.deprecated ? { deprecated: true } : {}),
       security: [{ sessionCookie: [] }],
       parameters,
       responses: {

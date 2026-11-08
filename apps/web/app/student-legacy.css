@@ -203,8 +203,7 @@
 .stl .wr-round { border-color: var(--cp-line); color: var(--cp-ink); background: var(--cp-surface); }
 .stl .wr-round[data-kind="go"] { background: var(--cp-navy); border-color: var(--cp-navy); color: var(--cp-on-navy); }
 .stl .wr-round[data-kind="save"] { color: var(--cp-navy); }
-.stl .wr-swipe-hint { color: var(--cp-muted); }
-.stl .wr-deck-peek { border-color: var(--cp-line); }
+.stl .wr-choose-hint { color: var(--cp-muted); }
 
 .stl-tabs {
   position: fixed;
@@ -303,11 +302,6 @@
   gap: 20px;
 }
 
-.stl-home .wr-deck {
-  max-width: 520px;
-  width: 100%;
-}
-
 /* ---------- Direction A re-skin of the shared app components (only role cards, job heroes and recap slides keep colour) ---------- */
 .stl .wr-app {
   padding: 0;
@@ -333,7 +327,7 @@
   font-size: 0.8125rem;
 }
 
-.stl .wr-tile:not(.wr-deck-card),
+.stl .wr-tile,
 .stl [data-slot="card"] {
   background: var(--cp-surface);
   color: var(--cp-ink);

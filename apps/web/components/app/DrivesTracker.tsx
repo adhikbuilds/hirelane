@@ -79,7 +79,7 @@ export function Tracker({ items }: { items: TrackerItem[] }) {
   const counts = { all: items.length, replied: items.filter((i) => i.state === "replied").length, interview: items.filter((i) => i.state === "interview").length };
   return (
     <section className="wr-tracker" aria-labelledby="tracker-h">
-      <div className="wr-swipe-top">
+      <div className="wr-choose-top">
         <h1 id="tracker-h" className="acct-display wr-hello">
           Tracker
         </h1>

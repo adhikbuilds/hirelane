@@ -14,6 +14,11 @@ export type RateClass = { name: string; max: number; windowSeconds: number };
 const READ: RateClass = { name: "read", max: 120, windowSeconds: 60 };
 const WRITE: RateClass = { name: "write", max: 40, windowSeconds: 60 };
 export const UPLOAD_RATE: RateClass = { name: "upload", max: 10, windowSeconds: 600 };
+/**
+ * Per-student limit on applying (decision 2026-10-31): 20 a minute, a bucket of its own apart from the general write budget.
+ * The deprecated alias route and /apply/applications share this one bucket, so using both never doubles the budget.
+ */
+export const APPLY_RATE: RateClass = { name: "apply-create", max: 20, windowSeconds: 60 };
 
 const JSON_BODY_MAX = 64 * 1024;
 

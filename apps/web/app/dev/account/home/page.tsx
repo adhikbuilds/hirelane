@@ -1,3 +1,4 @@
+import { devPagesOpen } from "@/lib/dev-gate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AccountShell } from "@/components/account/AccountShell";
@@ -8,7 +9,7 @@ export const metadata: Metadata = { title: "Home preview", robots: { index: fals
 
 /** Dev-only preview of the student Home with a labelled sample student. Not found in production. */
 export default function HomePreview() {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (!devPagesOpen()) notFound();
   return (
     <AccountShell>
       <Home data={SAMPLE_HOME} />

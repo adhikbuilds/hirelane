@@ -41,7 +41,12 @@ import {
   TpoMeSchema,
   TpoOutcomesSchema,
 } from "@hirelane/services";
+import { z } from "zod";
 import type { V1Operation } from "./openapi-types";
+
+/** The drive inbox and roster preview return structured objects the console reads; described loosely here. */
+const Loose = z.object({}).passthrough();
+const IdStatus = z.object({ id: z.string().uuid(), status: z.string() });
 
 const campusId = { name: "campusId", description: "Needed only when you staff more than one campus.", type: "string", format: "uuid" } as const;
 
@@ -117,6 +122,21 @@ export const CAMPUS_OPERATIONS: V1Operation[] = [
     errors: [400, 413, 415],
     success: { status: 200, schema: RosterResultSchema, description: "Counts" },
   },
+  { operationId: "previewDrive", method: "post", path: "/api/v1/tpo/drives/preview", summary: "Step 1: parse a pasted notice with rules (0 LLM calls). Nothing is saved and the link is never fetched.", mutation: true, request: PublishDriveInput, success: { status: 200, schema: Loose, description: "Parsed criteria and scam signals" } },
+  { operationId: "saveDriveDraft", method: "post", path: "/api/v1/tpo/drives/draft", summary: "Step 2: save the parsed notice as a draft that students cannot see", mutation: true, request: PublishDriveInput, success: { status: 200, schema: Loose, description: "The draft" } },
+  { operationId: "announceDrive", method: "post", path: "/api/v1/tpo/drives/{id}/announce", summary: "Step 3: make a draft drive live", mutation: true, success: { status: 200, schema: IdStatus, description: "Live" } },
+  { operationId: "closeDrive", method: "post", path: "/api/v1/tpo/drives/{id}/close", summary: "End a drive", mutation: true, success: { status: 200, schema: IdStatus, description: "Closed" } },
+  { operationId: "getDriveReach", method: "get", path: "/api/v1/tpo/drives/{id}/reach", summary: "Qualify and could-not-check counts from the nightly snapshot; pending until one exists (k >= 10 applied by the database)", mutation: false, success: { status: 200, schema: Loose, description: "Reach" } },
+  {
+    operationId: "previewRoster",
+    method: "post",
+    path: "/api/v1/tpo/cohorts/{id}/roster/preview",
+    summary: "Count a roster CSV without storing anything and without echoing any email",
+    mutation: true,
+    rawRequest: { contentType: "text/csv", description: "CSV with an email column and an optional placed column" },
+    errors: [400, 413, 415],
+    success: { status: 200, schema: Loose, description: "Counts" },
+  },
   { operationId: "listTpoDrives", method: "get", path: "/api/v1/tpo/drives", summary: "Drives published for my campus", mutation: false, query: [campusId], success: { status: 200, schema: DrivesListSchema, description: "Drives" } },
   { operationId: "publishDrive", method: "post", path: "/api/v1/tpo/drives", summary: "Paste a drive notice: parse criteria and scam signals (no LLM, the link is never fetched) and publish to a cohort", mutation: true, request: PublishDriveInput, success: { status: 201, schema: DrivePublishedSchema, description: "The drive with its parsed criteria and flags" } },
   { operationId: "getDriveCounts", method: "get", path: "/api/v1/tpo/drives/{id}", summary: "Eligible / unknown / ineligible counts for a drive, suppressed like the stats", mutation: false, success: { status: 200, schema: DriveCountsSchema, description: "Counts" } },
@@ -140,14 +160,14 @@ export const CAMPUS_OPERATIONS: V1Operation[] = [
     path: "/api/v1/tpo/export/naac",
     summary: "What the NAAC 5.2.1 export would hold: a row count, the file name and the headers. No student is named; nothing is written.",
     mutation: false,
-    query: [campusId, { name: "passoutYear", description: "Limit to one passout year.", type: "integer" }],
+    query: [campusId, { name: "passoutYear", description: "Limit to one passout year.", type: "integer" }, { name: "format", description: "readme returns the export notes as text/plain instead of the JSON preview.", type: "string" }],
     success: { status: 200, schema: NaacPreviewSchema, description: "Preview" },
   },
   {
     operationId: "exportNaac",
     method: "post",
     path: "/api/v1/tpo/export/naac",
-    summary: "NAAC 5.2.1 shaped CSV of offers by verified students who chose outcomes or full. Formula-injection safe; audited per student. Column headers are not yet checked against the NAAC manual.",
+    summary: "NAAC 5.2.1 shaped CSV with Part A (placement offers) and Part B (higher education) of verified students who chose outcomes or full. Formula-injection safe; audited per student. Data only: GET the same path with format=readme for the notes and the caveat that the columns are not yet checked against the official template.",
     mutation: true,
     idempotent: false,
     query: [campusId, { name: "passoutYear", description: "Limit to one passout year.", type: "integer" }],

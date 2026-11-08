@@ -159,7 +159,8 @@ describe("console screens", () => {
     await put("stage_no_resume", 4, 43);
     signIn(staff);
 
-    await expect(prod.loadCampusStudents()).rejects.toThrow("NEXT_NOT_FOUND"); // dev-only for now
+    const inProd = await prod.loadCampusStudents(); // production-ready: the screen prints no figure it does not have
+    expect(inProd.source).toBe("real");
     const st = await dev.loadCampusStudents();
     expect(st.source).toBe("real");
     if (st.source === "real") {
@@ -173,17 +174,18 @@ describe("console screens", () => {
     expect(await dev.loadCampusStudents()).toEqual({ source: "sample" });
   });
 
-  it("the overview, students and outcomes stay 404 in production until their components stop hard-coding figures", async () => {
+  it("the overview, students and outcomes are real in production for staff, and a 404 for a student or a stranger", async () => {
     const w = await mkCampus();
-    signIn(await mkStaff(w));
-    await expect(prod.loadCampusOverview()).rejects.toThrow("NEXT_NOT_FOUND");
+    const staff = await mkStaff(w);
+    signIn(staff);
+    for (const load of [prod.loadCampusOverview, prod.loadCampusOutcomes, prod.loadCampusStudents, prod.loadCampusDrives, prod.loadCampusSettings]) expect((await load()).source).toBe("real");
+    signIn(await mkStudent(w, "Asha Verma"));
+    for (const load of [prod.loadCampusOverview, prod.loadCampusOutcomes, prod.loadCampusStudents, prod.loadCampusDrives, prod.loadCampusSettings]) await expect(load()).rejects.toThrow("NEXT_NOT_FOUND");
+    signIn(await mkWho("Stranger"));
     await expect(prod.loadCampusOutcomes()).rejects.toThrow("NEXT_NOT_FOUND");
-    await expect(prod.loadCampusStudents()).rejects.toThrow("NEXT_NOT_FOUND");
-    const o = await dev.loadCampusOverview();
-    expect(o.source).toBe("real");
   });
 
-  it("only the Outcomes screen reads student outcomes (and so logs access); the overview does not", async () => {
+  it("no console screen names a student or writes to the access log on a page view; naming is the explicit reveal call", async () => {
     const w = await mkCampus();
     const staff = await mkStaff(w);
     const student = await mkStudent(w, "Asha Verma", "full");
@@ -196,7 +198,13 @@ describe("console screens", () => {
     expect(await logged()).toBe(before);
     const out = await dev.loadCampusOutcomes();
     expect(out.source).toBe("real");
-    if (out.source === "real") expect(out.data.offers).toMatchObject([{ employer: "Retail chain", lpa: 3.2, status: "waiting", source: "Hirelane" }]);
+    if (out.source === "real") {
+      expect(out.data.offers).toMatchObject([{ employer: "Retail chain", lpa: 3.2, status: "waiting", source: "Hirelane" }]);
+      expect(JSON.stringify(out.data)).not.toContain("Asha");
+    }
+    await dev.loadCampusOutcomes(); // a refresh adds nothing
+    expect(await logged()).toBe(before);
+    await S.revealOutcomes(ctxFor(staff.id), {}); // the explicit action is what logs
     expect(await logged()).toBe(before + 1);
   });
 });

@@ -1,5 +1,5 @@
 /**
- * Pure drag physics for the landing swipe stack (docs/design/landing-v3.md, "Drag and swipe").
+ * Pure drag physics for the landing card stack (docs/design/landing-v3.md, "Drag and decide").
  * No DOM, no motion library, no clock: every rule is a function of numbers, so it is unit tested.
  * Positive x is the right (Approve), negative x is the left (Pass).
  */
@@ -12,7 +12,7 @@ export const COMMIT_RATIO = 0.35;
 export const COMMIT_VELOCITY = 600;
 /** Card rotation at the extreme, in degrees. */
 export const MAX_ROTATE = 12;
-/** A drag steeper than this angle from horizontal is a page scroll, never a swipe. */
+/** A drag steeper than this angle from horizontal is a page scroll, never a decision. */
 export const VERTICAL_ANGLE = 30;
 /** A flick needs at least this much travel, so a twitch never decides a card. */
 export const MIN_FLICK_TRAVEL = 12;

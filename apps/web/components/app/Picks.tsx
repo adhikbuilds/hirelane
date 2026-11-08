@@ -11,10 +11,10 @@ function FitIcon({ status }: { status: "pass" | "fail" | "partial" }) {
 }
 
 /** Today's picks: progress bars, the 45-second card with its fit maths, and a button for every gesture. */
-export function SwipeCard({ card, index, total }: { card: PickCard; index: number; total: number }) {
+export function PickScreen({ card, index, total }: { card: PickCard; index: number; total: number }) {
   return (
-    <section className="wr-swipe" aria-labelledby="pick-h">
-      <div className="wr-swipe-top">
+    <section className="wr-choose" aria-labelledby="pick-h">
+      <div className="wr-choose-top">
         <h2 className="wr-tile-label">Today&apos;s picks</h2>
         <p className="wr-tile-label">
           {index} of {total}
@@ -71,7 +71,7 @@ export function SwipeCard({ card, index, total }: { card: PickCard; index: numbe
         </article>
       </div>
 
-      <div className="wr-swipe-actions">
+      <div className="wr-choose-actions">
         <form action="#">
           <button type="submit" className="wr-round" data-kind="skip" aria-label="Skip this role">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
@@ -94,7 +94,7 @@ export function SwipeCard({ card, index, total }: { card: PickCard; index: numbe
           </button>
         </form>
       </div>
-      <p className="wr-swipe-hint">Skip, save or get it ready. Swiping works too.</p>
+      <p className="wr-choose-hint">Skip, save or get it ready.</p>
     </section>
   );
 }

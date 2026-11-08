@@ -788,20 +788,27 @@ describe("outcomes: report, share, verify, letters, export", () => {
     expect(res.status).toBe(200);
     expect(res.res.headers.get("content-type")).toMatch(/^text\/csv/);
     expect(res.res.headers.get("content-disposition")).toMatch(/^attachment; filename="naac-5\.2\.1-2026-\d{4}-\d{2}-\d{2}\.csv"$/);
-    // The file opens with comment lines naming the manual, then Part A (placement) and Part B (higher education).
+    // The file is data only: Part A (placement) then Part B (higher education). The notes live in the README download.
     const lines = res.text.split("\r\n").filter((l) => l !== "");
-    const isComment = (l: string) => /^"?# /.test(l);
-    expect(lines.filter(isComment).join("\n")).toContain("RAF 2023");
-    expect(lines.filter(isComment).join("\n")).toContain("5.2.1");
-    const body = lines.filter((l) => !isComment(l));
+    expect(lines[0]).toBe(S.NAAC_HEADER.map((h) => (/[,"]/.test(h) ? `"${h}"` : h)).join(","));
+    expect(lines.some((l) => /^"?# /.test(l))).toBe(false);
+    expect(res.text).not.toContain("RAF 2023");
+    const body = lines;
     const partB = body.findIndex((l) => l.startsWith(S.NAAC_HIGHER_ED_HEADER[0]));
     expect(partB).toBeGreaterThan(0);
     const rows = S.parseCsv(body.slice(0, partB).join("\r\n"));
     expect(rows.header).toEqual([...S.NAAC_HEADER]);
     expect(S.parseCsv(body.slice(partB).join("\r\n")).header).toEqual([...S.NAAC_HIGHER_ED_HEADER]);
+    // The README (caveat and manual) reaches the TPO through the same route, without logging anything.
+    const readme = await call(R.naac.GET, "GET", `/api/v1/tpo/export/naac?passoutYear=2026&format=readme`, as(staff));
+    expect([readme.status, readme.res.headers.get("content-type")]).toEqual([200, "text/plain; charset=utf-8"]);
+    expect(readme.text).toContain("RAF 2023");
+    expect(readme.text).toContain("5.2.1");
+    expect(readme.text).toContain("not been checked");
+    expect(readme.text).toContain("Part B");
     expect(rows.rows).toHaveLength(1);
     const row = rows.rows[0]!;
-    expect(row[0]).toMatch(/^20\d{2}$/);
+    expect(row[0]).toMatch(/^\d{4}-\d{2}$/);
     expect(row[1]).toBe(`'=HYPERLINK("http://evil.example.test","click")`);
     expect(row[3]).toBe("'+cmd|' /C calc'!A0");
     expect(row[4]).toBe(""); // no employer contact is stored yet, so the cell stays blank

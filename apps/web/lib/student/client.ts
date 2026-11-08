@@ -1,3 +1,5 @@
+import { dayKey as istDayKey } from "@/lib/adapters/ist";
+
 /** Browser calls to the v1 API. Same origin, so the session cookie and Origin header go with it; every mutation carries a fresh Idempotency-Key. */
 export interface ApiResult<T> {
   ok: boolean;
@@ -26,8 +28,8 @@ async function call<T>(method: "POST" | "PUT", url: string, body: unknown): Prom
 export const postJson = <T>(url: string, body?: unknown): Promise<ApiResult<T>> => call<T>("POST", url, body);
 export const putJson = <T>(url: string, body?: unknown): Promise<ApiResult<T>> => call<T>("PUT", url, body);
 
-/** Skipped and saved roles are remembered on this device for the day: no service stores them yet, so the copy says so. */
-const dayKey = (): string => new Date().toISOString().slice(0, 10);
+/** Skipped and saved roles are remembered on this device for the IST day: no service stores them yet, so the copy says so. */
+const dayKey = (): string => istDayKey(new Date());
 export function readSet(kind: "skipped" | "saved"): Set<string> {
   try {
     const raw = window.localStorage.getItem(`hl:${kind}:${kind === "skipped" ? dayKey() : "all"}`);

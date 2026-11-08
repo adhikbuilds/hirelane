@@ -12,7 +12,7 @@ import { SAMPLE_CARDS } from "@/lib/student/sample";
 import type { CardData } from "@/lib/student/types";
 
 const real = (n: number): CardData[] => SAMPLE_CARDS.map((c, i) => ({ ...c, id: `job-${i}`, jobId: `00000000-0000-4000-8000-00000000000${i + 1}`, role: `${c.role} ${n}` }));
-const swipeOk = { ok: true, status: 201, data: { application: { id: "app-1" } }, error: null };
+const applyOk = { ok: true, status: 201, data: { application: { id: "app-1" } }, error: null };
 const itemOf = (role: string) => screen.getByRole("article", { name: new RegExp(role) }).closest(".st-fitem") as HTMLElement;
 const live = () => document.querySelector("[aria-live]")!.textContent;
 
@@ -45,12 +45,12 @@ describe("Feed", () => {
   });
 
   it("Apply on a real card creates the application, collapses to a row and counts down", async () => {
-    api.postJson.mockResolvedValue(swipeOk);
+    api.postJson.mockResolvedValue(applyOk);
     const cards = real(2);
     render(<Feed cards={cards} variant="home" autoApply address="rahul.k3x@apply.hirelane.in" network />);
     expect(screen.getByText("rahul.k3x@apply.hirelane.in")).toBeTruthy();
     await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
-    expect(api.postJson).toHaveBeenCalledWith("/api/v1/apply/swipe", { jobId: cards[0]!.jobId });
+    expect(api.postJson).toHaveBeenCalledWith("/api/v1/apply/applications", { jobId: cards[0]!.jobId });
     const row = screen.getByText(`${cards[0]!.role}, Trellis Cloud`, { exact: false }).closest(".st-fdone") as HTMLElement;
     expect(row.textContent).toContain("Applied:");
     expect(row.textContent).toContain("Sends in 4 seconds");
@@ -62,7 +62,7 @@ describe("Feed", () => {
 
   it("after 4 seconds the row offers the receipt and no more Undo", async () => {
     vi.useFakeTimers();
-    api.postJson.mockResolvedValue(swipeOk);
+    api.postJson.mockResolvedValue(applyOk);
     const cards = real(3);
     render(<Feed cards={cards} variant="home" autoApply address={null} network />);
     await act(async () => {
@@ -77,7 +77,7 @@ describe("Feed", () => {
   });
 
   it("Undo inside the window takes the application back and returns the card", async () => {
-    api.postJson.mockImplementation(async (url: string) => (url.endsWith("/swipe") ? swipeOk : { ok: true, status: 200, data: { id: "app-1", status: "undone" }, error: null }));
+    api.postJson.mockImplementation(async (url: string) => (url === "/api/v1/apply/applications" ? applyOk : { ok: true, status: 200, data: { id: "app-1", status: "undone" }, error: null }));
     const cards = real(4);
     render(<Feed cards={cards} variant="home" autoApply address={null} network />);
     await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
@@ -88,7 +88,7 @@ describe("Feed", () => {
   });
 
   it("when the window has passed, Undo says so and keeps the row", async () => {
-    api.postJson.mockImplementation(async (url: string) => (url.endsWith("/swipe") ? swipeOk : { ok: false, status: 409, data: null, error: "conflict" }));
+    api.postJson.mockImplementation(async (url: string) => (url === "/api/v1/apply/applications" ? applyOk : { ok: false, status: 409, data: null, error: "undo_window_closed" }));
     const cards = real(5);
     render(<Feed cards={cards} variant="home" autoApply address={null} network />);
     await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
@@ -178,10 +178,10 @@ describe("Feed", () => {
     expect(screen.getByText("2 left")).toBeTruthy();
   });
 
-  it("has no drag, stamps, stacked ghost cards or swipe wording", () => {
+  it("has no drag, stamps, stacked ghost cards or gesture wording", () => {
     const { container } = render(<Feed cards={SAMPLE_CARDS} variant="picks" autoApply address={null} network={false} />);
     expect(container.querySelector(".st-stamp, .st-deck, .st-bars")).toBeNull();
-    expect(container.textContent).not.toMatch(/swipe|drag|arrow key/i);
+    expect(container.textContent).not.toMatch(/swip|drag|arrow key/i);
   });
 
   it("every action is a real button reachable by keyboard and announced in the live region", async () => {
@@ -214,5 +214,102 @@ describe("Feed, picks variant", () => {
   it("the home variant has no side panel", () => {
     render(<Feed cards={SAMPLE_CARDS} variant="home" autoApply address={null} network={false} />);
     expect(screen.queryByText("Your check for this role")).toBeNull();
+  });
+});
+
+describe("Feed fixes", () => {
+  const applyAndUndoFails = (undoRes: unknown) => api.postJson.mockImplementation(async (url: string) => (url === "/api/v1/apply/applications" ? applyOk : undoRes));
+
+  it("after Skip, Save and Apply focus moves to that row's Undo button", async () => {
+    api.postJson.mockResolvedValue(applyOk);
+    const cards = real(20);
+    render(<Feed cards={cards} variant="home" autoApply address={null} network />);
+    for (const [i, name] of [[0, /^Skip/], [1, /^Save/], [2, /^Apply/]] as const) {
+      await userEvent.click(within(itemOf(cards[i]!.role)).getByRole("button", { name }));
+      const row = document.querySelector(`.st-fdone[data-card="${cards[i]!.id}"]`) as HTMLElement;
+      await waitFor(() => expect(document.activeElement).toBe(within(row).getByRole("button", { name: "Undo" })));
+    }
+  });
+
+  it("after Undo focus lands on the restored card", async () => {
+    const cards = real(21);
+    render(<Feed cards={cards} variant="home" autoApply={false} address={null} network={false} />);
+    await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Skip/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(document.activeElement).toBe(itemOf(cards[0]!.role)));
+  });
+
+  it("a failed undo that is not 409 undo_window_closed says try again and keeps the Undo button", async () => {
+    applyAndUndoFails({ ok: false, status: 500, data: null, error: "error" });
+    const cards = real(22);
+    render(<Feed cards={cards} variant="home" autoApply address={null} network />);
+    await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("Undo failed, try again"));
+    expect(screen.getByRole("alert").textContent).not.toContain("Too late");
+    expect(screen.getByRole("button", { name: "Undo" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "See receipt" })).toBeNull();
+  });
+
+  it("a network failure on undo is also try again, and a 409 with another code is not too late", async () => {
+    applyAndUndoFails({ ok: false, status: 409, data: null, error: "something_else" });
+    const cards = real(23);
+    render(<Feed cards={cards} variant="home" autoApply address={null} network />);
+    await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("Undo failed, try again"));
+  });
+
+  it("a failed Apply clears its sent mark: a second Apply gets a fresh 4 second window", async () => {
+    vi.useFakeTimers();
+    api.postJson.mockResolvedValueOnce({ ok: false, status: 503, data: null, error: "boom" }).mockResolvedValue(applyOk);
+    const cards = real(24);
+    render(<Feed cards={cards} variant="home" autoApply address={null} network />);
+    await act(async () => {
+      fireEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(4100);
+    });
+    await act(async () => {
+      fireEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
+    });
+    expect(screen.queryByRole("link", { name: "See receipt" })).toBeNull();
+    expect(screen.getByText("Sends in 4 seconds")).toBeTruthy();
+  });
+
+  it("a failure is announced once: the alert carries it and the polite live region stays quiet", async () => {
+    api.postJson.mockResolvedValue({ ok: false, status: 503, data: null, error: "auto_apply_off" });
+    const cards = real(25);
+    render(<Feed cards={cards} variant="home" autoApply address={null} network />);
+    await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    expect(live()).not.toContain("didn’t go through");
+    expect(live()).not.toContain("Too late");
+  });
+
+  it("an undo failure is announced once too", async () => {
+    applyAndUndoFails({ ok: false, status: 409, data: null, error: "undo_window_closed" });
+    const cards = real(26);
+    render(<Feed cards={cards} variant="home" autoApply address={null} network />);
+    await userEvent.click(within(itemOf(cards[0]!.role)).getByRole("button", { name: /^Apply/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    expect(live()).not.toContain("Too late");
+  });
+
+  it("pre-pilot sample data never shows Applied, Sends in 4 seconds or a receipt", async () => {
+    vi.useFakeTimers();
+    render(<Feed cards={SAMPLE_CARDS} variant="home" autoApply address={null} network={false} />);
+    await act(async () => {
+      fireEvent.click(within(itemOf(SAMPLE_CARDS[0]!.role)).getByRole("button", { name: /^Apply|Get it ready/ }));
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(document.body.textContent).not.toMatch(/Applied|Sends in 4|receipt/i);
+    expect(api.postJson).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Undo" })).toBeTruthy();
+    expect(live()).not.toContain("Applied");
   });
 });

@@ -39,7 +39,7 @@ import { announce, endLine, initialQueue, isDone, reduceQueue, undoLabel } from 
 import { useReduced } from "./use-reduced";
 
 export const UNDO_MS = 4000;
-const HINT_KEY = "hirelane:swipe-hint";
+const HINT_KEY = "hirelane:card-hint";
 const SPRING = { type: "spring", stiffness: 300, damping: 30 } as const;
 
 /** Keystrokes aimed at a text field, slider or menu belong to that control, never to the stack. */
@@ -264,7 +264,7 @@ function StackCard({ card, depth, getWidth, exit, enterFrom, reduce, nudgeKey, n
   );
 }
 
-export type SwipeStackProps = {
+export type CardStackProps = {
   cards: StackCardModel[];
   /** Called with the card now on top (null when the queue is done), so the road sign can follow. */
   onTopChange?: (card: StackCardModel | null) => void;
@@ -273,7 +273,7 @@ export type SwipeStackProps = {
   className?: string;
 };
 
-export function SwipeStack({ cards, onTopChange, startHref = "#start", className }: SwipeStackProps) {
+export function CardStack({ cards, onTopChange, startHref = "#start", className }: CardStackProps) {
   const reduce = useReduced();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const slugs = useMemo(() => cards.map((c) => c.slug), [cards]);
@@ -463,7 +463,7 @@ export function SwipeStack({ cards, onTopChange, startHref = "#start", className
   }, []);
 
   return (
-    <div className={cn("relative mx-auto flex w-full max-w-[420px] flex-col items-stretch", className)} data-ui data-testid="swipe-stack">
+    <div className={cn("relative mx-auto flex w-full max-w-[420px] flex-col items-stretch", className)} data-ui data-testid="card-stack">
       <div
         ref={rootRef}
         tabIndex={0}
@@ -611,13 +611,13 @@ export function SwipeStack({ cards, onTopChange, startHref = "#start", className
           <RoundButton label="Pass" hint="←" disabled={done} onClick={() => decide("pass")} tone="pass">
             <X aria-hidden className="size-6" strokeWidth={3} />
           </RoundButton>
-          <RoundButton label="Approve" hint="→" disabled={done} onClick={() => decide("approve")} tone="approve">
+          <RoundButton label="Apply" hint="→" disabled={done} onClick={() => decide("approve")} tone="approve">
             <Check aria-hidden className="size-6" strokeWidth={3} />
           </RoundButton>
         </div>
 
         <p className="min-h-5 text-center text-[13px] leading-5 text-[#a3ada3]" data-testid="stack-caption">
-          {hint ? "Swipe right to approve, left to pass. Or use A and P." : "Demo: nothing is sent."}
+          {hint ? "Tap Apply to approve, Pass to skip. Or use A and P." : "Demo: nothing is sent."}
         </p>
       </div>
 

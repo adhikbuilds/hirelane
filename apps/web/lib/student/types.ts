@@ -16,7 +16,7 @@ export interface RuleLine {
 /** One role on the deck. Fields without a source are null: the card shows only what is true. */
 export interface CardData {
   id: string;
-  /** The ingested job. null for a sample card: swiping a sample never touches the network. */
+  /** The ingested job. null for a sample card: applying to a sample never touches the network. */
   jobId: string | null;
   /** The full posting. null when there is none to open (the sample). */
   href: string | null;

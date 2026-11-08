@@ -8,6 +8,7 @@ vi.mock("next/font/google", () => ({
   Geist_Mono: () => ({ variable: "gm" }),
   Bricolage_Grotesque: () => ({ variable: "b" }),
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 
 const loaders = vi.hoisted(() => ({

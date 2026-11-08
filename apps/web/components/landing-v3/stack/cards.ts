@@ -1,4 +1,4 @@
-/** Card models for the landing swipe stack. Pure: the same job always yields the same card. */
+/** Card models for the landing card stack. Pure: the same job always yields the same card. */
 import { agoShort, hashString, matchFixture, type FixtureMatch } from "../../landing/demo-model";
 import type { DemoJob } from "../../landing/types";
 

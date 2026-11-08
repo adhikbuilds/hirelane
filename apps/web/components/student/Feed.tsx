@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { postJson, readSet, writeSet } from "@/lib/student/client";
 import type { CardData } from "@/lib/student/types";
 import { Ic } from "./Icon";
@@ -45,8 +45,13 @@ export function Feed({
   const pending = useRef<Record<string, Promise<string | null>>>({});
   const doneRef = useRef(done);
   doneRef.current = done;
+  const root = useRef<HTMLDivElement>(null);
+  /** Where focus goes after the next render: a collapsed row loses the button that was pressed, so it moves on to Undo or the restored card. */
+  const focusNext = useRef<{ id: string; to: "undo" | "card" } | null>(null);
 
-  const label = { apply: autoApply ? "Applied" : "Ready", skip: "Skipped", save: "Saved" } as const;
+  // Applying is real only when the pilot is on and the card has a job. Otherwise (the sample, before the pilot) it only marks the card ready.
+  const real = autoApply && network;
+  const label = { apply: real ? "Applied" : "Ready", skip: "Skipped", save: "Saved" } as const;
 
   // What this student already skipped today stays skipped after a reload; no service stores it, so it lives on this device.
   useEffect(() => {
@@ -56,6 +61,17 @@ export function Feed({
     for (const c of cards) if (skipped.has(c.id)) marks[c.id] = "skip";
     if (Object.keys(marks).length > 0) setDone((d) => ({ ...marks, ...d }));
   }, [cards]);
+
+  useLayoutEffect(() => {
+    const f = focusNext.current;
+    if (!f) return;
+    const row = Array.from(root.current?.querySelectorAll<HTMLElement>("[data-card], [data-item]") ?? []).find((e) => (e.dataset["card"] ?? e.dataset["item"]) === f.id);
+    const target = f.to === "undo" ? row?.querySelector<HTMLElement>("button[data-undo]") : row;
+    if (target) {
+      target.focus();
+      focusNext.current = null;
+    }
+  });
 
   useEffect(() => {
     const t = timers.current;
@@ -69,27 +85,33 @@ export function Feed({
   const decide = useCallback(
     (card: CardData, kind: Kind) => {
       setProblem(null);
+      focusNext.current = { id: card.id, to: "undo" };
       setDone((d) => ({ ...d, [card.id]: kind }));
-      setLive(`${label[kind]}: ${card.role} at ${card.company}.${kind === "apply" && autoApply ? " Undo is available for 4 seconds." : " Undo is available."}`);
+      setLive(`${label[kind]}: ${card.role} at ${card.company}.${kind === "apply" && real ? " Undo is available for 4 seconds." : " Undo is available."}`);
       if (kind === "skip") writeSet("skipped", new Set([...readSet("skipped"), card.id]));
       if (kind === "save") writeSet("saved", new Set([...readSet("saved"), card.id]));
-      if (kind !== "apply" || !autoApply) return;
+      if (kind !== "apply" || !real) return;
 
       timers.current[card.id] = setTimeout(() => setSent((s) => (doneRef.current[card.id] === "apply" ? { ...s, [card.id]: true } : s)), UNDO_MS);
-      if (card.jobId && network) {
-        const p = postJson<ApplyOut>("/api/v1/apply/swipe", { jobId: card.jobId }).then((r) => {
+      if (card.jobId) {
+        const p = postJson<ApplyOut>("/api/v1/apply/applications", { jobId: card.jobId }).then((r) => {
           if (r.ok && r.data) {
             setAppIds((m) => ({ ...m, [card.id]: r.data!.application.id }));
             return r.data.application.id;
           }
           // Put the card back and say why, in plain words. Nothing was queued.
           clearTimeout(timers.current[card.id]);
+          setSent((s) => {
+            const { [card.id]: _sent, ...rest } = s;
+            return rest;
+          });
+          focusNext.current = { id: card.id, to: "card" };
           setDone((d) => {
             const { [card.id]: _gone, ...rest } = d;
             return rest;
           });
           setProblem({ title: "That one didn’t go through", sub: r.error === "auto_apply_off" ? "Applying from Hirelane isn’t switched on yet." : "Nothing was sent. Try it again in a moment." });
-          setLive("That one didn’t go through. Nothing was sent.");
+          setLive(""); // the alert below announces it; saying it twice is noise
           return null;
         });
         pending.current[card.id] = p;
@@ -104,14 +126,19 @@ export function Feed({
     const kind = done[card.id];
     if (!kind) return;
     clearTimeout(timers.current[card.id]);
-    if (kind === "apply" && network && card.jobId) {
+    if (kind === "apply" && real && card.jobId) {
       const id = appIds[card.id] ?? (await pending.current[card.id]);
       if (id) {
         const r = await postJson(`/api/v1/apply/applications/${id}/undo`);
         if (!r.ok) {
-          setSent((s) => ({ ...s, [card.id]: true }));
-          setProblem({ title: "Too late to take that back", sub: "It has already gone. You can follow it in Tracker." });
-          setLive("Too late to take that back. It has already gone.");
+          setLive(""); // the alert below announces it
+          if (r.status === 409 && r.error === "undo_window_closed") {
+            setSent((s) => ({ ...s, [card.id]: true }));
+            setProblem({ title: "Too late to take that back", sub: "It has already gone. You can follow it in Tracker." });
+          } else {
+            // Not a closed window: the application may still be undoable, so the row and its Undo button stay.
+            setProblem({ title: "Undo failed, try again", sub: "Nothing changed." });
+          }
           return;
         }
       }
@@ -132,6 +159,7 @@ export function Feed({
       return rest;
     });
     setSelId(card.id);
+    focusNext.current = { id: card.id, to: "card" };
     setLive(`Undone: ${card.role} at ${card.company} is back.`);
   };
 
@@ -160,7 +188,7 @@ export function Feed({
           {cards.map((c) => {
             const kind = done[c.id];
             if (kind) {
-              const receipt = kind === "apply" && autoApply && sent[c.id];
+              const receipt = kind === "apply" && real && sent[c.id];
               return (
                 <div className="st-fdone" key={c.id} data-card={c.id}>
                   <span>
@@ -173,8 +201,8 @@ export function Feed({
                       </Link>
                     ) : (
                       <>
-                        {kind === "apply" && autoApply ? <span className="st-ink2">Sends in 4 seconds</span> : null}
-                        <button className="st-btn st-sm" type="button" onClick={() => void undo(c)}>
+                        {kind === "apply" && real ? <span className="st-ink2">Sends in 4 seconds</span> : null}
+                        <button className="st-btn st-sm" type="button" data-undo onClick={() => void undo(c)}>
                           Undo
                         </button>
                       </>
@@ -187,6 +215,8 @@ export function Feed({
             return (
               <div
                 key={c.id}
+                data-item={c.id}
+                tabIndex={-1}
                 className={`st-fitem${sel?.id === c.id ? " st-sel" : ""}`}
                 onClick={(e) => {
                   if (!(e.target as HTMLElement).closest("a")) setSelId(c.id);
@@ -203,9 +233,9 @@ export function Feed({
                     <Ic name="plus" small />
                     Save
                   </button>
-                  <button className="st-btn st-p" type="button" aria-label={`${autoApply ? "Apply to" : "Get it ready:"} ${who}`} onClick={() => decide(c, "apply")}>
+                  <button className="st-btn st-p" type="button" aria-label={`${real ? "Apply to" : "Get it ready:"} ${who}`} onClick={() => decide(c, "apply")}>
                     <Ic name="check" small />
-                    {autoApply ? "Apply" : "Get it ready"}
+                    {real ? "Apply" : "Get it ready"}
                   </button>
                 </div>
               </div>
@@ -220,7 +250,7 @@ export function Feed({
       ) : null}
       {address ? (
         <p className="st-mode">
-          {autoApply ? "Applies from" : "Ready from"} <span className="st-mono">{address}</span>
+          {real ? "Applies from" : "Ready from"} <span className="st-mono">{address}</span>
         </p>
       ) : null}
       <div aria-live="polite" className="st-vh">
@@ -229,10 +259,10 @@ export function Feed({
     </>
   );
 
-  if (variant === "home") return <div>{list}</div>;
+  if (variant === "home") return <div ref={root}>{list}</div>;
 
   return (
-    <div className="st-picks">
+    <div className="st-picks" ref={root}>
       <div className="st-pfeed">{list}</div>
       {sel ? (
         <div className="st-panel st-pside">

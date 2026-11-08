@@ -60,7 +60,7 @@ export function Home({ data }: { data: HomeData }) {
           </ul>
           <Button asChild variant="lime" size="pill-sm">
             <Link href="/picks">
-              Start swiping
+              See today’s picks
             </Link>
           </Button>
         </div>

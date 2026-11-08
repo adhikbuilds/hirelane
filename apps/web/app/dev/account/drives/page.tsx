@@ -1,3 +1,4 @@
+import { devPagesOpen } from "@/lib/dev-gate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StudentShell } from "@/components/student/Shell";
@@ -7,7 +8,7 @@ import { SAMPLE_DRIVES } from "@/lib/sample/loop";
 export const metadata: Metadata = { title: "Drives preview", robots: { index: false, follow: false } };
 
 export default function DrivesPreview() {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (!devPagesOpen()) notFound();
   return (
     <StudentShell active="drives" initials="R">
       <div className="wr-app">

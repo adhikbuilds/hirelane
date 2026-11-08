@@ -77,6 +77,7 @@ const as = (who: Who, o: Opts = {}): Opts => ({ ...o, who });
 
 const routes = async () => ({
   swipe: await import("../app/api/v1/apply/swipe/route"),
+  create: await import("../app/api/v1/apply/applications/route"),
   list: await import("../app/api/v1/apply/applications/route"),
   one: await import("../app/api/v1/apply/applications/[id]/route"),
   undo: await import("../app/api/v1/apply/applications/[id]/undo/route"),
@@ -142,7 +143,7 @@ describe("wrapper rules and the document", () => {
     const doc = (await call(R.openapi.GET, "GET", "/api/v1/openapi.json", { who: null })).json;
     for (const [p, methods] of [
       ["/api/v1/apply/swipe", ["post"]],
-      ["/api/v1/apply/applications", ["get"]],
+      ["/api/v1/apply/applications", ["get", "post"]],
       ["/api/v1/apply/applications/{id}", ["get"]],
       ["/api/v1/apply/applications/{id}/undo", ["post"]],
       ["/api/v1/apply/applications/{id}/rearm", ["post"]],
@@ -154,6 +155,28 @@ describe("wrapper rules and the document", () => {
     ] as const) {
       for (const m of methods) expect(doc.paths[p]?.[m], `${m} ${p}`).toBeDefined();
     }
+  });
+});
+
+describe("apply alias", () => {
+  it("POST /api/v1/apply/applications applies exactly like the deprecated /swipe, and shares its rate bucket", async () => {
+    const u = await mkWho();
+    const j = await mkJob(client, { ats: "ashby" });
+    const r = await call(R.create.POST, "POST", "/api/v1/apply/applications", as(u, { body: { jobId: j.jobId } }));
+    expect(r.status).toBe(201);
+    expect(S.SwipeResultSchema.parse(r.json).application).toMatchObject({ status: "ready", created: true });
+    const again = await call(R.swipe.POST, "POST", "/api/v1/apply/swipe", as(u, { body: { jobId: j.jobId } }));
+    expect(again.status).toBe(200);
+    const rows = (await client.query("SELECT bucket FROM rate_limits")).rows.map((x: { bucket: string }) => x.bucket);
+    expect(rows).toContain(`v1:apply-create:${u.id}`);
+  });
+
+  it("the document says apply, and marks /swipe deprecated", async () => {
+    const doc = (await call(R.openapi.GET, "GET", "/api/v1/openapi.json", { who: null })).json;
+    expect(doc.paths["/api/v1/apply/applications"].post.summary).toMatch(/apply/i);
+    expect(doc.paths["/api/v1/apply/applications"].post.deprecated).toBeUndefined();
+    expect(doc.paths["/api/v1/apply/swipe"].post.deprecated).toBe(true);
+    expect(JSON.stringify(doc.paths["/api/v1/apply/applications"])).not.toMatch(/swip/i);
   });
 });
 
@@ -685,7 +708,7 @@ describe("swipe rate limit (decision 2026-10-31): a bucket of its own per studen
     expect((await swipe(b, (await mkJob(client)).jobId)).status).toBe(201);
     // the bucket is the swipe's own: the general write budget (40 a minute) is untouched by 20 swipes
     const rows = (await client.query("SELECT bucket, count FROM rate_limits WHERE bucket LIKE $1", [`v1:%:${a.id}`])).rows.map((r) => r.bucket as string);
-    expect(rows).toContain(`v1:apply-swipe:${a.id}`);
+    expect(rows).toContain(`v1:apply-create:${a.id}`);
     expect(rows).not.toContain(`v1:write:${a.id}`);
   });
 
@@ -693,7 +716,7 @@ describe("swipe rate limit (decision 2026-10-31): a bucket of its own per studen
     const a = await mkWho();
     for (let i = 0; i < 20; i++) await swipe(a, (await mkJob(client)).jobId);
     expect((await swipe(a, (await mkJob(client)).jobId)).status).toBe(429);
-    await client.query("UPDATE rate_limits SET window_start = window_start - interval '2 minutes' WHERE bucket = $1", [`v1:apply-swipe:${a.id}`]);
+    await client.query("UPDATE rate_limits SET window_start = window_start - interval '2 minutes' WHERE bucket = $1", [`v1:apply-create:${a.id}`]);
     expect((await swipe(a, (await mkJob(client)).jobId)).status).toBe(201);
   });
 });

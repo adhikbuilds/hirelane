@@ -1,32 +1,31 @@
 import Link from "next/link";
 import type { OfferRow, ProgrammeRow } from "@/lib/sample/campus";
+import { NaacDownload, OutcomesTable, RosterImport } from "./Actions";
 import { Icon, pct } from "./Console";
 
 /** Cells under 10 are never shown as numbers (Amendment B §15). */
 const K = (n: number) => (n < 10 ? <span className="cp-muted">under 10</span> : n);
 
-const OFFER_STATUS = {
-  verified: { tone: "good", label: "Verified", d: "M5 12l5 5 9-10" },
-  waiting: { tone: "warn", label: "Waiting for you", d: "M12 7v5l3 3" },
-  rejected: { tone: "risk", label: "Not accepted", d: "M6 6l12 12M18 6L6 18" },
-} as const;
-
 /** Students: totals by programme. Rows under 10 students are hidden, never shown as numbers. */
-export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
+export function StudentsPage({ rows, real = false, cohorts = [] }: { rows: ProgrammeRow[]; real?: boolean; cohorts?: { id: string; label: string }[] }) {
+  const cols = real ? ["Final years", "Joined", "Resume ready", "Interviews", "Offers"] : ["Final years", "Joined", "Resume ready", "Eligible", "Applied", "Interviews", "Offers"];
   return (
     <>
       <header className="cp-top">
         <div>
           <h1 className="cp-title">Students by programme</h1>
-          <p className="cp-sub">Batch of 2026. Totals only; you never see an individual student&apos;s marks or resume here.</p>
+          <p className="cp-sub">Totals only; you never see an individual student&apos;s marks or resume here.</p>
         </div>
-        <div className="cp-actions">
-          <Link className="cp-btn" data-variant="outline" href="#">
-            <Icon d="M4 6h16M4 12h10M4 18h6" />
-            Import your student list
-          </Link>
-        </div>
+        {real ? null : (
+          <div className="cp-actions">
+            <button className="cp-btn" data-variant="outline" type="button">
+              <Icon d="M4 6h16M4 12h10M4 18h6" />
+              Import your student list
+            </button>
+          </div>
+        )}
       </header>
+      {real ? <RosterImport cohorts={cohorts} /> : null}
       <section className="cp-card" aria-labelledby="prog-h">
         <h2 id="prog-h">Progress after on-campus drives</h2>
         <div className="cp-scroll">
@@ -34,7 +33,7 @@ export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
             <thead>
               <tr>
                 <th scope="col">Programme</th>
-                {["Final years", "Joined", "Resume ready", "Eligible", "Applied", "Interviews", "Offers"].map((h) => (
+                {cols.map((h) => (
                   <th key={h} scope="col" className="cp-num">
                     {h}
                   </th>
@@ -47,7 +46,7 @@ export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
                   <tr key={r.programme}>
                     <td>{r.programme}</td>
                     <td className="cp-num">{r.finalYears}</td>
-                    <td colSpan={6} className="cp-hidden">
+                    <td colSpan={cols.length - 1} className="cp-hidden">
                       Hidden to protect students in small groups. Two small programmes are hidden together, so neither can be worked out from the totals.
                     </td>
                   </tr>
@@ -59,8 +58,8 @@ export function StudentsPage({ rows }: { rows: ProgrammeRow[] }) {
                       {r.joined} <small>{pct(r.joined, r.finalYears)}%</small>
                     </td>
                     <td className="cp-num">{K(r.ready)}</td>
-                    <td className="cp-num">{K(r.eligible)}</td>
-                    <td className="cp-num">{K(r.applied)}</td>
+                    {real ? null : <td className="cp-num">{K(r.eligible)}</td>}
+                    {real ? null : <td className="cp-num">{K(r.applied)}</td>}
                     <td className="cp-num">{K(r.interviews)}</td>
                     <td className="cp-num">
                       <b className="cp-good">{K(r.offers)}</b>
@@ -235,7 +234,10 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
 
           <section id="step-5" className="cp-card" aria-labelledby="s5">
             <h2 id="s5">5. Review and publish</h2>
-            <p className="cp-card-sub">Students see the drive in their app with a countdown and the rules they meet. Students who clearly don&apos;t qualify never see it; students we couldn&apos;t check see it with the reason.</p>
+            <p className="cp-card-sub">
+              Students see the drive in their app with a countdown and the rules they meet. Students who clearly don&apos;t qualify never see it; students we couldn&apos;t check see it with the
+              reason.
+            </p>
             <div className="cp-actions">
               <button className="cp-btn" type="submit">
                 Publish to 170 students
@@ -295,10 +297,26 @@ export function DrivesInboxPage({ notice }: { notice: string }) {
   );
 }
 
-/** Outcomes and NAAC: verify offers students chose to share, then export the 5.2.1 list. */
-export function OutcomesPage({ offers, outgoing, higherStudies }: { offers: OfferRow[]; outgoing: number; higherStudies: number }) {
-  const verified = offers.filter((o) => o.status === "verified").length;
-  const placedTotal = 96 + 22;
+/** Outcomes and NAAC: verify offers students chose to share, then export the 5.2.1 list. Every figure is counted from the data given. */
+export function OutcomesPage({
+  offers,
+  outgoing,
+  higherStudies,
+  placedOnRoster,
+  verified,
+  waiting,
+  real = false,
+}: {
+  offers: OfferRow[];
+  outgoing: number;
+  higherStudies: number;
+  /** Placed on campus from the roster. Null when that figure is hidden (under 10 students). */
+  placedOnRoster: number | null;
+  verified: number;
+  waiting: number;
+  real?: boolean;
+}) {
+  const placedTotal = placedOnRoster === null ? null : placedOnRoster + verified;
   return (
     <>
       <header className="cp-top">
@@ -307,10 +325,7 @@ export function OutcomesPage({ offers, outgoing, higherStudies }: { offers: Offe
           <p className="cp-sub">Offers from students who chose to share them. Nothing is counted until you verify it.</p>
         </div>
         <div className="cp-actions">
-          <Link className="cp-btn" href="#">
-            <Icon d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" />
-            Download 5.2.1 list (CSV)
-          </Link>
+          <NaacDownload sample={!real} />
         </div>
       </header>
       <dl className="cp-ledger">
@@ -320,7 +335,7 @@ export function OutcomesPage({ offers, outgoing, higherStudies }: { offers: Offe
         </div>
         <div>
           <dt>Placed (on campus and verified off campus)</dt>
-          <dd>{placedTotal}</dd>
+          <dd>{placedTotal === null ? <span className="cp-muted">hidden: fewer than 10</span> : placedTotal}</dd>
         </div>
         <div>
           <dt>Higher studies (reported by students)</dt>
@@ -329,62 +344,30 @@ export function OutcomesPage({ offers, outgoing, higherStudies }: { offers: Offe
         <div>
           <dt>5.2.1 figure this year</dt>
           <dd>
-            {pct(placedTotal + higherStudies, outgoing)}% <small>so far</small>
+            {placedTotal === null || outgoing === 0 ? (
+              <span className="cp-muted">not available yet</span>
+            ) : (
+              <>
+                {pct(placedTotal + higherStudies, outgoing)}% <small>so far</small>
+              </>
+            )}
           </dd>
         </div>
       </dl>
       <section className="cp-card" aria-labelledby="offers-h">
         <h2 id="offers-h">Offers to check</h2>
         <p className="cp-card-sub">
-          9 waiting and 22 verified this year; showing the latest {offers.length}. Open a letter to mark it verified or not accepted.
+          {waiting} waiting and {verified} verified. Open a letter, then mark the offer verified.
         </p>
-        <div className="cp-scroll">
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th scope="col">Student</th>
-                <th scope="col">Programme</th>
-                <th scope="col">Employer</th>
-                <th scope="col" className="cp-num">
-                  Package
-                </th>
-                <th scope="col">Found through</th>
-                <th scope="col">Letter</th>
-                <th scope="col">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {offers.map((o) => {
-                const st = OFFER_STATUS[o.status];
-                return (
-                  <tr key={o.id}>
-                    <td>
-                      <b>{o.student}</b>
-                    </td>
-                    <td>{o.programme}</td>
-                    <td>{o.employer}</td>
-                    <td className="cp-num">{o.lpa.toFixed(1)} LPA</td>
-                    <td>{o.source}</td>
-                    <td>{o.letter ? <Link href="#">View letter</Link> : <span className="cp-muted">Not uploaded</span>}</td>
-                    <td>
-                      <span className="cp-status" data-tone={st.tone}>
-                        <Icon d={st.d} />
-                        {st.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <OutcomesTable offers={offers} sample={!real} />
       </section>
     </>
   );
 }
 
 /** Settings: the CGPA rule (the one setting that unlocks most "can't check" verdicts), domains, join code, staff. */
-export function SettingsPage() {
+export function SettingsPage(props: { real?: false } | { real: true; college: string; universityRule: string | null; staff: { id: string; role: "owner" | "staff"; claimed: boolean }[] }) {
+  if (props.real) return <RealSettings {...props} />;
   return (
     <>
       <header className="cp-top">
@@ -396,7 +379,9 @@ export function SettingsPage() {
       <div className="cp-grid">
         <section className="cp-card" aria-labelledby="cgpa-h">
           <h2 id="cgpa-h">CGPA to percentage</h2>
-          <p className="cp-card-sub">Drives often ask for &quot;60% or 6.0 CGPA&quot;. With your university&apos;s rule we can check every student; without it, 27 students show as &quot;can&apos;t check&quot;.</p>
+          <p className="cp-card-sub">
+            Drives often ask for &quot;60% or 6.0 CGPA&quot;. With your university&apos;s rule we can check every student; without it, 27 students show as &quot;can&apos;t check&quot;.
+          </p>
           <form className="cp-form" action="#">
             <label htmlFor="uni">Your university</label>
             <select id="uni" defaultValue="sample">
@@ -448,6 +433,64 @@ export function SettingsPage() {
                 </td>
                 <td>Can view</td>
               </tr>
+            </tbody>
+          </table>
+        </section>
+        <section className="cp-card" aria-labelledby="priv-h">
+          <h2 id="priv-h">Privacy rules</h2>
+          <ul className="cp-rules">
+            <li>
+              <Icon d="M5 12l5 5 9-10" />
+              Totals only; groups under 10 are hidden. This can&apos;t be changed.
+            </li>
+            <li>
+              <Icon d="M5 12l5 5 9-10" />
+              Students choose what you see: totals, outcomes, or applications too.
+            </li>
+            <li>
+              <Icon d="M5 12l5 5 9-10" />
+              Every time staff open a student&apos;s outcome, the student can see it.
+            </li>
+          </ul>
+        </section>
+      </div>
+    </>
+  );
+}
+
+/** Settings on real data: the university rule matched by college name and the staff seats. The join code is stored hashed, so it is not shown. */
+function RealSettings({ college, universityRule, staff }: { college: string; universityRule: string | null; staff: { id: string; role: "owner" | "staff"; claimed: boolean }[] }) {
+  return (
+    <>
+      <header className="cp-top">
+        <div>
+          <h1 className="cp-title">Settings</h1>
+          <p className="cp-sub">{college}</p>
+        </div>
+      </header>
+      <div className="cp-grid">
+        <section className="cp-card" aria-labelledby="cgpa-h">
+          <h2 id="cgpa-h">CGPA to percentage</h2>
+          {universityRule ? (
+            <p className="cp-card-sub">The rule for {universityRule} is on file, so students who give only a CGPA can be checked.</p>
+          ) : (
+            <p className="cp-card-sub">
+              No rule on file for this college&apos;s name. Students who give only a CGPA show as &quot;can&apos;t check&quot; for CGPA drives. Send us your university&apos;s circular and we add the
+              rule.
+            </p>
+          )}
+        </section>
+        <section className="cp-card" aria-labelledby="staff-h">
+          <h2 id="staff-h">Placement cell staff</h2>
+          <table className="cp-table">
+            <tbody>
+              {staff.map((m, i) => (
+                <tr key={m.id}>
+                  <td>Seat {i + 1}</td>
+                  <td>{m.role === "owner" ? "Owner" : "Can view"}</td>
+                  <td>{m.claimed ? "Joined" : "Invited"}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </section>

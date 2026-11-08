@@ -16,6 +16,8 @@ export type CampusOverview = {
   stuck: { blocker: string; students: number; action: string }[];
   hiddenGroups: number;
   drives: { company: string; role: string; rules: string; eligible: number; applied: number; deadline: string; status: "open" | "closing" | "closed" }[];
+  /** Real data only: one row per cohort. A hidden cell (under 10) is null, never 0. */
+  programmes?: { name: string; joined: number | null; offers: number | null }[];
 };
 
 export const SAMPLE_CAMPUS: CampusOverview = {

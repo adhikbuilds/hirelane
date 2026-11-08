@@ -1,3 +1,4 @@
+import { devPagesOpen } from "@/lib/dev-gate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { assessHealth, evaluateEligibility, parseCriteria } from "@hirelane/engine";
@@ -47,7 +48,7 @@ const NOTICE = "Eligibility: 60% throughout in 10th, 12th and graduation. B.E/B.
 
 /** Dev-only preview: the real engine runs on synthetic text, so this is what a student would really see. */
 export default function ResumePreview() {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (!devPagesOpen()) notFound();
   const report = assessHealth({ text: SAMPLE_TEXT, meta: META, fileName: "WhatsApp Document 2025.pdf" });
   const result = evaluateEligibility(
     parseCriteria(NOTICE),

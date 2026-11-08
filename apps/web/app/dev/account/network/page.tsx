@@ -1,3 +1,4 @@
+import { devPagesOpen } from "@/lib/dev-gate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StudentShell } from "@/components/student/Shell";
@@ -13,7 +14,7 @@ const COMPANIES: WarmCompany[] = [
 
 /** Dev-only: before and after uploading connections. Sample people (initials only). */
 export default function NetworkPreview() {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (!devPagesOpen()) notFound();
   return (
     <StudentShell active="me" initials="R">
       <div className="wr-app">

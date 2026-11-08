@@ -10,11 +10,13 @@ import {
   listDrives,
   listInbox,
   listMyDrives,
-  revealOutcomes,
+  listOutcomes,
+  listStaff,
   listResumes,
   tpoMe,
   type Cohort,
   type ServiceCtx,
+  universityFor,
 } from "@hirelane/services";
 import { accountsEnabled } from "@/lib/auth/flags";
 import { withPageCtx } from "@/lib/api/action";
@@ -22,7 +24,7 @@ import type { CampusOverview, OfferRow, ProgrammeRow } from "@/lib/sample/campus
 import type { DriveItem, TrackerItem } from "@/lib/sample/loop";
 import type { HomeData } from "@/lib/sample/home";
 import { toDriveInbox, type DriveInboxData } from "./campus-drives";
-import { campusIsEmpty, toCampusOverview, toOfferRows, toProgrammeRows, type CampusInput, type DriveRow, type OutcomeRow, type Stats } from "./campus";
+import { campusIsEmpty, metricTotal, toCampusOverview, toOfferRows, toProgrammeRows, type CampusInput, type DriveRow, type OutcomeRow, type Stats } from "./campus";
 import { toDriveItems } from "./drives";
 import { firstNameOf, homeIsEmpty, toHomeData } from "./home";
 import { isDevEnv, resolveScreen, type Screen, type ScreenEnv } from "./screen";
@@ -90,10 +92,9 @@ const statsFor = async (ctx: ServiceCtx, cohorts: Cohort[]): Promise<Record<stri
 
 const FORBIDDEN = { forbidden: true, empty: true } as const;
 
-/** Console overview. Dev-only for now: CampusDash hard-codes its weekly chart, programme split and Act list. */
+/** Console overview. Production-ready: CampusDash prints only what the snapshot holds (no weekly chart, programme split or Act list is invented). */
 export function loadCampusOverview(): Promise<Screen<{ college: string; overview: CampusOverview }>> {
   return resolveScreen(env, {
-    prodReady: false,
     read: async (ctx) => {
       const base = await staffCampus(ctx);
       if (!base) return { ...FORBIDDEN, data: null as never };
@@ -107,32 +108,72 @@ export function loadCampusOverview(): Promise<Screen<{ college: string; overview
 }
 
 /**
- * Console Students: totals by programme. Dev-only: eligible and applied have no source (the table prints "under 10"),
- * a withheld cell also prints "under 10", and StudentsPage hard-codes "Batch of 2026" in its subtitle.
+ * Console Students: totals by programme. Eligible and applied have no source, so the table leaves them out; a withheld
+ * cell prints "hidden". Also the cohorts the roster import can target.
  */
-export function loadCampusStudents(): Promise<Screen<{ college: string; rows: ProgrammeRow[] }>> {
+export function loadCampusStudents(): Promise<Screen<{ college: string; rows: ProgrammeRow[]; cohorts: { id: string; label: string }[] }>> {
   return resolveScreen(env, {
-    prodReady: false,
     read: async (ctx) => {
       const base = await staffCampus(ctx);
       if (!base) return { ...FORBIDDEN, data: null as never };
       const stats = await statsFor(ctx, base.cohorts);
-      return { data: { college: base.campusName, rows: toProgrammeRows({ cohorts: base.cohorts, stats }) }, empty: base.cohorts.length === 0 };
+      return { data: { college: base.campusName, rows: toProgrammeRows({ cohorts: base.cohorts, stats }), cohorts: base.cohorts.map((c) => ({ id: c.id, label: `${c.programme} (${c.passoutYear})` })) }, empty: base.cohorts.length === 0 };
     },
   });
 }
 
-/** Console Outcomes. Revealing the list logs each student returned, so this is the only loader that does it. Dev-only: OutcomesPage hard-codes its placed total. */
-export function loadCampusOutcomes(): Promise<Screen<{ college: string; offers: OfferRow[]; outgoing: number }>> {
+export interface OutcomesData {
+  college: string;
+  offers: OfferRow[];
+  outgoing: number;
+  higherStudies: number;
+  /** Placed on campus, from the roster snapshot. Null when that cell is hidden (under 10): never printed as 0. */
+  placedOnRoster: number | null;
+  verified: number;
+  waiting: number;
+}
+
+/**
+ * Console Outcomes. A page view names nobody and writes nothing: it reads the unnamed list (listOutcomes). Names come from
+ * the explicit POST /api/v1/tpo/outcomes/reveal call, which logs each student returned.
+ */
+export function loadCampusOutcomes(): Promise<Screen<OutcomesData>> {
   return resolveScreen(env, {
-    prodReady: false,
     read: async (ctx) => {
       const base = await staffCampus(ctx);
       if (!base) return { ...FORBIDDEN, data: null as never };
-      // The screen names students, so it uses the explicit, logged call (decision 2026-10-31: the plain list names nobody and logs nothing).
-      const { outcomes } = await revealOutcomes(ctx, { campusId: base.campusId });
-      const offers = toOfferRows(outcomes as OutcomeRow[]);
-      return { data: { college: base.campusName, offers, outgoing: base.cohorts.reduce((a, c) => a + c.rosterSize, 0) }, empty: offers.length === 0 && base.cohorts.length === 0 };
+      const [{ outcomes }, stats] = await Promise.all([listOutcomes(ctx, { campusId: base.campusId }), statsFor(ctx, base.cohorts)]);
+      const rows = outcomes as OutcomeRow[];
+      const offers = toOfferRows(rows);
+      const data: OutcomesData = {
+        college: base.campusName,
+        offers,
+        outgoing: base.cohorts.reduce((a, c) => a + c.rosterSize, 0),
+        higherStudies: rows.filter((r) => (r.kind as string) === "higher_studies").length,
+        placedOnRoster: metricTotal(base.cohorts, stats, "placed_on_roster"),
+        verified: offers.filter((o) => o.status === "verified").length,
+        waiting: offers.filter((o) => o.status === "waiting").length,
+      };
+      return { data, empty: rows.length === 0 && base.cohorts.length === 0 };
+    },
+  });
+}
+
+export interface SettingsData {
+  college: string;
+  /** The university rule on file for this college's name, or null: students who only give a CGPA then show as "can't check". */
+  universityRule: string | null;
+  staff: { id: string; role: "owner" | "staff"; claimed: boolean }[];
+}
+
+/** Console Settings: what the services hold (the university rule matched by name, the staff seats). The join code is stored hashed and is not shown. */
+export function loadCampusSettings(): Promise<Screen<SettingsData>> {
+  return resolveScreen(env, {
+    read: async (ctx) => {
+      const base = await staffCampus(ctx);
+      if (!base) return { ...FORBIDDEN, data: null as never };
+      const { staff } = await listStaff(ctx, { campusId: base.campusId });
+      return { data: { college: base.campusName, universityRule: universityFor(base.campusName)?.short ?? null, staff: staff.map((m) => ({ id: m.id, role: m.role, claimed: m.claimed })) }, empty: false };
     },
   });
 }

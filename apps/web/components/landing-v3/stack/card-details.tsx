@@ -123,7 +123,7 @@ export function CardDetails({
           Pass
         </button>
         <button type="button" onClick={onApprove} className="h-12 rounded-2xl bg-[#c6f19d] text-[15px] font-extrabold text-[#0f1f10] hover:bg-[#d4f6b3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-          Approve
+          Apply
         </button>
       </div>
     </div>

@@ -201,7 +201,7 @@ export const getLandingSnapshot = unstable_cache(loadLanding, ["landing:v1"], { 
 
 // landing v3
 /**
- * Per-card extras for the landing swipe stack: when each job was posted, how many roles its company has open and
+ * Per-card extras for the landing card stack: when each job was posted, how many roles its company has open and
  * the posting URL. Read from the same jobs the demo uses; nothing here is invented. JSON-safe, cached 300 s.
  */
 export type StackExtraRow = { freshAt: string | null; openRoles: number | null; postingUrl: string | null };

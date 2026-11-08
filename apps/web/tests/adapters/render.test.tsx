@@ -8,6 +8,7 @@ vi.mock("next/font/google", () => ({
   Geist_Mono: () => ({ variable: "gm" }),
   Bricolage_Grotesque: () => ({ variable: "b" }),
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 
 import { DrivesList, Tracker } from "@/components/app/DrivesTracker";
@@ -61,7 +62,7 @@ describe("the unedited components accept empty real data", () => {
     render(
       <>
         <StudentsPage rows={rows} />
-        <OutcomesPage offers={[]} outgoing={0} higherStudies={0} />
+        <OutcomesPage real offers={[]} outgoing={0} higherStudies={0} placedOnRoster={0} verified={0} waiting={0} />
       </>,
     );
     expect(document.body.textContent).not.toMatch(/NaN|Infinity|undefined/);

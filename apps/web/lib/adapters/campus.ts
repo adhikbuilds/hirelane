@@ -169,6 +169,7 @@ export function toCampusOverview(i: CampusInput): CampusOverview {
     stuck,
     hiddenGroups: hidden,
     drives,
+    programmes: i.cohorts.map((c) => ({ name: `${c.programme} (${c.passoutYear})`, joined: metricTotal([c], i.stats, "joined_verified"), offers: metricTotal([c], i.stats, "offer_reported") })),
   };
 }
 

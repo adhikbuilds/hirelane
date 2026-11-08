@@ -7,6 +7,8 @@ export interface V1Operation {
   path: string;
   summary: string;
   mutation: boolean;
+  /** Marks the operation deprecated in the document. */
+  deprecated?: boolean;
   /** False for a mutation that takes no Idempotency-Key (account delete). Default true. */
   idempotent?: boolean;
   /** JSON request body schema (the path id is supplied by the URL, not the body). */

@@ -1,5 +1,5 @@
 /**
- * Rich pick cards for the swipe deck. Every field maps to something we can know honestly: the posting (via our
+ * Rich pick cards for the sample picks. Every field maps to something we can know honestly: the posting (via our
  * engine), the company's own careers page (posting counts), the student's confirmed profile, and their own
  * connections file. Sample values only; real cards come from match:user + picks:user (HLD M3).
  */
