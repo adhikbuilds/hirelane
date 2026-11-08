@@ -163,9 +163,10 @@ describe('VTU: the formula depends on the scheme', () => {
     expect(v.status).toBe('unknown');
     expect(v.reason).toContain('not confirmed');
   });
-  it('a campus rule still wins over the VTU table, with or without a scheme', () => {
+  it('a campus rule no longer overrides the VTU table: with no scheme the verdict is unknown (review finding, HIGH)', () => {
     const r = evaluateEligibility(crit, GRAD, { cgpaRule: { kind: 'linear', a: 9, b: 0 }, universityRule: vtu }).verdicts[0]!;
-    expect(r.reason).toBe("8.0 CGPA = 72.0% by your campus's rule, needs 60%: you meet it");
+    expect(r.status).toBe('unknown');
+    expect(r.reason).toContain('which VTU scheme');
   });
 });
 
@@ -208,9 +209,9 @@ describe('Mumbai: disputed, unknown until verified', () => {
     const v = evaluateEligibility(crit, { ...GRAD, grad_conversion: 'direct', grad_pct_equiv: 66 }, { cgpaRule: null, universityRule: mu, universityRuleConfirmed: true }).verdicts[0]!;
     expect(v.status).toBe('pass');
   });
-  it('a campus rule still wins over a disputed university row', () => {
+  it('a campus rule no longer overrides a disputed university row: unknown (review finding, HIGH)', () => {
     const v = evaluateEligibility(crit, GRAD, { cgpaRule: { kind: 'linear', a: 10, b: 0 }, universityRule: mu }).verdicts[0]!;
-    expect(v.status).toBe('pass');
+    expect(v.status).toBe('unknown');
   });
 });
 

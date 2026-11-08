@@ -24,8 +24,10 @@ export interface MyOutcome {
   hasLetter: boolean;
   createdAt: string;
 }
+/** What reportOutcome returns: for higher_studies, employer is the institution joined and roleTitle the programme admitted to. */
+export type ReportedOutcome = Omit<MyOutcome, 'kind'> & { kind: 'interview' | 'offer' | 'higher_studies' };
 const COLS = 'id, kind, employer, role_title, package_lpa, verification, (letter_enc IS NOT NULL) AS has_letter, created_at';
-const toMine = (r: Record<string, any>): MyOutcome => ({
+const toMine = (r: Record<string, any>): ReportedOutcome => ({
   id: r.id,
   kind: r.kind,
   employer: r.employer,
@@ -37,7 +39,7 @@ const toMine = (r: Record<string, any>): MyOutcome => ({
 });
 
 /** "I got an interview / an offer." Student-reported until a TPO verifies it. The student's campus and cohort come from their membership. */
-export async function reportOutcome(ctx: ServiceCtx, input: unknown): Promise<MyOutcome> {
+export async function reportOutcome(ctx: ServiceCtx, input: unknown): Promise<ReportedOutcome> {
   const i = parseInput(OutcomeInput, input);
   try {
     return await withUserTx(ctx, async (c) => {
@@ -58,8 +60,8 @@ export async function reportOutcome(ctx: ServiceCtx, input: unknown): Promise<My
 
 export async function listMyOutcomes(ctx: ServiceCtx): Promise<{ outcomes: MyOutcome[] }> {
   try {
-    const rows = await withUserTx(ctx, async (c) => (await c.query(`SELECT ${COLS} FROM outcomes ORDER BY created_at DESC, id`)).rows);
-    return { outcomes: rows.map(toMine) };
+    const rows = await withUserTx(ctx, async (c) => (await c.query(`SELECT ${COLS} FROM outcomes WHERE kind <> 'higher_studies' ORDER BY created_at DESC, id`)).rows);
+    return { outcomes: rows.map((r) => toMine(r) as MyOutcome) };
   } catch (e) {
     throw mapPgError(e);
   }

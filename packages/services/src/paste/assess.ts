@@ -6,6 +6,7 @@ import {
   skillLabel,
   type CgpaRule,
   type EligibilityProfileInput,
+  type UniversityRule,
 } from '@hirelane/engine';
 import type { StudentFit } from '../picks/rank';
 import type { PasteResult } from './types';
@@ -16,6 +17,8 @@ const labelOf = (id: string): string => skillLabel(skillIndex, id) ?? id;
 export interface PasteContext {
   profile: EligibilityProfileInput | null;
   cgpaRule: CgpaRule;
+  /** The university row of the student's campus, or null. */
+  universityRule?: UniversityRule | null;
   fit: StudentFit;
   now: Date;
   /** A link shared with the paste. Parsed as a string only. */
@@ -33,7 +36,7 @@ export function assessPaste(text: string, ctx: PasteContext): PasteResult {
     job,
     { skillIds: ctx.fit.skillIds, cities: ctx.fit.cities, remote: ctx.fit.remote, yearsExperience: ctx.fit.yearsExperience },
     ctx.profile,
-    { now: ctx.now, cgpaRule: ctx.cgpaRule },
+    { now: ctx.now, cgpaRule: ctx.cgpaRule, universityRule: ctx.universityRule ?? null },
   );
 
   const have = new Set(ctx.fit.skillIds);

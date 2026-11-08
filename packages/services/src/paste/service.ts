@@ -19,5 +19,5 @@ export async function checkPastedJob(ctx: ServiceCtx, input: unknown): Promise<P
   } catch (e) {
     throw mapPgError(e);
   }
-  return assessPaste(text, { profile: student.profile, cgpaRule: student.cgpaRule, fit: student.fit, now: ctx.now(), url: url ?? null });
+  return assessPaste(text, { profile: student.profile, cgpaRule: student.cgpaRule, universityRule: student.universityRule, fit: student.fit, now: ctx.now(), url: url ?? null });
 }

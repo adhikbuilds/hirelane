@@ -1,6 +1,6 @@
-import type { CgpaRule, EligibilityProfileInput } from '@hirelane/engine';
+import type { CgpaRule, EligibilityProfileInput, UniversityRule } from '@hirelane/engine';
 import type { UserClient } from '../db';
-import { asCgpaRule, profileFromRow } from '../campus/drives';
+import { asCgpaRule, profileFromRow, universityFor } from '../campus/drives';
 import { membershipIn } from '../campus/membership';
 import type { StudentFit } from './rank';
 
@@ -9,6 +9,8 @@ export interface StudentContext {
   profile: EligibilityProfileInput | null;
   /** The campus CGPA rule when the student is on a campus that set one. */
   cgpaRule: CgpaRule;
+  /** The university row the campus name points to, or null. Stops a campus rule overriding a scheme-keyed or disputed row. */
+  universityRule: UniversityRule | null;
   placed: boolean;
   fit: StudentFit;
 }
@@ -31,6 +33,7 @@ export async function loadStudentContext(c: UserClient, userId: string): Promise
   return {
     profile: profileFromRow(prof.rows[0]),
     cgpaRule: asCgpaRule(member?.campus.cgpaRule),
+    universityRule: universityFor(member?.campus.name),
     placed: member?.placed === true,
     fit: {
       skillIds: ((resume.rows[0]?.skills as string[] | undefined) ?? []).map((s) => s.toLowerCase()),

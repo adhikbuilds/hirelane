@@ -240,7 +240,7 @@ export async function confirmResume(ctx: ServiceCtx, input: unknown): Promise<Re
       );
       // The client's fieldMeta is ignored: provenance is computed against the parse (see provenance.ts).
       const meta: FieldMeta = deriveFieldMeta(inp.eligibility, parsed.data);
-      await upsertEligibility(c, ctx, inp.eligibility, meta, newId);
+      await upsertEligibility(c, ctx, inp.eligibility, meta, newId, { keepSchemeWhenOmitted: true });
       const out = (await c.query(`SELECT ${SUMMARY_COLS} FROM ${FROM_FAMILY} WHERE r.id = $1 AND r.user_id = $2`, [newId, ctx.userId])).rows[0];
       return { ...summary(out), eligibilityConfirmedAt: now.toISOString() };
     });

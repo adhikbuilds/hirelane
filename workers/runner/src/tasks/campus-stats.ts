@@ -21,7 +21,7 @@
  *
  * Idempotent: re-running on the same day replaces that day's rows. Rows older than 35 days are pruned. Logs carry counts only.
  */
-import { evaluateEligibility, type CgpaRule, type Criterion, type EligibilityProfileInput } from '@hirelane/engine';
+import { evaluateEligibility, findUniversityRule, type CgpaRule, type Criterion, type EligibilityProfileInput } from '@hirelane/engine';
 import type { Task, TaskList } from 'graphile-worker';
 import { adminRun, type Run } from './resume-common';
 
@@ -109,8 +109,8 @@ export function profileInput(r: Record<string, unknown> | null | undefined): Eli
   const put = (k: string, v: unknown) => {
     if (v !== null && v !== undefined) out[k] = v;
   };
-  for (const k of ['pct_10', 'pct_secondary', 'grad_score', 'grad_pct_equiv', 'grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year']) put(k, num(r[k]));
-  for (const k of ['board_10', 'secondary_kind', 'board_secondary', 'degree', 'branch_code', 'branch_raw', 'grad_conversion', 'grad_is_final', 'lateral_entry']) put(k, r[k]);
+  for (const k of ['pct_10', 'pct_secondary', 'grad_score', 'grad_pct_equiv', 'grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year', 'admission_year']) put(k, num(r[k]));
+  for (const k of ['board_10', 'secondary_kind', 'board_secondary', 'degree', 'branch_code', 'branch_raw', 'grad_conversion', 'grad_is_final', 'lateral_entry', 'university_scheme']) put(k, r[k]);
   return out as unknown as EligibilityProfileInput;
 }
 
@@ -123,9 +123,9 @@ export const verdictOf = (overall: 'pass' | 'fail' | 'unknown'): Verdict => (ove
 async function evaluateDrives(c: Q, day: string): Promise<{ drives: number; checks: number }> {
   const drives = (
     await c.query(
-      `SELECT d.id, d.cohort_id, d.criteria, ca.cgpa_rule FROM drives d JOIN campuses ca ON ca.id = d.campus_id WHERE d.status = 'published' ORDER BY d.cohort_id, d.published_at, d.id`,
+      `SELECT d.id, d.cohort_id, d.criteria, ca.cgpa_rule, ca.name AS campus_name FROM drives d JOIN campuses ca ON ca.id = d.campus_id WHERE d.status = 'published' ORDER BY d.cohort_id, d.published_at, d.id`,
     )
-  ).rows as { id: string; cohort_id: string; criteria: unknown; cgpa_rule: unknown }[];
+  ).rows as { id: string; cohort_id: string; criteria: unknown; cgpa_rule: unknown; campus_name: string }[];
   let checks = 0;
   const released = new Map<string, Map<string, Verdict>[]>();
   // Drives that were published, had counts released, and were closed since: a TPO still holds those numbers, so a new drive is
@@ -147,6 +147,8 @@ async function evaluateDrives(c: Q, day: string): Promise<{ drives: number; chec
   for (const d of drives) {
     const criteria = (Array.isArray(d.criteria) ? d.criteria : []) as Criterion[];
     const rule = cgpaRule(d.cgpa_rule);
+    // The campus's university row: a scheme-keyed (VTU) or disputed (Mumbai) one is never overridden by the campus rule.
+    const universityRule = findUniversityRule(d.campus_name);
     const members = (
       await c.query(
         `SELECT m.user_id AS member_id, m.verified_at IS NOT NULL AS verified,
@@ -160,7 +162,7 @@ async function evaluateDrives(c: Q, day: string): Promise<{ drives: number; chec
     let population = 0;
     const vector = new Map<string, Verdict>();
     for (const m of members) {
-      const verdict = verdictOf(evaluateEligibility(criteria, profileInput(m), { cgpaRule: rule }).overall);
+      const verdict = verdictOf(evaluateEligibility(criteria, profileInput(m), { cgpaRule: rule, universityRule }).overall);
       await c.query(
         `INSERT INTO drive_checks (drive_id, user_id, verdict, checked_at) VALUES ($1, $2, $3, now())
          ON CONFLICT (drive_id, user_id) DO UPDATE SET verdict = EXCLUDED.verdict, checked_at = EXCLUDED.checked_at`,

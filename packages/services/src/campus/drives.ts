@@ -1,4 +1,4 @@
-import { detectScamSignals, evaluateEligibility, parseCriteria, type CgpaRule, type Criterion, type EligibilityProfileInput } from '@hirelane/engine';
+import { detectScamSignals, evaluateEligibility, findUniversityRule, parseCriteria, type CgpaRule, type Criterion, type EligibilityProfileInput, type UniversityRule } from '@hirelane/engine';
 import type { ServiceCtx } from '../ctx';
 import { withUserTx } from '../db';
 import { mapPgError } from '../errors';
@@ -22,8 +22,17 @@ export function profileFromRow(r: Record<string, unknown> | undefined): Eligibil
   for (const k of ['grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year']) put(k, num(r[k]));
   for (const k of ['board_10', 'secondary_kind', 'board_secondary', 'degree', 'branch_code', 'branch_raw', 'grad_conversion']) put(k, r[k]);
   for (const k of ['grad_is_final', 'lateral_entry']) put(k, r[k]);
+  put('admission_year', num(r['admission_year']));
+  put('university_scheme', r['university_scheme']);
   return out as unknown as EligibilityProfileInput;
 }
+
+/**
+ * The university row (data/cgpa-rules.json) a campus belongs to, found from its name ("ABC Institute, affiliated to VTU"). Null
+ * when the name names none: a campus rule then stands alone. A scheme-keyed or disputed row is what stops a campus rule from
+ * overriding it (engine resolveConversion).
+ */
+export const universityFor = (campusName: unknown): UniversityRule | null => (typeof campusName === 'string' ? findUniversityRule(campusName) : null);
 
 export const asCgpaRule = (v: unknown): CgpaRule =>
   v && typeof v === 'object' && (v as { kind?: unknown }).kind === 'linear' && typeof (v as { a?: unknown }).a === 'number' && typeof (v as { b?: unknown }).b === 'number'
@@ -68,10 +77,11 @@ export async function listMyDrives(ctx: ServiceCtx): Promise<{ placed: boolean; 
       ).rows;
       const profile = profileFromRow((await c.query('SELECT * FROM eligibility_profiles WHERE user_id = $1', [ctx.userId])).rows[0]);
       const cgpaRule = asCgpaRule(m.campus.cgpaRule);
+      const universityRule = universityFor(m.campus.name);
       const drives: StudentDrive[] = [];
       for (const r of rows) {
         const criteria = (Array.isArray(r.criteria) ? r.criteria : []) as Criterion[];
-        const res = evaluateEligibility(criteria, profile, { cgpaRule });
+        const res = evaluateEligibility(criteria, profile, { cgpaRule, universityRule });
         if (res.overall === 'fail') continue;
         drives.push({
           id: r.id,

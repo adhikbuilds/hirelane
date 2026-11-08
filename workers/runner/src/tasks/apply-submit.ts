@@ -10,7 +10,7 @@
  *   - apply:sweep: backstop. Re-queues ready applications whose submit job was lost, fails ones stuck in submitting.
  * Logs carry ids and codes only.
  */
-import { answerFrom, answerQuestion, type AnswerBankEntry, type AnswerProfile, type ResumeFacts } from '@hirelane/engine';
+import { answerFrom, answerQuestion, findUniversityRule, type AnswerBankEntry, type AnswerProfile, type ResumeFacts } from '@hirelane/engine';
 import type { Task, TaskList } from 'graphile-worker';
 import { applyMode } from '../../../../packages/agent/src/apply-mode';
 import { runSubmit } from '../../../../packages/agent/src/submit/index';
@@ -61,7 +61,11 @@ export function answerPortFor(facts: StudentFacts, app: ClaimedApplication): Ans
   const resumeFacts: ResumeFacts = { confirmed: facts.resumeConfirmed, skills: facts.skills, projects: [], experience: [], links: [] };
   const set = answerFrom(profile, bank, resumeFacts, { name: app.companyName, about: '', role: app.jobTitle }, {
     ...(facts.countries.length === 1 ? { country: facts.countries[0]! } : {}),
+    // The percentage an employer receives is never computed from an unverified or ambiguous rule. The university row of the campus
+    // (VTU: one formula per scheme; Mumbai: disputed) is passed so the engine ignores a campus rule for it, and it is never marked
+    // confirmed here, so the field is left for the student (needs-you). A rule ops wrote with --force-unverified is dropped by the engine.
     campusRule: asCgpaRule(facts.campusRule),
+    universityRule: findUniversityRule(facts.campusName ?? null),
   });
   return {
     resolve(q) {

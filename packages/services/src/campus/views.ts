@@ -46,7 +46,7 @@ export const MyDrivesSchema = z.strictObject({ placed: z.boolean(), drives: z.ar
 
 export const OutcomeSchema = z.strictObject({
   id: idSchema,
-  kind: z.enum(['interview', 'offer']),
+  kind: z.enum(['interview', 'offer', 'higher_studies']),
   employer: z.string(),
   roleTitle: z.string().nullable(),
   packageLpa: z.number().nullable(),
@@ -104,7 +104,7 @@ export const TpoOutcomesSchema = z.strictObject({
   outcomes: z.array(
     z.strictObject({
       id: idSchema,
-      kind: z.enum(['interview', 'offer']),
+      kind: z.enum(['interview', 'offer', 'higher_studies']),
       employer: z.string(),
       roleTitle: z.string().nullable(),
       packageLpa: z.number().nullable(),

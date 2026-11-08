@@ -32,7 +32,8 @@ export const NAAC_HEADER = [
 export const NAAC_HIGHER_ED_HEADER = ['Name of the student', 'Program graduated from', 'Name of the institution joined', 'Name of the programme admitted to', 'Verification'] as const;
 
 export interface NaacRow {
-  year: number;
+  /** Academic year of the cohort's passout: "2025-26" for the class of 2026. Null (a blank cell) when unknown, never 0. */
+  year: string | null;
   student: string;
   programme: string;
   employer: string;
@@ -50,8 +51,14 @@ export interface NaacHigherEdRow {
   verification: 'student_reported' | 'tpo_verified';
 }
 
+/** "2025-26": the two years must be consecutive, so "2025-27" and "0" are junk. */
+const ACADEMIC_YEAR = /^(\d{4})-(\d{2})$/;
 const text = (v: unknown): string => (typeof v === 'string' ? v : '');
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+function academicYear(v: unknown): string | null {
+  const m = typeof v === 'string' ? ACADEMIC_YEAR.exec(v) : null;
+  return m && (Number(m[1]) + 1) % 100 === Number(m[2]) ? (v as string) : null;
+}
 const ver = (v: unknown): 'student_reported' | 'tpo_verified' => (v === 'tpo_verified' ? 'tpo_verified' : 'student_reported');
 
 /**
@@ -65,7 +72,7 @@ export function readNaacPayload(raw: unknown): { placements: NaacRow[]; higherEd
   const placements = placementsIn.filter(isObj).map((r) => {
     const contact = text(r.employerContact).trim();
     return {
-      year: typeof r.year === 'number' ? r.year : 0,
+      year: academicYear(r.year),
       student: text(r.student),
       programme: text(r.programme),
       employer: text(r.employer),
@@ -81,21 +88,37 @@ export function readNaacPayload(raw: unknown): { placements: NaacRow[]; higherEd
 const label = (v: 'student_reported' | 'tpo_verified') => (v === 'tpo_verified' ? 'TPO-verified' : 'student-reported');
 
 /**
- * The file: comment lines (each one CSV cell starting "# ") that state the manual, then Part A (placement) and Part B (higher
- * education), each with its own header row. Every cell is formula-safe. Comment text is fixed, never student data.
+ * The README that goes with the CSV: which manual it follows, what is unverified, and what each part and column means. Fixed
+ * text, never student data. It is NOT part of the CSV: a "# " row in a CSV breaks a spreadsheet import and a filing upload.
+ */
+export function buildNaacReadme(): string {
+  return [
+    'NAAC criterion 5.2.1: README for the CSV that came with it',
+    '',
+    NAAC_MANUAL,
+    '',
+    'The columns follow the public description of the template and have not been checked against the official data template for the current cycle. Check them before a college files with it.',
+    'Part A: placement of outgoing students. One row per offer reported by a verified student who chose to share outcomes.',
+    'Part B: students progressing to higher education. One row per record reported by a verified student who chose to share outcomes. It can be empty.',
+    'Year is the academic year of the cohort passout (the class of 2026 is 2025-26). It is blank when the cohort has none.',
+    'Employer contact details are blank unless the student shared it.',
+    'Verification says whether the row is student-reported or TPO-verified.',
+    'Only students who joined with a verified college email and chose to share outcomes appear. Each one can see in their own account that this export was made.',
+    '',
+  ].join('\r\n');
+}
+
+/**
+ * The CSV: Part A (placement) then, after a blank line, Part B (higher education), each with its own header row. Data only: the
+ * notes are in `buildNaacReadme`. Every cell is formula-safe.
  */
 export function buildNaacCsv(placements: readonly NaacRow[], higherEd: readonly NaacHigherEdRow[]): string {
-  const note = (t: string) => toCsv([`# ${t}`], []);
   return [
-    note(NAAC_MANUAL),
-    note('The columns follow the public description of the template and have not been checked against the official data template for the current cycle'),
-    note('Employer contact details are blank unless the student shared it'),
-    note('Part A: placement of outgoing students'),
     toCsv(
       NAAC_HEADER,
-      placements.map((r) => [r.year, r.student, r.programme, r.employer, (r.employerContact ?? '').trim(), r.packageLpa === null ? '' : r.packageLpa, label(r.verification)]),
+      placements.map((r) => [r.year ?? '', r.student, r.programme, r.employer, (r.employerContact ?? '').trim(), r.packageLpa === null ? '' : r.packageLpa, label(r.verification)]),
     ),
-    note(higherEd.length === 0 ? 'Part B: students progressing to higher education. There are no higher-education records shared by students yet' : 'Part B: students progressing to higher education'),
+    '\r\n',
     toCsv(
       NAAC_HIGHER_ED_HEADER,
       higherEd.map((r) => [r.student, r.programme, r.institution, r.admittedTo, label(r.verification)]),
@@ -118,10 +141,10 @@ export async function previewNaac(ctx: ServiceCtx, input: unknown = {}): Promise
 }
 
 /**
- * The export, an explicit action (POST): offers (and, when the database returns them, higher-education records) by verified members who chose outcomes or full. The database logs one access
+ * The export, an explicit action (POST): offers and higher-education records by verified members who chose outcomes or full. The database logs one access
  * row per student in the same call, so the student can see the export. Labelled "student-reported" or "TPO-verified". Cells are formula-safe.
  */
-export async function exportNaac(ctx: ServiceCtx, input: unknown = {}): Promise<{ filename: string; csv: string; rows: number }> {
+export async function exportNaac(ctx: ServiceCtx, input: unknown = {}): Promise<{ filename: string; csv: string; readme: string; rows: number }> {
   const i = parseInput(NaacExportInput, input);
   const rows = await staffTx(ctx, async (c) => {
     const campus = await resolveCampus(c, i.campusId);
@@ -130,5 +153,5 @@ export async function exportNaac(ctx: ServiceCtx, input: unknown = {}): Promise<
   const { placements, higherEd } = readNaacPayload(rows);
   const csv = buildNaacCsv(placements, higherEd);
   const stamp = ctx.now().toISOString().slice(0, 10);
-  return { filename: `naac-5.2.1-${i.passoutYear ?? 'all'}-${stamp}.csv`, csv, rows: placements.length + higherEd.length };
+  return { filename: `naac-5.2.1-${i.passoutYear ?? 'all'}-${stamp}.csv`, csv, readme: buildNaacReadme(), rows: placements.length + higherEd.length };
 }

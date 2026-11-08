@@ -141,8 +141,11 @@ function academic(profile: AnswerProfile, o: AnswerOptions): Pick<AnswerSet, 'pc
         const v2 = `${trimNum(e.grad_pct_equiv as number)}%`;
         percentage = filled('percentage', v2, [{ source: 'profile', field: 'grad_pct_equiv', value: v2 }]);
       } else if (scale === 10) {
-        const campus: CgpaRule = o.campusRule ?? null;
-        const { conv, missing } = resolveConversion({ cgpaRule: campus, universityRule: o.universityRule ?? null, universityRuleConfirmed: o.universityRuleConfirmed === true, universityScheme: o.universityScheme ?? null, admissionYear: o.admissionYear ?? null });
+        // A rule ops wrote with --force-unverified is never the source of a number an employer receives.
+        const campus: CgpaRule = o.campusRule && o.campusRule.unverified !== true ? o.campusRule : null;
+        const storedScheme = typeof e.university_scheme === 'string' && e.university_scheme.trim() !== '' ? e.university_scheme : null;
+        const storedYear = typeof e.admission_year === 'number' && Number.isFinite(e.admission_year) ? e.admission_year : null;
+        const { conv, missing } = resolveConversion({ cgpaRule: campus, universityRule: o.universityRule ?? null, universityRuleConfirmed: o.universityRuleConfirmed === true, universityScheme: o.universityScheme ?? storedScheme, admissionYear: o.admissionYear ?? storedYear });
         const pct = conv ? applyCgpaRule(score, conv.rule as NonNullable<CgpaRule>) : null;
         if (conv && pct !== null) {
           const v2 = `${fmt1(round1(pct))}%`;

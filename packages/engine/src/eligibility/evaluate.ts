@@ -71,19 +71,27 @@ export interface Conversion {
 }
 export interface Resolved {
   conv: Conversion | null;
+  /** The formula was picked from the admission year alone. Good enough to pass someone, never enough to fail them. */
+  yearOnly?: boolean;
   /** Why there is no conversion, for the unknown reason. */
   missing: string;
 }
 
 export function resolveConversion(opts: EvaluateOptions): Resolved {
   const campus = opts.cgpaRule;
-  if (campus && campus.kind === 'linear' && isNum(campus.a) && isNum(campus.b)) return { conv: { rule: campus, who: "your campus's rule" }, missing: '' };
   const u = opts.universityRule;
+  // A scheme-keyed (VTU) or disputed (Mumbai) university row has no single formula, so one linear campus rule cannot stand in for it:
+  // it would give a wrong percentage for part of the students. Such a row is resolved by its own variants only.
+  const guarded = !!u && (!!u.variants || !!u.disputed);
+  if (!guarded && campus && campus.kind === 'linear' && isNum(campus.a) && isNum(campus.b)) return { conv: { rule: campus, who: "your campus's rule" }, missing: '' };
   if (u) {
     // A disputed rule or a missing scheme is unknown even when the student confirmed the rule: confirming cannot supply a scheme.
     const res = resolveUniversityRule(u, { scheme: opts.universityScheme ?? null, admissionYear: opts.admissionYear ?? null });
     if (!res.ok) return { conv: null, missing: res.reason };
-    if (u.verified || opts.universityRuleConfirmed === true) return { conv: { rule: res.rule, who: `${u.short}'s rule` }, missing: '' };
+    if (u.verified || opts.universityRuleConfirmed === true) {
+      const explicit = typeof opts.universityScheme === 'string' && opts.universityScheme.trim() !== '';
+      return { conv: { rule: res.rule, who: `${u.short}'s rule` }, missing: '', ...(u.variants && !explicit ? { yearOnly: true } : {}) };
+    }
     return { conv: null, missing: `${u.short}'s rule (${u.formula}) is not confirmed yet. Confirm it to see if you meet this` };
   }
   return { conv: null, missing: 'We need your university\'s CGPA to % rule. Pick your university or ask your campus' };
@@ -108,7 +116,9 @@ function graduation(c: Extract<Criterion, { type: 'min_score' }>, p: Eligibility
   const score = p.grad_score;
   const scale = p.grad_scale;
   const cgpaScore = scale === 10 ? val(score, 0, 10) : undefined;
-  const { conv, missing } = resolveConversion(opts);
+  const { conv, missing, yearOnly } = resolveConversion(opts);
+  /** A fail that rests on a year-picked formula is not a fail: the scheme could be a different one. */
+  const guardYear = (p: Part): Part => (yearOnly && p.status === 'fail' ? { ...unk(`${p.reason}. This used the formula for your admission year, and only your scheme can confirm it. Tell us which scheme you are on to check this`, 'grad_score'), level: L } : p);
   const four = scale === 4 || scale === 5;
 
   // The student's graduation result on the percent side: a number plus how it was reached.
@@ -150,7 +160,7 @@ function graduation(c: Extract<Criterion, { type: 'min_score' }>, p: Eligibility
         // 59.95 shows as 60.0 at one decimal; when that would hide a miss, show two decimals so the reason is not self-contradicting.
         const shown = !ok && pct >= need && pctExact !== null ? how.replace(`${fmt1(pct)}%`, `${(Math.floor(pctExact * 100) / 100).toFixed(2)}%`) : how;
         const short = pct < need || pctExact === null ? need - pct : Math.round((need - pctExact) * 100) / 100;
-        routes.push({ status: ok ? 'pass' : 'fail', reason: ok ? `${shown}, needs ${needTxt}: you meet it` : `${shown}, needs ${needTxt}. Short by ${short < 0.1 ? short.toFixed(2) : gap(short)}%`, field: 'grad_score', level: L });
+        routes.push(guardYear({ status: ok ? 'pass' : 'fail', reason: ok ? `${shown}, needs ${needTxt}: you meet it` : `${shown}, needs ${needTxt}. Short by ${short < 0.1 ? short.toFixed(2) : gap(short)}%`, field: 'grad_score', level: L }));
       } else routes.push(compareStated(pct, need, L, 'grad_score', '%'));
     }
   }
@@ -164,7 +174,7 @@ function graduation(c: Extract<Criterion, { type: 'min_score' }>, p: Eligibility
         const r = Math.round(cg * 100 + 1e-9) / 100;
         const ok = r >= c.cgpa;
         const how2 = `${fmt(stated)}% = ${r.toFixed(2)} CGPA by ${conv!.who}`;
-        routes.push({ status: ok ? 'pass' : 'fail', reason: ok ? `${how2}, needs ${fmt(c.cgpa)} CGPA: you meet it` : `${how2}, needs ${fmt(c.cgpa)} CGPA. Short by ${gap(c.cgpa - r)}`, field: 'grad_score', level: L });
+        routes.push(guardYear({ status: ok ? 'pass' : 'fail', reason: ok ? `${how2}, needs ${fmt(c.cgpa)} CGPA: you meet it` : `${how2}, needs ${fmt(c.cgpa)} CGPA. Short by ${gap(c.cgpa - r)}`, field: 'grad_score', level: L }));
       }
     }
   }
@@ -253,13 +263,17 @@ function evalOne(c: Criterion, p: EligibilityProfileInput, opts: EvaluateOptions
   }
 }
 
+/** The scheme and admission year the student stored on their profile; the caller's option wins when given. */
+const profileScheme = (p: EligibilityProfileInput | null | undefined): string | null => (typeof p?.university_scheme === 'string' && p.university_scheme.trim() !== '' ? p.university_scheme : null);
+const profileYear = (p: EligibilityProfileInput | null | undefined): number | null => (isNum(p?.admission_year) ? (p!.admission_year as number) : null);
+
 export function evaluateEligibility(
   criteria: readonly Criterion[],
   profile: EligibilityProfileInput | null | undefined,
   opts: EvaluateOptions = { cgpaRule: null },
 ): EligibilityResult {
   const confirmed = !!profile && (profile as { confirmed?: unknown }).confirmed === true;
-  const o: EvaluateOptions = { cgpaRule: opts?.cgpaRule ?? null, universityRule: opts?.universityRule ?? null, universityRuleConfirmed: opts?.universityRuleConfirmed === true, universityScheme: opts?.universityScheme ?? null, admissionYear: opts?.admissionYear ?? null };
+  const o: EvaluateOptions = { cgpaRule: opts?.cgpaRule ?? null, universityRule: opts?.universityRule ?? null, universityRuleConfirmed: opts?.universityRuleConfirmed === true, universityScheme: opts?.universityScheme ?? profileScheme(profile), admissionYear: opts?.admissionYear ?? profileYear(profile) };
   const verdicts: CriterionVerdict[] = criteria.map((criterion) => {
     if (!confirmed) return { criterion, status: 'unknown', reason: 'Your profile is not confirmed yet. Confirm it to check this' };
     const part = evalOne(criterion, profile as EligibilityProfileInput, o);

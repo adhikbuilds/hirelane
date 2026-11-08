@@ -24,7 +24,7 @@ export interface StructuredComp {
   interval: 'year' | 'month' | 'week' | 'day' | 'hour' | 'unknown';
   kind: 'salary' | 'ote' | 'other';
   summaryText: string | null;
-  source: 'ashby.compensation' | 'lever.salaryRange' | 'greenhouse.pay';
+  source: 'ashby.compensation' | 'lever.salaryRange' | 'greenhouse.pay' | 'jsonld.baseSalary';
 }
 
 export interface SalaryContext {

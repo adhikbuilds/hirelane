@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseCsv } from '../src/campus/csv';
-import { buildNaacCsv, NAAC_HEADER, NAAC_HIGHER_ED_HEADER, NAAC_MANUAL, readNaacPayload, type NaacRow } from '../src/campus/naac';
+import { buildNaacCsv, buildNaacReadme, NAAC_HEADER, NAAC_HIGHER_ED_HEADER, NAAC_MANUAL, readNaacPayload, type NaacRow } from '../src/campus/naac';
 
 const split = (csv: string) => {
   const lines = csv.split('\r\n').filter((l) => l !== '');
@@ -14,7 +14,7 @@ const partA = (csv: string) => {
   const d = split(csv).data;
   return d.slice(0, d.findIndex((l) => l.startsWith(NAAC_HIGHER_ED_HEADER[0]))).join('\r\n');
 };
-const placed = (o: Partial<NaacRow> = {}): NaacRow => ({ year: 2026, student: 'Asha Rao', programme: 'B.Tech CSE', employer: 'Acme Test Co', employerContact: null, packageLpa: 6.25, verification: 'student_reported', ...o });
+const placed = (o: Partial<NaacRow> = {}): NaacRow => ({ year: '2025-26', student: 'Asha Rao', programme: 'B.Tech CSE', employer: 'Acme Test Co', employerContact: null, packageLpa: 6.25, verification: 'student_reported', ...o });
 
 describe('NAAC 5.2.1 header', () => {
   it('placement columns: Year first, employer contact after the employer', () => {
@@ -33,24 +33,28 @@ describe('NAAC 5.2.1 header', () => {
 });
 
 describe('buildNaacCsv', () => {
-  it('opens with comment lines that state the manual, the unverified template and the contact rule', () => {
-    const { comments } = split(buildNaacCsv([placed()], []));
-    expect(comments[0]).toContain(NAAC_MANUAL);
-    const all = comments.join('\n');
-    expect(all).toMatch(/not been checked against the official data template/i);
-    expect(all).toMatch(/blank unless the student shared it/i);
-  });
-  it('the first line is the manual comment, before any data', () => {
+  it('the CSV holds data only: no "# " comment row anywhere, the first line is the Part A header', () => {
     const csv = buildNaacCsv([placed()], []);
-    expect(/^"?# /.test(csv)).toBe(true);
-    expect(csv.indexOf('RAF 2023')).toBeLessThan(csv.indexOf(NAAC_HEADER[0]));
+    expect(split(csv).comments).toEqual([]);
+    expect(csv.split('\r\n')[0]).toBe(NAAC_HEADER.join(','));
+    expect(csv).not.toMatch(/(^|\r\n)"?# /);
+  });
+  it('the notes live in a separate README: manual, unverified template, contact rule, both parts, Year meaning', () => {
+    const readme = buildNaacReadme();
+    expect(readme).toContain(NAAC_MANUAL);
+    expect(readme).toMatch(/not been checked against the official data template/i);
+    expect(readme).toMatch(/blank unless the student shared it/i);
+    expect(readme).toMatch(/Part A/);
+    expect(readme).toMatch(/Part B/);
+    expect(readme).toMatch(/academic year/i);
+    expect(readme).toMatch(/2025-26/);
   });
   it('writes the placement part with Year and a contact only when the student shared it', () => {
     const csv = buildNaacCsv([placed({ employerContact: 'hr@acme.example.test, +91 90000 00000' }), placed({ student: 'Ben', employerContact: null }), placed({ student: 'Cy', employerContact: '   ' })], []);
     const rows = parseCsv(partA(csv));
     expect(rows.header).toEqual([...NAAC_HEADER]);
     expect(rows.rows).toHaveLength(3);
-    expect(rows.rows[0]).toEqual(['2026', 'Asha Rao', 'B.Tech CSE', 'Acme Test Co', 'hr@acme.example.test, +91 90000 00000', '6.25', 'student-reported']);
+    expect(rows.rows[0]).toEqual(['2025-26', 'Asha Rao', 'B.Tech CSE', 'Acme Test Co', 'hr@acme.example.test, +91 90000 00000', '6.25', 'student-reported']);
     expect(rows.rows[1]![4]).toBe('');
     expect(rows.rows[2]![4]).toBe('');
   });
@@ -61,18 +65,20 @@ describe('buildNaacCsv', () => {
   });
   it('writes a higher-education section with its own header', () => {
     const he = [{ student: 'Dev Nair', programme: 'B.Tech ECE', institution: 'Test Institute of Science', admittedTo: 'M.Tech VLSI', verification: 'student_reported' as const }];
-    const { data, comments } = split(buildNaacCsv([placed()], he));
-    expect(comments.join('\n')).toMatch(/Part B/);
+    const { data } = split(buildNaacCsv([placed()], he));
     const at = data.findIndex((l) => l.startsWith(NAAC_HIGHER_ED_HEADER[0]));
     expect(at).toBeGreaterThan(1);
     const part = parseCsv(data.slice(at).join('\r\n'));
     expect(part.header).toEqual([...NAAC_HIGHER_ED_HEADER]);
     expect(part.rows).toEqual([['Dev Nair', 'B.Tech ECE', 'Test Institute of Science', 'M.Tech VLSI', 'student-reported']]);
   });
-  it('with no higher-education records the section is still there, header only, with a note', () => {
-    const { data, comments } = split(buildNaacCsv([placed()], []));
+  it('with no higher-education records the section is still there, header only', () => {
+    const { data } = split(buildNaacCsv([placed()], []));
     expect(data.at(-1)).toBe(NAAC_HIGHER_ED_HEADER.join(','));
-    expect(comments.join('\n')).toMatch(/no higher-education records/i);
+  });
+  it('a missing year is blank, never 0', () => {
+    const rows = parseCsv(partA(buildNaacCsv([placed({ year: null })], [])));
+    expect(rows.rows[0]![0]).toBe('');
   });
   it('with no rows at all both headers still print', () => {
     const { data } = split(buildNaacCsv([], []));
@@ -103,7 +109,7 @@ describe('buildNaacCsv', () => {
 
 describe('readNaacPayload (what the database function returns)', () => {
   it('a plain array of offers (the current function) is placements only, with no contact and no higher education', () => {
-    const p = readNaacPayload([{ year: 2026, student: 'A', programme: 'P', employer: 'E', packageLpa: 1, verification: 'student_reported' }]);
+    const p = readNaacPayload([{ year: '2025-26', student: 'A', programme: 'P', employer: 'E', packageLpa: 1, verification: 'student_reported' }]);
     expect(p.placements).toHaveLength(1);
     expect(p.placements[0]!.employerContact).toBeNull();
     expect(p.higherEd).toEqual([]);
@@ -119,8 +125,12 @@ describe('readNaacPayload (what the database function returns)', () => {
       expect(p, String(bad)).toEqual({ placements: [], higherEd: [] });
     }
   });
+  it('the year is the academic year as the database wrote it; a number, junk or nothing reads as blank, not 0', () => {
+    const p = readNaacPayload({ placements: [{ year: '2025-26' }, { year: 2026 }, { year: '0' }, { year: '2025-2026' }, {}, { year: null }] });
+    expect(p.placements.map((r) => r.year)).toEqual(['2025-26', null, null, null, null, null]);
+  });
   it('drops rows that are not objects and coerces missing text to blank', () => {
-    const p = readNaacPayload({ placements: [null, 3, { year: 2026, employer: 'E' }], higherEd: [null, { student: 'S' }] });
+    const p = readNaacPayload({ placements: [null, 3, { year: '2025-26', employer: 'E' }], higherEd: [null, { student: 'S' }] });
     expect(p.placements).toHaveLength(1);
     expect(p.placements[0]).toMatchObject({ student: '', programme: '', packageLpa: null, employerContact: null });
     expect(p.higherEd).toHaveLength(1);

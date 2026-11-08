@@ -113,6 +113,9 @@ export const eligibilityProfiles = pgTable('eligibility_profiles', {
   gapYears: smallint('gap_years'),
   passoutYear: smallint('passout_year'),
   lateralEntry: boolean('lateral_entry'),
+  /** The student's own scheme ("2022"), for universities with one formula per scheme. Never derived. 0017. */
+  universityScheme: text('university_scheme'),
+  admissionYear: smallint('admission_year'),
   fieldMeta: jsonb('field_meta').notNull().default({}),
   sourceResumeId: uuid('source_resume_id'),
   confirmedAt: tstz('confirmed_at').notNull(),

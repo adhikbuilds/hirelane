@@ -1,0 +1,47 @@
+# Fly.io config for the graphile worker (public demo). TEMPLATE: not read by Fly as is.
+#
+# Steps (full runbook in docs/DEPLOY-DEMO.md, section 5):
+#   1. cp workers/runner/fly.toml.template fly.toml        (in the REPO ROOT; the build context is the repo root)
+#   2. replace every <PLACEHOLDER> below with your value
+#   3. fly secrets import (secrets are never written in this file)
+#   4. fly deploy
+#
+# Placeholders: <FLY_APP_NAME>  <FLY_REGION>  <DEMO_HOST>  <APPLY_DOMAIN>  <MX_AUTHSERV_ID>
+# Secrets, set with fly secrets (NOT here): DATABASE_URL, HIRELANE_MASTER_KEY.
+# Optional, only when the mail transport and an inbound MTA exist: none yet for the demo.
+
+app = "<FLY_APP_NAME>"
+primary_region = "<FLY_REGION>"
+kill_signal = "SIGTERM"
+kill_timeout = 30
+
+[build]
+  # Relative to the repo root (the directory that holds this fly.toml after step 1).
+  dockerfile = "workers/runner/Dockerfile"
+
+# Non-secret configuration only. Demo policy: fixture auto-apply, LLM off (0 model calls), fixture ingest.
+[env]
+  NODE_ENV = "production"
+  HIRELANE_AUTO_APPLY = "fixture"
+  HIRELANE_LLM_MODE = "off"
+  HIRELANE_INGEST_MODE = "fixture"
+  HIRELANE_APP_ORIGIN = "https://<DEMO_HOST>"
+  APP_ORIGIN = "https://<DEMO_HOST>"
+  HIRELANE_APPLY_DOMAIN = "<APPLY_DOMAIN>"
+  HIRELANE_MAIL_AUTHSERV_ID = "<MX_AUTHSERV_ID>"
+  # Must match the storage the web app writes to. The web app runs on Vercel, which has no shared disk, so resume
+  # uploads cannot reach this worker yet (see the storage decision in docs/DEPLOY-DEMO.md). Keep this path; mount a
+  # volume below only if you move the web app to a host that shares it.
+  HIRELANE_STORAGE_DIR = "/data/blobs"
+  HIRELANE_LOGO_DIR = "/data/logos"
+
+# A worker serves no web traffic, so this file has no web service section: Fly only runs the machine.
+# Uncomment only if the web app also runs on Fly with the same volume (create it first: fly volumes create hirelane_data --region <FLY_REGION>).
+# [[mounts]]
+#   source = "hirelane_data"
+#   destination = "/data"
+
+# Memory: 1 GB gives headroom for resume PDF rendering (pdfkit). Not load-tested; raise it if the worker is OOM-killed.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

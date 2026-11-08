@@ -14,7 +14,7 @@ export {
   type JoinOpts,
   type Membership,
 } from './membership';
-export { asCgpaRule, driveCounts, listDrives, listMyDrives, profileFromRow, publishDrive, type StudentDrive } from './drives';
+export { asCgpaRule, driveCounts, listDrives, listMyDrives, profileFromRow, publishDrive, universityFor, type StudentDrive } from './drives';
 export {
   announceDrive,
   closeDrive,
@@ -35,6 +35,6 @@ export { istDay } from './ist';
 export { attachLetter, listMyOutcomes, listOutcomes, MAX_LETTER_BYTES, outcomeLetter, outcomeLetterAad, reportOutcome, revealOutcomes, verifyOutcome, type MyOutcome } from './outcomes';
 export { importRoster, MAX_ROSTER_BYTES, MIN_ROSTER_ROWS, MAX_ROSTER_ROWS, readRosterCsv, type RosterResult } from './roster';
 export { previewRoster, summarizeRoster, type RosterPreview } from './roster-preview';
-export { buildNaacCsv, exportNaac, NAAC_HEADER, NAAC_HIGHER_ED_HEADER, NAAC_MANUAL, previewNaac, readNaacPayload, type NaacHigherEdRow, type NaacRow } from './naac';
+export { buildNaacCsv, buildNaacReadme, exportNaac, NAAC_HEADER, NAAC_HIGHER_ED_HEADER, NAAC_MANUAL, previewNaac, readNaacPayload, type NaacHigherEdRow, type NaacRow } from './naac';
 export { claimStaffInvites, cohortStats, createCohort, inviteStaff, listCohorts, listStaff, removeStaff, tpoMe, transferOwnership, type Cohort, type StaffMembership } from './tpo';
 export { fileOutboxCampusMail } from './mail';

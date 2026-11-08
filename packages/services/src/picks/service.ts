@@ -79,6 +79,7 @@ export async function getPicks(ctx: ServiceCtx, opts: PicksOptions = {}): Promis
         jobs,
         profile: student.profile,
         cgpaRule: student.cgpaRule,
+        universityRule: student.universityRule,
         fit: student.fit,
         now,
         exclude: new Set(applied),

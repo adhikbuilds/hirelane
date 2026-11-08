@@ -45,10 +45,10 @@ interface World {
   campusId: string;
   cohortId: string;
 }
-async function mkWorld(cgpaRule: unknown = null): Promise<World> {
+async function mkWorld(cgpaRule: unknown = null, name?: string): Promise<World> {
   const campusId = randomUUID();
   const cohortId = randomUUID();
-  await c.query('INSERT INTO campuses (id, name, code_hmac, cgpa_rule) VALUES ($1, $2, $3, $4)', [campusId, `Campus ${campusId.slice(0, 6)}`, `h-${campusId}`, cgpaRule]);
+  await c.query('INSERT INTO campuses (id, name, code_hmac, cgpa_rule) VALUES ($1, $2, $3, $4)', [campusId, name ?? `Campus ${campusId.slice(0, 6)}`, `h-${campusId}`, cgpaRule]);
   await c.query("INSERT INTO cohorts (id, campus_id, passout_year, programme) VALUES ($1, $2, 2026, 'B.Tech')", [cohortId, campusId]);
   return { campusId, cohortId };
 }
@@ -327,6 +327,38 @@ describe('campus:stats drive evaluation', () => {
     expect(rows).toHaveLength(3);
     expect(rows.every((v) => v === 'eligible' || v === 'unknown')).toBe(true);
     expect(rows).not.toContain('ineligible');
+  });
+
+  describe('a campus rule never overrides a scheme-keyed or disputed university', () => {
+    const cgpaOnly = { grad_score: 7.8, grad_scale: 10, grad_conversion: 'unknown', passout_year: 2026, degree: 'B.Tech', active_backlogs: 0, pct_10: 80, pct_secondary: 80 };
+    const needs80 = 'B.Tech 2026 batch. Minimum 80% in graduation.'; // the campus rule (10 x CGPA) makes this 78%: a fail
+    const verdicts = async (id: string) => (await c.query('SELECT verdict FROM drive_checks WHERE drive_id = $1', [id])).rows.map((x) => x.verdict as string);
+
+    it('a VTU campus: the campus rule cannot make the member ineligible; the verdict is unknown', async () => {
+      const w = await mkWorld({ kind: 'linear', a: 10, b: 0 }, 'Stats Test College affiliated to VTU');
+      await many(w, 2, { profile: cgpaOnly });
+      const id = await publish(w, needs80);
+      await runCampusStats(run, DAY);
+      expect(await verdicts(id)).toEqual(['unknown', 'unknown']);
+    });
+    it('a Mumbai campus (disputed) is unknown too', async () => {
+      const w = await mkWorld({ kind: 'linear', a: 10, b: 0 }, 'Stats Test College, University of Mumbai');
+      await many(w, 2, { profile: cgpaOnly });
+      const id = await publish(w, needs80);
+      await runCampusStats(run, DAY);
+      expect(await verdicts(id)).toEqual(['unknown', 'unknown']);
+    });
+    it('an unrelated campus keeps the campus rule: 78% against 80% is ineligible', async () => {
+      const w = await mkWorld({ kind: 'linear', a: 10, b: 0 });
+      await many(w, 2, { profile: cgpaOnly });
+      const id = await publish(w, needs80);
+      await runCampusStats(run, DAY);
+      expect(await verdicts(id)).toEqual(['ineligible', 'ineligible']);
+    });
+    it('the scheme and admission year stored on the profile reach the engine (profileInput)', () => {
+      expect(profileInput({ confirmed_at: new Date(), university_scheme: '2018', admission_year: 2018, grad_score: '7.80' })).toMatchObject({ university_scheme: '2018', admission_year: 2018, grad_score: 7.8 });
+      expect(profileInput({ confirmed_at: new Date(), university_scheme: null, admission_year: null })).not.toHaveProperty('university_scheme');
+    });
   });
 
   it('closed drives are not evaluated; checks of members who left are removed', async () => {

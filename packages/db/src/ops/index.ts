@@ -23,6 +23,12 @@ export interface OpsDeps {
   mailboxHmac(email: string): Promise<string | null>;
   generateCode(): string;
   log(line: string): void;
+  /**
+   * Which university row (data/cgpa-rules.json) a campus name points to, passed in by the entry point because this package may not
+   * import the engine. A row whose formula depends on the scheme (VTU) or may have changed (Mumbai) cannot be one linear rule.
+   * Absent: no check is possible, so only entry points that supply it (scripts/ops/deps.ts) get the guard.
+   */
+  universityOf?(campusName: string): { name: string; schemeKeyed: boolean; disputed: boolean } | null;
 }
 
 export class OpsError extends Error {
@@ -67,6 +73,25 @@ export interface CgpaRule {
   kind: 'linear';
   a: number;
   b: number;
+  /** Written only by --force-unverified on a scheme-keyed or disputed university. The apply worker never computes a percentage from it. */
+  unverified?: true;
+}
+
+/**
+ * A single linear rule on a scheme-keyed or disputed university is wrong for part of the students, so it is refused unless the
+ * operator says --force-unverified. A forced rule is stored flagged `unverified` and its audit row says so.
+ */
+function guardRule(d: OpsDeps, campusName: string, rule: CgpaRule | null, force: boolean): { rule: CgpaRule | null; university: string | null } {
+  if (!rule) return { rule, university: null };
+  const u = d.universityOf?.(campusName) ?? null;
+  if (!u || (!u.schemeKeyed && !u.disputed)) return { rule, university: null };
+  if (!force) {
+    throw new OpsError(
+      'refused',
+      `${u.name} ${u.schemeKeyed ? 'has a different formula for each scheme' : 'may have changed its conversion'}, so one linear rule is wrong for some students. Leave the rule empty (students are told it cannot be checked) or pass --force-unverified to write it anyway`,
+    );
+  }
+  return { rule: { ...rule, unverified: true }, university: u.name };
 }
 export function parseRule(aRaw: string | undefined, bRaw: string | undefined): CgpaRule {
   const num = (raw: string | undefined, flag: string): number => {
@@ -123,8 +148,10 @@ async function campusExists(c: Queryable, id: string, lock = false): Promise<voi
 
 // ------------------------------------------------------------------ commands
 
-export async function createCampus(d: OpsDeps, i: { name: string; domains: string[]; rule: CgpaRule | null }): Promise<{ campusId: string; code: string }> {
+export async function createCampus(d: OpsDeps, i: { name: string; domains: string[]; rule: CgpaRule | null; forceUnverified?: boolean }): Promise<{ campusId: string; code: string }> {
   const actor = requireActor(d);
+  const guarded = guardRule(d, i.name, i.rule, i.forceUnverified === true);
+  i = { ...i, rule: guarded.rule };
   if (i.domains.length === 0) throw new OpsError('usage', 'at least one --domain is required');
   const domains = [...new Set(i.domains)].sort();
   const code = d.generateCode();
@@ -134,7 +161,7 @@ export async function createCampus(d: OpsDeps, i: { name: string; domains: strin
       const r = await c.query('INSERT INTO campuses (name, code_hmac, cgpa_rule) VALUES ($1, $2, $3::jsonb) RETURNING id', [i.name, codeHmac, i.rule ? JSON.stringify(i.rule) : null]);
       const id = r.rows[0].id as string;
       for (const dom of domains) await c.query('INSERT INTO campus_domains (campus_id, domain) VALUES ($1, $2)', [id, dom]);
-      await audit(c, actor, 'campus_create', id, { name: i.name, domains, cgpaRule: i.rule });
+      await audit(c, actor, 'campus_create', id, { name: i.name, domains, cgpaRule: i.rule, ...(guarded.university ? { forceUnverified: true, university: guarded.university } : {}) });
       return id;
     }),
   );
@@ -167,14 +194,15 @@ export async function removeDomain(d: OpsDeps, i: { campusId: string; domain: st
   );
 }
 
-export async function setCgpaRule(d: OpsDeps, i: { campusId: string; rule: CgpaRule | null }): Promise<void> {
+export async function setCgpaRule(d: OpsDeps, i: { campusId: string; rule: CgpaRule | null; forceUnverified?: boolean }): Promise<void> {
   const actor = requireActor(d);
   await d.run((c) =>
     inTx(c, async () => {
-      const cur = (await c.query('SELECT cgpa_rule FROM campuses WHERE id = $1 FOR UPDATE', [i.campusId])).rows[0];
+      const cur = (await c.query('SELECT name, cgpa_rule FROM campuses WHERE id = $1 FOR UPDATE', [i.campusId])).rows[0];
       if (!cur) throw new OpsError('not_found', 'no such campus');
-      await c.query('UPDATE campuses SET cgpa_rule = $2::jsonb WHERE id = $1', [i.campusId, i.rule ? JSON.stringify(i.rule) : null]);
-      await audit(c, actor, 'cgpa_rule_set', i.campusId, { previous: cur.cgpa_rule ?? null, next: i.rule });
+      const g = guardRule(d, String(cur.name), i.rule, i.forceUnverified === true);
+      await c.query('UPDATE campuses SET cgpa_rule = $2::jsonb WHERE id = $1', [i.campusId, g.rule ? JSON.stringify(g.rule) : null]);
+      await audit(c, actor, 'cgpa_rule_set', i.campusId, { previous: cur.cgpa_rule ?? null, next: g.rule, ...(g.university ? { forceUnverified: true, university: g.university } : {}) });
     }),
   );
 }
@@ -224,10 +252,11 @@ export async function setPlatformSwitch(d: OpsDeps, i: { platform: string; enabl
 
 export const USAGE = `usage: pnpm ops <command> [flags]
 
-  campus create --name <text> --domain <host> [--domain <host> ...] [--cgpa-a <n> --cgpa-b <n>]
+  campus create --name <text> --domain <host> [--domain <host> ...] [--cgpa-a <n> --cgpa-b <n> [--force-unverified]]
   domain add    --campus <id> --domain <host>
   domain remove --campus <id> --domain <host>
-  cgpa-rule set --campus <id> (--a <n> --b <n> | --clear)        pct = a * cgpa + b
+  cgpa-rule set --campus <id> (--a <n> --b <n> [--force-unverified] | --clear)   pct = a * cgpa + b
+                (a scheme-keyed or disputed university, VTU or Mumbai, refuses a single rule without --force-unverified)
   owner-invite  --campus <id> --email <address>
   switch set    --platform <greenhouse|lever|ashby> (--on | --off) [--reason <text>]
 
@@ -242,6 +271,7 @@ const OPTIONS = {
   'cgpa-a': { type: 'string' },
   'cgpa-b': { type: 'string' },
   clear: { type: 'boolean' },
+  'force-unverified': { type: 'boolean' },
   email: { type: 'string' },
   platform: { type: 'string' },
   on: { type: 'boolean' },
@@ -291,6 +321,7 @@ export async function runOpsCli(argv: readonly string[], d: OpsDeps): Promise<nu
           name: parseName(v.name),
           domains: (v.domain ?? []).map((x) => parseDomain(x)),
           rule: hasA ? parseRule(v['cgpa-a'], v['cgpa-b']) : null,
+          forceUnverified: v['force-unverified'] === true,
         });
         d.log(`campus created: id=${r.campusId}`);
         d.log(`join code (shown once, not stored): ${r.code}`);
@@ -307,7 +338,7 @@ export async function runOpsCli(argv: readonly string[], d: OpsDeps): Promise<nu
       case 'cgpa-rule set': {
         const campusId = parseCampusId(v.campus);
         if (v.clear && (v.a !== undefined || v.b !== undefined)) throw new OpsError('usage', 'use either --clear or --a and --b, not both');
-        await setCgpaRule(d, { campusId, rule: v.clear ? null : parseRule(v.a, v.b) });
+        await setCgpaRule(d, { campusId, rule: v.clear ? null : parseRule(v.a, v.b), forceUnverified: v['force-unverified'] === true });
         d.log(v.clear ? 'cgpa rule cleared' : 'cgpa rule set');
         return 0;
       }

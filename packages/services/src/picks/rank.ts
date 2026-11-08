@@ -11,6 +11,7 @@ import {
   type Iso4217,
   type Level,
   type PayPeriod,
+  type UniversityRule,
 } from '@hirelane/engine';
 import { LEVEL_VALUES } from './levels';
 import type { Pick } from './types';
@@ -55,6 +56,8 @@ export interface PickInput {
   /** The confirmed eligibility profile, or null (every academic rule is then "could not be checked", never a block). */
   profile: EligibilityProfileInput | null;
   cgpaRule: CgpaRule;
+  /** The university row of the student's campus, or null. */
+  universityRule?: UniversityRule | null;
   fit: StudentFit;
   now: Date;
   /** Job ids not to show again (already applied to). */
@@ -127,7 +130,7 @@ export function buildPicks(input: PickInput): Pick[] {
     if (!(nowMs - j.lastSeenAt.getTime() < PICK_MAX_AGE_DAYS * DAY_MS)) continue;
 
     const text = j.descriptionText ?? '';
-    const eligibility = evaluateEligibility(parseCriteria(text), input.profile, { cgpaRule: input.cgpaRule });
+    const eligibility = evaluateEligibility(parseCriteria(text), input.profile, { cgpaRule: input.cgpaRule, universityRule: input.universityRule ?? null });
     if (eligibility.overall === 'fail') continue;
 
     let matched = 0;

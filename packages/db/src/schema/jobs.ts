@@ -97,6 +97,12 @@ export const jobs = pgTable(
     enrichVersion: integer('enrich_version').notNull(),
     primaryPostingId: uuid('primary_posting_id').references(() => postings.id, { onDelete: 'set null' }),
     source: text('source').notNull(),
+    /** Migration 0018: greenhouse | lever | ashby | jsonld | zoho_rss | campus_drive | user_shared. All three are set together or all NULL. */
+    sourceKind: text('source_kind'),
+    /** Human-readable origin, e.g. `careers.trelliscloud.in` or `Shared from Reddit`. */
+    sourceLabel: text('source_label'),
+    /** The original posting, https. For user_shared only the pasted URL; the page behind it is never fetched. */
+    sourceUrl: text('source_url'),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },

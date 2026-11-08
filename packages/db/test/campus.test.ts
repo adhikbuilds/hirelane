@@ -776,12 +776,70 @@ describe('outcomes: student reports, TPO verifies, share levels and consent gate
     await report(ok, w, 'interview', 'Only Interview', null);
     await report(unverified, w, 'offer', 'Unverified Member Co', 3);
     await report(private_, w, 'offer', 'Private Co', 3);
-    const rows = await fn(staff, 'tpo_naac_rows', w.campusId, null);
+    const out = await fn(staff, 'tpo_naac_rows', w.campusId, null);
+    const rows = out.placements;
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ student: '=HYPERLINK(1)', programme: 'B.Tech CSE', employer: 'Real Employer', packageLpa: 6, verification: 'student_reported' });
-    expect(await fn(staff, 'tpo_naac_rows', w.campusId, 2030)).toEqual([]);
+    expect(out.higherEd).toEqual([]);
+    // Year is the academic year of the cohort's passout (2026 -> 2025-26), never the year the row was created.
+    expect(rows[0]).toMatchObject({ year: '2025-26', student: '=HYPERLINK(1)', programme: 'B.Tech CSE', employer: 'Real Employer', packageLpa: 6, verification: 'student_reported' });
+    expect(await fn(staff, 'tpo_naac_rows', w.campusId, 2030)).toEqual({ placements: [], higherEd: [] });
     expect(await as(ok, async (q) => (await q("SELECT 1 FROM tpo_access_log WHERE action = 'naac_export'")).rowCount)).toBe(1);
     expect(await as(private_, async (q) => (await q('SELECT 1 FROM tpo_access_log')).rowCount)).toBe(0);
+  });
+});
+
+describe('higher_studies outcome kind and the NAAC higher-education part', () => {
+  const higher = (u: string, w: World, institution: string, programme: string | null) =>
+    call(u, `INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer, role_title) VALUES ($1, $2, $3, 'higher_studies', $4, $5) RETURNING id`, [u, w.campusId, w.cohortId, institution, programme]).then((r) => r.id as string);
+
+  it('the database accepts higher_studies and still refuses other kinds and a package on it', async () => {
+    const w = await mkCampus();
+    const u = await mkMember(w, { share: 'outcomes' });
+    expect(await higher(u, w, 'Test Institute of Science', 'M.Tech VLSI')).toMatch(/^[0-9a-f-]{36}$/);
+    expect(await code(u, "INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer) VALUES ($1, $2, $3, 'astronaut', 'X')", [u, w.campusId, w.cohortId])).toBe('23514');
+    expect(await code(u, "INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer, package_lpa) VALUES ($1, $2, $3, 'higher_studies', 'X', 5)", [u, w.campusId, w.cohortId])).toBe('23514');
+  });
+
+  it('tpo_naac_rows returns {placements, higherEd} under the same consent filter, and logs each student once', async () => {
+    const w = await mkCampus();
+    const staff = await mkStaff(w, 'staff');
+    const shared = await mkMember(w, { share: 'outcomes' });
+    const hiddenHe = await mkMember(w, { share: 'aggregate' });
+    const unverified = await mkMember(w, { share: 'outcomes', via: 'code' });
+    await c.query("UPDATE users SET display_name = 'Dev Nair' WHERE id = $1", [shared]);
+    await higher(shared, w, 'Test Institute of Science', 'M.Tech VLSI');
+    await higher(hiddenHe, w, 'Hidden Univ', 'MS');
+    await higher(unverified, w, 'Unverified Univ', 'MS');
+    const out = await fn(staff, 'tpo_naac_rows', w.campusId, null);
+    expect(out.placements).toEqual([]);
+    expect(out.higherEd).toHaveLength(1);
+    expect(out.higherEd[0]).toMatchObject({ student: 'Dev Nair', programme: 'B.Tech CSE', institution: 'Test Institute of Science', admittedTo: 'M.Tech VLSI', verification: 'student_reported' });
+    expect(JSON.stringify(out)).not.toMatch(/Hidden Univ|Unverified Univ/);
+    expect(await as(shared, async (q) => (await q("SELECT 1 FROM tpo_access_log WHERE action = 'naac_export'")).rowCount)).toBe(1);
+    expect(await as(hiddenHe, async (q) => (await q('SELECT 1 FROM tpo_access_log')).rowCount)).toBe(0);
+    expect(await fn(staff, 'tpo_naac_rows', w.campusId, 2030)).toEqual({ placements: [], higherEd: [] });
+  });
+
+  it('a student with an offer and a higher-studies record is logged once, not twice, per export', async () => {
+    const w = await mkCampus();
+    const staff = await mkStaff(w, 'staff');
+    const u = await mkMember(w, { share: 'full' });
+    await call(u, "INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer, package_lpa) VALUES ($1, $2, $3, 'offer', 'Acme', 5)", [u, w.campusId, w.cohortId]);
+    await higher(u, w, 'Test Institute of Science', null);
+    const out = await fn(staff, 'tpo_naac_rows', w.campusId, null);
+    expect(out.placements).toHaveLength(1);
+    expect(out.higherEd).toHaveLength(1);
+    expect(out.higherEd[0].admittedTo).toBe('');
+    expect(await as(u, async (q) => (await q("SELECT 1 FROM tpo_access_log WHERE action = 'naac_export'")).rowCount)).toBe(1);
+  });
+
+  it('higher_studies does not count as an offer in the stats or notify on verify', async () => {
+    const w = await mkCampus();
+    const staff = await mkStaff(w, 'staff');
+    const u = await mkMember(w, { share: 'outcomes' });
+    const id = await higher(u, w, 'Test Institute of Science', 'MS');
+    await fn(staff, 'tpo_verify_outcome', id);
+    expect(await as(u, async (q) => (await q("SELECT 1 FROM notifications WHERE kind = 'outcome_verified'")).rowCount)).toBe(0);
   });
 });
 
@@ -795,7 +853,7 @@ describe('outcomes stay with the campus they were reported at', () => {
     await call(u, "INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer, package_lpa) VALUES ($1, $2, $3, 'offer', 'A Employer', 5)", [u, a.campusId, a.cohortId]);
     // While a member of A at outcomes level, A's TPO sees it and the export has it.
     expect(await fn(staffA, 'tpo_list_outcomes', a.campusId, null)).toHaveLength(1);
-    expect(await fn(staffA, 'tpo_naac_rows', a.campusId, null)).toHaveLength(1);
+    expect((await fn(staffA, 'tpo_naac_rows', a.campusId, null)).placements).toHaveLength(1);
 
     expect(await fn(u, 'campus_leave')).toBe(true);
     await c.query("DELETE FROM tpo_access_log WHERE subject_user_id = $1", [u]);
@@ -805,13 +863,13 @@ describe('outcomes stay with the campus they were reported at', () => {
     );
     // B's level (full) must not be applied to A's rows, and A has no membership of this student any more.
     expect(await fn(staffA, 'tpo_list_outcomes', a.campusId, null)).toEqual([]);
-    expect(await fn(staffA, 'tpo_naac_rows', a.campusId, null)).toEqual([]);
+    expect(await fn(staffA, 'tpo_naac_rows', a.campusId, null)).toEqual({ placements: [], higherEd: [] });
     expect(await fn(staffA, 'tpo_verify_outcome', (await c.query('SELECT id FROM outcomes WHERE user_id = $1', [u])).rows[0].id)).toBeNull();
     expect((await c.query("SELECT 1 FROM tpo_access_log WHERE subject_user_id = $1 AND campus_id = $2", [u, a.campusId])).rowCount).toBe(0);
     // And B's TPO does not see an outcome that was reported at A.
     const staffB = await mkStaff(b, 'staff');
     expect(await fn(staffB, 'tpo_list_outcomes', b.campusId, null)).toEqual([]);
-    expect(await fn(staffB, 'tpo_naac_rows', b.campusId, null)).toEqual([]);
+    expect(await fn(staffB, 'tpo_naac_rows', b.campusId, null)).toEqual({ placements: [], higherEd: [] });
   });
 });
 

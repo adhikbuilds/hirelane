@@ -119,8 +119,12 @@ describe('GET views do not write (decision 2026-10-31: reads are side-effect fre
     const b = await mkMember(w, 'aggregate');
     await reportOffer(w, a, 'Acme');
     await reportOffer(w, b, 'Hidden');
-    expect(await fn(staff, 'tpo_naac_count', [w.campusId, null], true)).toEqual({ rows: 1 });
-    expect(await fn(staff, 'tpo_naac_count', [w.campusId, 2030], true)).toEqual({ rows: 0 });
+    expect(await fn(staff, 'tpo_naac_count', [w.campusId, null], true)).toEqual({ rows: 1, placements: 1, higherEd: 0 });
+    expect(await fn(staff, 'tpo_naac_count', [w.campusId, 2030], true)).toEqual({ rows: 0, placements: 0, higherEd: 0 });
+    // A higher-studies record under the same consent filter counts too; one the student keeps private does not.
+    await c.query("INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer) VALUES ($1, $2, $3, 'higher_studies', 'Test Institute')", [a, w.campusId, w.cohortId]);
+    await c.query("INSERT INTO outcomes (user_id, campus_id, cohort_id, kind, employer) VALUES ($1, $2, $3, 'higher_studies', 'Private Institute')", [b, w.campusId, w.cohortId]);
+    expect(await fn(staff, 'tpo_naac_count', [w.campusId, null], true)).toEqual({ rows: 2, placements: 1, higherEd: 1 });
     expect(await fn(stranger, 'tpo_naac_count', [w.campusId, null], true)).toBeNull();
     expect(await fn(stranger, 'tpo_peek_outcomes', [w.campusId, null], true)).toBeNull();
     expect(await logRows(w.campusId)).toBe(0);

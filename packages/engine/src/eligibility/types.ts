@@ -47,12 +47,16 @@ export interface EligibilityProfileInput {
   gap_years?: number;
   passout_year?: number;
   lateral_entry?: boolean;
+  /** The student's own scheme ("2022"), for universities with one formula per scheme. Never derived from the passout year. */
+  university_scheme?: string;
+  admission_year?: number;
   /** Nothing is evaluated until the student confirms. */
   confirmed: true;
 }
 
 /** campuses.cgpa_rule: pct = a * cgpa + b. null means no rule, so CGPA vs % is unknown. */
-export type CgpaRule = { kind: 'linear'; a: number; b: number } | null;
+/** `unverified` is set by ops --force-unverified: the rule was written against a scheme-keyed or disputed university. */
+export type CgpaRule = { kind: 'linear'; a: number; b: number; unverified?: true } | null;
 
 export type VerdictStatus = 'pass' | 'fail' | 'unknown';
 

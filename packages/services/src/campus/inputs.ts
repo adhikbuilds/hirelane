@@ -28,11 +28,11 @@ export const JoinEmailVerifyInput = z.strictObject({ email: z.string().min(3).ma
 export const ShareInput = z.strictObject({ level: z.enum(SHARE_LEVELS) });
 
 export const OutcomeInput = z.strictObject({
-  kind: z.enum(['interview', 'offer']),
+  kind: z.enum(['interview', 'offer', 'higher_studies']),
   employer: z.string().trim().min(1).max(160),
   roleTitle: z.string().trim().min(1).max(120).nullable().optional(),
   packageLpa: z.number().min(0).max(1000).nullable().optional(),
-});
+}).refine((v) => v.kind !== 'higher_studies' || v.packageLpa == null, { path: ['packageLpa'], message: 'a higher-studies record has no package' });
 export const CampusIdInput = z.strictObject({ id: idSchema });
 
 const campusId = idSchema.optional();

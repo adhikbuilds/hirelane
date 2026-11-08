@@ -1,7 +1,7 @@
 import type { Mailer } from '@hirelane/agent';
 import { evaluateEligibility, type Criterion } from '@hirelane/engine';
 import type { KeyProvider } from '@hirelane/vault';
-import { asCgpaRule, profileFromRow } from '../campus/drives';
+import { asCgpaRule, profileFromRow, universityFor } from '../campus/drives';
 import { istDay, nextDay } from '../campus/ist';
 import { isCritical, NOTIFY_KINDS, type NotifyKind } from './kinds';
 import { renderNotificationEmail } from './templates';
@@ -35,6 +35,7 @@ interface DriveRow {
   cohort_id: string;
   criteria: unknown;
   cgpa_rule: unknown;
+  campus_name: string;
 }
 
 /**
@@ -47,9 +48,10 @@ async function audience(db: NotifyDb, d: DriveRow): Promise<{ userId: string; ch
   const profiles = new Map((await db.query('SELECT * FROM eligibility_profiles WHERE user_id = ANY($1::uuid[])', [members])).rows.map((r) => [r.user_id as string, r]));
   const criteria = (Array.isArray(d.criteria) ? d.criteria : []) as Criterion[];
   const cgpaRule = asCgpaRule(d.cgpa_rule);
+  const universityRule = universityFor(d.campus_name);
   const out: { userId: string; check: boolean }[] = [];
   for (const userId of members) {
-    const res = evaluateEligibility(criteria, profileFromRow(profiles.get(userId)), { cgpaRule });
+    const res = evaluateEligibility(criteria, profileFromRow(profiles.get(userId)), { cgpaRule, universityRule });
     if (res.overall === 'fail') continue;
     out.push({ userId, check: res.overall === 'unknown' && res.verdicts.length > 0 });
   }
@@ -77,7 +79,7 @@ export async function notifyNewDrives(deps: NotifyDeps): Promise<{ drives: numbe
   const since = new Date(deps.now().getTime() - ANNOUNCE_WINDOW_DAYS * DAY_MS);
   const drives = (
     await deps.db.query(
-      `SELECT d.id, d.title, d.cohort_id, d.criteria, ca.cgpa_rule FROM drives d JOIN campuses ca ON ca.id = d.campus_id
+      `SELECT d.id, d.title, d.cohort_id, d.criteria, ca.cgpa_rule, ca.name AS campus_name FROM drives d JOIN campuses ca ON ca.id = d.campus_id
         WHERE d.status = 'published' AND d.announced_at IS NOT NULL AND d.announced_at > $1
           AND (d.deadline IS NULL OR d.deadline >= $2::date)
         ORDER BY d.announced_at, d.id`,
@@ -94,7 +96,7 @@ export async function notifyClosingTomorrow(deps: NotifyDeps): Promise<{ drives:
   const tomorrow = nextDay(istDay(deps.now()));
   const drives = (
     await deps.db.query(
-      `SELECT d.id, d.title, d.cohort_id, d.criteria, ca.cgpa_rule FROM drives d JOIN campuses ca ON ca.id = d.campus_id
+      `SELECT d.id, d.title, d.cohort_id, d.criteria, ca.cgpa_rule, ca.name AS campus_name FROM drives d JOIN campuses ca ON ca.id = d.campus_id
         WHERE d.status = 'published' AND d.announced_at IS NOT NULL AND d.deadline = $1::date ORDER BY d.id`,
       [tomorrow],
     )

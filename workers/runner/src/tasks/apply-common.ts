@@ -83,6 +83,8 @@ export interface StudentFacts {
   workAuthorizations: { country: string; status: 'citizen' | 'permanent' | 'visa_held' | 'needs_sponsorship' }[];
   bank: { questionKey: string; answer: string; source: 'user' | 'resume' }[];
   campusRule: unknown;
+  /** campuses.name, to find the university row. Optional so older facts type-check; absent means no row. */
+  campusName?: string | null;
   countries: string[];
   resumeConfirmed: boolean;
   skills: string[];
@@ -122,11 +124,11 @@ const num = (v: unknown): number | undefined => (v === null || v === undefined ?
 export function eligibilityFromRow(r: Record<string, unknown> | undefined): Record<string, unknown> | null {
   if (!r) return null;
   const out: Record<string, unknown> = { confirmed: true };
-  for (const k of ['pct_10', 'pct_secondary', 'grad_score', 'grad_pct_equiv', 'grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year']) {
+  for (const k of ['pct_10', 'pct_secondary', 'grad_score', 'grad_pct_equiv', 'grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year', 'admission_year']) {
     const n = num(r[k]);
     if (n !== undefined) out[k] = n;
   }
-  for (const k of ['board_10', 'secondary_kind', 'board_secondary', 'degree', 'branch_code', 'branch_raw', 'grad_conversion', 'grad_is_final', 'lateral_entry']) {
+  for (const k of ['board_10', 'secondary_kind', 'board_secondary', 'degree', 'branch_code', 'branch_raw', 'grad_conversion', 'grad_is_final', 'lateral_entry', 'university_scheme']) {
     if (r[k] !== null && r[k] !== undefined) out[k] = r[k];
   }
   return out;
@@ -220,7 +222,7 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
           const v = await vault.openJson(buf(r['answer_enc']), bankAad(app.userId, String(r['id'])));
           if (typeof v === 'string') bank.push({ questionKey: String(r['question_key']), answer: v, source: r['source'] === 'resume' ? 'resume' : 'user' });
         }
-        const rule = (await q('SELECT c.cgpa_rule FROM cohort_members m JOIN campuses c ON c.id = m.campus_id WHERE m.user_id = $1', [app.userId]))[0];
+        const rule = (await q('SELECT c.cgpa_rule, c.name FROM cohort_members m JOIN campuses c ON c.id = m.campus_id WHERE m.user_id = $1', [app.userId]))[0];
         const countries = app.jobId ? ((await q('SELECT countries FROM jobs WHERE id = $1', [app.jobId]))[0]?.['countries'] as string[] | undefined) ?? [] : [];
         const resumeId = app.resumeId ?? ((await q('SELECT id FROM resumes WHERE user_id = $1 AND is_default AND deleted_at IS NULL', [app.userId]))[0]?.['id'] as string | undefined) ?? null;
         const resume = resumeId ? (
@@ -244,6 +246,7 @@ export function createApplyRepo(run: Run = adminRun, vault: ResumeVault = defaul
           })),
           bank,
           campusRule: rule?.['cgpa_rule'] ?? null,
+          campusName: typeof rule?.['name'] === 'string' ? (rule['name'] as string) : null,
           countries,
           resumeConfirmed: resume?.['parse_status'] === 'confirmed',
           skills: (resume?.['skills'] as string[] | undefined) ?? [],

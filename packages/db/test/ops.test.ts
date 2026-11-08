@@ -168,6 +168,56 @@ describe('cgpa_rule', () => {
     expect(await auditCount()).toBe(n0);
   });
 
+  describe('a single linear rule on a scheme-keyed or disputed university', () => {
+    // db may not import the engine, so the scripts entry point passes the lookup in; this stands in for it.
+    const universityOf: NonNullable<OpsDeps['universityOf']> = (name) =>
+      /vtu/i.test(name) ? { name: 'VTU', schemeKeyed: true, disputed: false } : /mumbai/i.test(name) ? { name: 'Mumbai', schemeKeyed: false, disputed: true } : /rgpv/i.test(name) ? { name: 'RGPV', schemeKeyed: false, disputed: false } : null;
+    const campusNamed = async (name: string): Promise<string> => {
+      const r = await c.query("INSERT INTO campuses (name, code_hmac) VALUES ($1, $2) RETURNING id", [`${name} ${randomUUID().slice(0, 6)}`, fakeHash(randomUUID())]);
+      return r.rows[0].id as string;
+    };
+    const ruleOf = async (id: string) => (await c.query('SELECT cgpa_rule FROM campuses WHERE id = $1', [id])).rows[0].cgpa_rule;
+
+    it.each([['Test Institute affiliated to VTU'], ['College of University of Mumbai']])('refuses on "%s" without --force-unverified and writes nothing', async (name) => {
+      const campus = await campusNamed(name);
+      const n0 = await auditCount();
+      const d = deps({ universityOf });
+      expect(await runOpsCli(['cgpa-rule', 'set', '--campus', campus, '--a', '10', '--b', '0'], d)).toBe(1);
+      expect(d.lines.join(' ')).toMatch(/force-unverified/);
+      expect(await ruleOf(campus)).toBeNull();
+      expect(await auditCount()).toBe(n0);
+    });
+
+    it('with --force-unverified it writes, flags the rule unverified and still writes an audit row saying so', async () => {
+      const campus = await campusNamed('Test Institute affiliated to VTU');
+      const n0 = await auditCount();
+      expect(await runOpsCli(['cgpa-rule', 'set', '--campus', campus, '--a', '10', '--b', '0', '--force-unverified'], deps({ universityOf }))).toBe(0);
+      expect(await ruleOf(campus)).toEqual({ kind: 'linear', a: 10, b: 0, unverified: true });
+      expect(await auditCount()).toBe(n0 + 1);
+      const row = (await audit('cgpa_rule_set')).filter((r) => r.target === campus)[0]!;
+      expect(row.detail).toMatchObject({ forceUnverified: true, university: 'VTU', next: { a: 10, b: 0, unverified: true } });
+    });
+
+    it('a university that is neither keyed nor disputed needs no flag, and the flag does not mark the rule', async () => {
+      const campus = await campusNamed('Some RGPV college');
+      expect(await runOpsCli(['cgpa-rule', 'set', '--campus', campus, '--a', '9.5', '--b', '0'], deps({ universityOf }))).toBe(0);
+      expect(await ruleOf(campus)).toEqual({ kind: 'linear', a: 9.5, b: 0 });
+      expect(await runOpsCli(['cgpa-rule', 'set', '--campus', campus, '--a', '10', '--b', '0', '--force-unverified'], deps({ universityOf }))).toBe(0);
+      expect(await ruleOf(campus)).toEqual({ kind: 'linear', a: 10, b: 0 });
+    });
+
+    it('--clear is never refused', async () => {
+      const campus = await campusNamed('Test Institute affiliated to VTU');
+      expect(await runOpsCli(['cgpa-rule', 'set', '--campus', campus, '--clear'], deps({ universityOf }))).toBe(0);
+    });
+
+    it('campus create refuses a rule on such a university the same way', async () => {
+      const name = `Create VTU college ${randomUUID().slice(0, 6)}`;
+      expect(await runOpsCli(['campus', 'create', '--name', name, '--domain', uniqueDomain(), '--cgpa-a', '10', '--cgpa-b', '0'], deps({ universityOf }))).toBe(1);
+      expect((await c.query('SELECT 1 FROM campuses WHERE name = $1', [name])).rowCount).toBe(0);
+    });
+  });
+
   it('refuses an unknown campus', async () => {
     const n0 = await auditCount();
     expect(await runOpsCli(['cgpa-rule', 'set', '--campus', randomUUID(), '--a', '10', '--b', '0'], deps())).not.toBe(0);

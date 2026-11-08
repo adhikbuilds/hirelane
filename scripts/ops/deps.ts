@@ -1,6 +1,7 @@
 import { userInfo } from 'node:os';
 import { isLocalUrl } from '../../packages/db/src/env';
 import type { OpsDeps } from '../../packages/db/src/ops/index';
+import { findUniversityRule } from '../../packages/engine/src/eligibility/university';
 import { EnvKeyProvider } from '../../packages/vault/src/index';
 import { campusCodeHmac, generateCampusCode, mailboxHmac, normalizeMailbox } from '../../packages/services/src/campus/codes';
 
@@ -34,5 +35,9 @@ export function buildOpsDeps(o: { env: Env; run: OpsDeps['run']; log: (line: str
     },
     generateCode: () => generateCampusCode(),
     log: o.log,
+    universityOf: (name) => {
+      const u = findUniversityRule(name);
+      return u ? { name: u.short, schemeKeyed: !!u.variants, disputed: !!u.disputed } : null;
+    },
   };
 }

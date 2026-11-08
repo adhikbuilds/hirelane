@@ -27,10 +27,12 @@ export const ELIGIBILITY_FIELDS = [
   'gap_years',
   'passout_year',
   'lateral_entry',
+  'university_scheme',
+  'admission_year',
 ] as const;
 export type EligibilityField = (typeof ELIGIBILITY_FIELDS)[number];
 const NUMERIC_FIELDS: readonly EligibilityField[] = ['pct_10', 'pct_secondary', 'grad_score', 'grad_pct_equiv'];
-const INT_FIELDS: readonly EligibilityField[] = ['grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year'];
+const INT_FIELDS: readonly EligibilityField[] = ['grad_scale', 'active_backlogs', 'backlog_history', 'gap_years', 'passout_year', 'admission_year'];
 
 const UUID_RE = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
@@ -54,8 +56,12 @@ export const EligibilityValues = z
     gap_years: count(20).optional(),
     passout_year: z.number().int().min(1990).max(2100).optional(),
     lateral_entry: z.boolean().optional(),
+    /** The student's own scheme ("2022"), for universities with one formula per scheme. Never derived from the passout year. */
+    university_scheme: z.string().trim().min(1).max(40).optional(),
+    admission_year: z.number().int().min(1990).max(2100).optional(),
   })
-  .refine((v) => v.grad_score === undefined || v.grad_scale === undefined || v.grad_score <= v.grad_scale, { path: ['grad_score'], message: 'above scale' });
+  .refine((v) => v.grad_score === undefined || v.grad_scale === undefined || v.grad_score <= v.grad_scale, { path: ['grad_score'], message: 'above scale' })
+  .refine((v) => v.admission_year === undefined || v.passout_year === undefined || v.admission_year <= v.passout_year, { path: ['admission_year'], message: 'after passout year' });
 export type EligibilityValues = z.infer<typeof EligibilityValues>;
 
 export const FieldMeta = z.partialRecord(
@@ -93,12 +99,15 @@ export async function upsertEligibility(
   values: EligibilityValues,
   meta: FieldMeta,
   sourceResumeId: string | null,
+  opts: { keepSchemeWhenOmitted?: boolean } = {},
 ): Promise<void> {
   const now = ctx.now();
   const cols = ['user_id', ...ELIGIBILITY_FIELDS, 'field_meta', 'source_resume_id', 'confirmed_at', 'updated_at'];
   const params: unknown[] = [ctx.userId, ...ELIGIBILITY_FIELDS.map((f) => values[f] ?? null), JSON.stringify(meta), sourceResumeId, now, now];
   const marks = cols.map((c, i) => (c === 'field_meta' ? `$${i + 1}::jsonb` : `$${i + 1}`));
-  const sets = cols.filter((c) => c !== 'user_id').map((c) => `${c} = EXCLUDED.${c}`);
+  // A resume does not know the student's scheme or admission year: confirming one must not wipe what the student told us.
+  const keep = (c: string): boolean => opts.keepSchemeWhenOmitted === true && (c === 'university_scheme' || c === 'admission_year');
+  const sets = cols.filter((c) => c !== 'user_id').map((c) => (keep(c) ? `${c} = COALESCE(EXCLUDED.${c}, eligibility_profiles.${c})` : `${c} = EXCLUDED.${c}`));
   await client.query(
     `INSERT INTO eligibility_profiles (${cols.join(', ')}) VALUES (${marks.join(', ')}) ON CONFLICT (user_id) DO UPDATE SET ${sets.join(', ')}`,
     params,
