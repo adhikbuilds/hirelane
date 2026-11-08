@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "ingest:run": "vite-node src/cli.ts --",
-    "discover": "vite-node src/discovery/cli.ts --"
+    "discover": "vite-node src/discovery/cli.ts --",
+    "ingest:india-report": "vite-node src/report/india-cli.ts --"
   },
   "dependencies": {
     "@hirelane/db": "workspace:*",

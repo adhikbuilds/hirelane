@@ -63,6 +63,8 @@ export function listUrl(ats: Ats, token: string): string {
       return `https://api.lever.co/v0/postings/${t}?mode=json`;
     case 'ashby':
       return `https://api.ashbyhq.com/posting-api/job-board/${t}?includeCompensation=true`;
+    default:
+      throw new Error(`the recorder covers the ATS APIs only, not ${ats}`);
   }
 }
 

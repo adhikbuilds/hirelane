@@ -6,7 +6,7 @@
  * assumption until a test against fixtures/mini confirms it.
  */
 
-export type Ats = 'greenhouse' | 'lever' | 'ashby';
+export type Ats = 'greenhouse' | 'lever' | 'ashby' | 'jsonld' | 'zoho_rss';
 export type IngestMode = 'live' | 'fixture';
 export type PostingSource = 'live' | 'fixture';
 
@@ -18,7 +18,7 @@ export interface CompensationHint {
   interval: 'year' | 'month' | 'week' | 'day' | 'hour' | 'unknown';
   kind: 'salary' | 'ote' | 'other';
   summaryText: string | null;
-  source: 'ashby.compensation' | 'lever.salaryRange' | 'greenhouse.pay';
+  source: 'ashby.compensation' | 'lever.salaryRange' | 'greenhouse.pay' | 'jsonld.baseSalary';
 }
 
 /** ATS-agnostic extraction of one board item. Produced by a connector, consumed by normalize(). */
@@ -37,6 +37,8 @@ export interface RawPosting {
   workplaceRaw: string | null;
   isRemoteHint: boolean | null;
   postedAt: string | null;
+  /** JSON-LD `validThrough`; the posting is past its deadline after this instant. Absent for ATS sources. */
+  validThrough?: string | null;
   compensation: CompensationHint | null;
   raw: unknown;
 }

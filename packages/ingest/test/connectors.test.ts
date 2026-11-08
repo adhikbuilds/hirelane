@@ -29,7 +29,7 @@ describe('URL templates', () => {
   });
 
   it('registers each connector under its ATS name', () => {
-    expect(Object.keys(connectors).sort()).toEqual(['ashby', 'greenhouse', 'lever']);
+    expect(Object.keys(connectors).sort()).toEqual(['ashby', 'greenhouse', 'jsonld', 'lever', 'zoho_rss']);
     for (const [k, c] of Object.entries(connectors)) expect(c.ats).toBe(k);
   });
 });
