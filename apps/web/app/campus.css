@@ -13,6 +13,9 @@
   --cp-ink: #14161b;
   --cp-muted: #5b6270;
   --cp-line: #e3e6eb;
+  --cp-field-edge: #858c99;
+  --cp-focus: #1b2a4a;
+  --cp-focus-on-navy: #f2f4f8;
   --cp-navy: #1b2a4a;
   --cp-navy-soft: #e8ecf4;
   --cp-on-navy: #f2f4f8;
@@ -45,8 +48,12 @@ body {
 }
 
 .cp :focus-visible {
-  outline: 2px solid var(--cp-navy);
+  outline: 2px solid var(--cp-focus);
   outline-offset: 2px;
+}
+
+.cp-side :focus-visible {
+  outline-color: var(--cp-focus-on-navy);
 }
 
 @layer base {
@@ -120,7 +127,7 @@ body {
 
 .cp-powered b {
   color: var(--cp-lime);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .cp-main {
@@ -152,7 +159,7 @@ body {
 .cp-title {
   margin: 0;
   font-size: 1.625rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
@@ -262,7 +269,7 @@ body {
   margin: 0;
   order: -1;
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -293,7 +300,7 @@ body {
   margin: 0;
   text-wrap: balance;
   font-size: 1.0625rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .cp-card-sub {
@@ -330,7 +337,7 @@ body {
 
 .cp-num {
   text-align: right;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -495,7 +502,7 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.8125rem;
   color: var(--cp-risk);
   background: var(--cp-surface);
@@ -505,7 +512,7 @@ body {
 
 .cp-col-n {
   font-size: 1.625rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1;
 }
@@ -587,7 +594,7 @@ body {
 }
 
 .cpl :focus-visible {
-  outline: 2px solid var(--cp-navy);
+  outline: 2px solid var(--cp-focus);
   outline-offset: 2px;
 }
 
@@ -614,7 +621,7 @@ body {
 }
 
 .cpl-brand {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.25rem;
 }
 
@@ -659,7 +666,7 @@ body {
   font-size: clamp(2.25rem, 5vw, 3.5rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
-  font-weight: 700;
+  font-weight: 600;
   text-wrap: balance;
 }
 
@@ -766,7 +773,7 @@ body {
 .cpl-form input {
   font: inherit;
   padding: 8px 12px;
-  border: 1px solid var(--cp-line);
+  border: 1px solid var(--cp-field-edge);
   border-radius: 8px;
   background: var(--cp-surface);
   width: 100%;
@@ -879,7 +886,7 @@ body {
   font: inherit;
   font-size: 0.9375rem;
   padding: 8px 12px;
-  border: 1px solid var(--cp-line);
+  border: 1px solid var(--cp-field-edge);
   border-radius: 8px;
   background: var(--cp-paper);
   color: var(--cp-ink);
@@ -903,6 +910,7 @@ body {
 
 .cp-field {
   display: grid;
+  align-content: start;
   gap: 4px;
   margin: 0;
   padding: 0;
@@ -956,7 +964,7 @@ body {
 }
 
 .cp-chip input:focus-visible + span {
-  outline: 2px solid var(--cp-navy);
+  outline: 2px solid var(--cp-focus);
   outline-offset: 2px;
 }
 
@@ -989,7 +997,7 @@ body {
 .cp-big {
   margin: 0;
   font-size: 2.25rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1;
 }
@@ -1041,7 +1049,7 @@ body {
 .cp-summary-plain h2 {
   margin: 0;
   font-size: 1.0625rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* ---------- Console pages: forms, tables, settings ---------- */
@@ -1049,7 +1057,34 @@ body {
 .cp-table small { color: var(--cp-muted); font-weight: 500; }
 .cp-good { color: var(--cp-good); }
 .cp-muted { color: var(--cp-muted); }
-.cp-hidden { color: var(--cp-muted); font-style: italic; }
+.cp-hidden { color: var(--cp-muted); font-style: italic; white-space: normal; min-width: 12rem; }
+.cp strong,
+.cp b,
+.cpl strong,
+.cpl b {
+  font-weight: 600;
+}
+
+.cp-link {
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--cp-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cp-link:disabled { color: var(--cp-muted); cursor: default; }
+.cp-table .cp-btn { white-space: nowrap; font-size: 0.875rem; min-height: 32px; }
+@media (max-width: 560px) {
+  .cp-table th, .cp-table td { padding-right: 8px; }
+  .cp-table th.cp-num { white-space: normal; }
+}
 
 .cp-form {
   display: grid;
@@ -1068,7 +1103,7 @@ body {
   font: inherit;
   font-size: 0.9375rem;
   padding: 8px 12px;
-  border: 1px solid var(--cp-line);
+  border: 1px solid var(--cp-field-edge);
   border-radius: 8px;
   background: var(--cp-paper);
   color: var(--cp-ink);
@@ -1136,7 +1171,7 @@ body {
   padding: 12px;
   border-radius: 8px;
   background: var(--cp-navy-soft);
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1276,7 +1311,7 @@ body {
   font: inherit;
   font-size: 0.9375rem;
   padding: 8px 12px;
-  border: 1px solid var(--cp-line);
+  border: 1px solid var(--cp-field-edge);
   border-radius: 8px;
   background: var(--cp-paper);
   color: var(--cp-ink);
@@ -1317,7 +1352,7 @@ body {
 .fr-verdict {
   margin: 0 0 12px;
   font-size: 1.375rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .fr-result ul {
@@ -1368,7 +1403,7 @@ body {
 
 .fr-how li::before {
   content: counter(step);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--cp-good);
 }
 
@@ -1452,6 +1487,9 @@ body {
   --cp-ink: #eef0f4;
   --cp-muted: #8b93a3;
   --cp-line: #262a31;
+  --cp-field-edge: #6b7383;
+  --cp-focus: #eef0f4;
+  --cp-focus-on-navy: #eef0f4;
   --cp-navy: #0a0c0f;
   --cp-navy-soft: #1d222b;
   --cp-on-navy: #eef0f4;
@@ -1501,7 +1539,7 @@ body {
 .dk-hero {
   margin: 0;
   font-size: clamp(3.5rem, 7vw, 5.5rem);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
@@ -1600,7 +1638,7 @@ body {
 .dk-totals {
   margin: 12px 0 0;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
   gap: 16px;
 }
 

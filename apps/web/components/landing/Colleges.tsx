@@ -40,7 +40,7 @@ export function CollegeLanding() {
           </p>
           <div className="cp-actions">
             <Link className="cp-btn" href="#demo">
-              Book a 20-minute demo
+              Book a demo
             </Link>
             <a className="cp-btn" data-variant="outline" href="#features">
               See the console
@@ -87,7 +87,7 @@ export function CollegeLanding() {
       <section id="demo" className="cpl-demo" aria-labelledby="demo-h">
         <div>
           <h2 id="demo-h">See it with your own batch.</h2>
-          <p>A 20-minute call with your placement team. We set up a pilot for one programme and you decide after the semester.</p>
+          <p>A call with your placement team. We set up a pilot for one programme and you decide after the semester.</p>
         </div>
         <form className="cp-form cpl-form" action="#">
           <label htmlFor="cname">Your name</label>

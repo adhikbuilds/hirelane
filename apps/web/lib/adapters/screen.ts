@@ -64,5 +64,7 @@ export async function resolveScreen<Ctx, T>(env: ScreenEnv<Ctx>, opts: ScreenOpt
 
 /** Labelled samples are for local development only (or an explicit HIRELANE_SAMPLES=1). A host with NODE_ENV unset or "test" is not development. */
 export function isDevEnv(env: Record<string, string | undefined> = process.env): boolean {
+  // The demo shows real seeded data or an honest empty state, never a labelled sample.
+  if (env["HIRELANE_DEMO"] === "1") return false;
   return env["NODE_ENV"] === "development" || env["HIRELANE_SAMPLES"] === "1";
 }

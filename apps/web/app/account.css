@@ -65,6 +65,11 @@ body {
   outline-offset: 2px;
 }
 
+/* The lime ring vanishes on the cream card (1.1:1); inside the card it is ink. */
+.acct-stack-y :focus-visible {
+  outline-color: var(--wr-ink);
+}
+
 .acct-top {
   display: flex;
   align-items: center;

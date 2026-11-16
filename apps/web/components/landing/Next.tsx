@@ -108,7 +108,7 @@ export function NextLanding({ counts }: { counts: NextCounts }) {
       <section className="nx-feature">
         <div>
           <h2>Every rule, checked before you apply.</h2>
-          <p>Percentage throughout, backlogs, batch, branch, gap years. If a drive says 60% and you have 58% in 12th, you&apos;ll know in a second, not after the test.</p>
+          <p>Percentage throughout, backlogs, batch, branch, gap years. If a drive says 60% and you have 58% in 12th, you&apos;ll know before you apply, not after the test.</p>
         </div>
         <div className="nx-demo nx-match" aria-hidden="true">
           {[

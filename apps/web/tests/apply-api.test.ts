@@ -519,6 +519,8 @@ describe("the access export covers every user-owned table", () => {
     product_events: "pseudonymous product analytics without content",
     drives: "staff-authored; a student's own result is in driveChecks",
     feature_flags: "operator switches, not data about the student",
+    llm_calls: "operator cost metadata (model, tokens, cost), no content; app role has no access",
+    llm_user_daily: "per-user daily call counter for spend limits, no content; app role has no access",
   };
   // export key -> table(s) it covers
   const COVERS: Record<string, string[]> = {

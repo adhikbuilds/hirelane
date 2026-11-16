@@ -257,7 +257,7 @@ export function MainLanding({ counts, employers }: { counts: SiteCounts; employe
 
       <section className="site-final">
         <h2>Your next job is probably already posted.</h2>
-        <p>Check which roles you qualify for in under a minute.</p>
+        <p>Check which roles you qualify for.</p>
         <div className="site-ctas">
           <Link href="/signin" className="site-btn site-btn-lg">
             Get started, it&apos;s free

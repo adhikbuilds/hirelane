@@ -125,6 +125,8 @@ body {
 .nx-btn[data-variant="ghost"] { background: transparent; color: var(--nx-ink); border-color: var(--nx-line); }
 .nx-btn[data-variant="ghost"]:hover { background: var(--nx-soft); }
 .nx-btn[data-variant="light"] { background: var(--nx-on-dark); color: var(--nx-navy); border-color: var(--nx-on-dark); }
+.nx-uni :focus-visible { outline-color: var(--nx-on-dark); }
+.nx-btn { white-space: nowrap; }
 .nx-btn-lg { min-height: 48px; padding: 0 20px; font-size: 1rem; }
 
 .nx-hero {
@@ -654,7 +656,7 @@ body {
   .nx-nav nav, .nx-quiet { display: none; }
   .nx-hero, .nx-feature, .nx-uni { grid-template-columns: minmax(0, 1fr); }
   .nx-feature[data-flip] > div:first-child { order: 0; }
-  .nx-story { min-height: 420px; }
+  .nx-story { min-height: 320px; }
   .nx-uni { margin: 80px 16px 0; padding: 28px; }
   .nx-mail { grid-template-columns: 72px minmax(0, 1fr); }
   .nx-mail em { display: none; }

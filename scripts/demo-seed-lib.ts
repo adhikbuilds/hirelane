@@ -20,6 +20,7 @@ export interface DemoDeps {
 export const DEMO_CAMPUS_NAME = 'Demo Institute of Technology (sample)';
 export const DEMO_DOMAIN = 'demo-college.example.test';
 export const DEMO_OWNER_EMAIL = `placement@${DEMO_DOMAIN}`;
+export const DEMO_STUDENT_EMAIL = `student01@${DEMO_DOMAIN}`;
 const STUDENTS = 24;
 
 export function assertDemoMayRun(databaseUrl: string, env: Env): void {
@@ -51,6 +52,12 @@ export async function seedDemo(d: DemoDeps): Promise<{ created: boolean; code: s
       const owner = await d.mailboxHmac(DEMO_OWNER_EMAIL);
       if (!owner) throw new Error('demo owner address was rejected');
       await q.query(`INSERT INTO tpo_members (campus_id, email_hmac, role) VALUES ($1, $2, 'owner')`, [campusId, owner]);
+
+      // The officer persona needs a real users row to sign in as (the tpo seat above is only an HMAC).
+      const officer = String((await q.query(`INSERT INTO users (email, email_verified_at, display_name) VALUES ($1, now(), 'Sample Placement Officer') RETURNING id`, [DEMO_OWNER_EMAIL])).rows[0]!['id']);
+      for (const kind of ['age_18_plus', 'terms', 'privacy']) {
+        await q.query(`INSERT INTO consents (user_id, kind, granted, doc_version) VALUES ($1, $2, true, 'demo')`, [officer, kind]);
+      }
 
       const users: string[] = [];
       for (let i = 1; i <= STUDENTS; i++) {

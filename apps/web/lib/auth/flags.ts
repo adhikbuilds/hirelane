@@ -11,6 +11,7 @@ export async function accountsEnabled(opts: { env?: Env; read?: () => Promise<bo
   const env = opts.env ?? process.env;
   if (env["HIRELANE_ACCOUNTS"] === "1") return true;
   if (env["HIRELANE_ACCOUNTS"] === "0") return false;
+  if (env["HIRELANE_DEMO"] === "1") return true;
   try {
     return await (opts.read ?? (() => withAuth((c) => isFeatureEnabled(c, "accounts"))))();
   } catch {

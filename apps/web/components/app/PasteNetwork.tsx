@@ -111,7 +111,7 @@ export function Network({
           </Button>
         ),
       },
-      { title: "Wait for LinkedIn's email", text: "Usually about 10 minutes. We'll remind you here.", action: null },
+      { title: "Wait for LinkedIn's email", text: "LinkedIn sends it to your inbox. We'll remind you here.", action: null },
       {
         title: "Upload the file",
         text: "The ZIP or Connections.csv. It stays private to you.",
@@ -129,7 +129,7 @@ export function Network({
     return (
       <Card aria-labelledby="net-h">
         <CardTitle id="net-h">See who you know at each company</CardTitle>
-        <CardDescription>Three steps, about 15 minutes. Your college and other students never see your connections.</CardDescription>
+        <CardDescription>Three steps. Your college and other students never see your connections.</CardDescription>
         <ol className="wr-lock-steps">
           {steps.map((st, i) => {
             const state = i < current ? "done" : i === current ? "now" : "locked";
