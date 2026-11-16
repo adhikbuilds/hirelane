@@ -13,7 +13,7 @@ function setup(impl: () => unknown, env = {}) {
   const calls: LlmCallRecord[] = [];
   const p = new AnthropicProvider({
     client: { messages: { parse } } as never,
-    models: { draft: 'claude-opus-5-5', bulk: 'claude-opus-5-5' },
+    models: { draft: 'claude-sonnet-5-5', bulk: 'claude-haiku-5-5' },
     sink: { record: (c) => void calls.push(c) },
     now: (() => { let t = 0; return () => (t += 50); })(),
     ...env,
@@ -27,7 +27,7 @@ describe('AnthropicProvider', () => {
     const r = await p.extract(req);
     expect(r.status).toBe('ok');
     const args = parse.mock.calls[0]![0] as Record<string, any>;
-    expect(args.model).toBe('claude-opus-5-5');
+    expect(args.model).toBe('claude-haiku-5-5');
     expect(args.cache_control).toEqual({ type: 'ephemeral' });
     expect(args.system).toBe('STABLE SYSTEM');
     expect(args.messages).toHaveLength(1);
@@ -44,10 +44,11 @@ describe('AnthropicProvider', () => {
     const { p, calls } = setup(async () => ok);
     await p.extract(req);
     expect(calls[0]).toEqual({
-      purpose: 'requirements', model: 'claude-opus-5-5', mode: 'anthropic', status: 'ok',
+      purpose: 'requirements', model: 'claude-haiku-5-5', mode: 'anthropic', status: 'ok',
       inputTokens: 100, outputTokens: 20, cacheReadTokens: 90, cacheCreationTokens: 0,
-      latencyMs: 50, batchSize: 1,
+      latencyMs: 50, batchSize: 1, estCostUsd: expect.any(Number),
     });
+    expect(calls[0]!.estCostUsd).toBeGreaterThan(0);
     expect(JSON.stringify(calls)).not.toContain('SECRET');
     expect(JSON.stringify(calls)).not.toContain('STABLE');
   });

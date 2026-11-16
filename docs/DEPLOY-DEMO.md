@@ -35,7 +35,7 @@ Each row was checked against the code on 2026-11-07.
 | 2 | The slug `sample-university-bengaluru` does not exist anywhere in the repo, and `pnpm demo:seed` takes no argument. | Typing that command does nothing useful. | The seeded campus is named `Demo Institute of Technology (sample)`. |
 | 3 | No production mail transport exists. `createMailer()` throws in production without one. | Email-code sign-in, the email college join, and notification emails fail. | Sign-in uses Google or LinkedIn (you register the OAuth app). The code join for students still works. |
 | 4 | Resume uploads are written to `HIRELANE_STORAGE_DIR` on the web host's disk. Vercel has no shared disk, so the Fly worker cannot read them. | Resume upload is not demo-safe. Do not promise it to officers. | `HIRELANE_STORAGE_DIR` stays empty on Vercel. Decision for you in section 10. |
-| 5 | `HIRELANE_DEMO` is not read by the web app. It only unlocks the local seed script. | Setting it on Vercel does nothing. | Do not set it on Vercel or Fly. |
+| 5 | `HIRELANE_DEMO=1` is read by the web app (accounts on, samples off, LLM off, demo door open). Demo sessions are shared accounts. | Do not collect real data on the demo deploy. | Set it on the demo project only, with `TRUST_X_REAL_IP=1`. Leave `HIRELANE_LLM` empty. |
 | 6 | The sitemap, `robots.txt` and `openapi.json` build their links from `APP_ORIGIN`, which defaults to `http://localhost:3001`. `HIRELANE_APP_ORIGIN` does not feed them. | Without `APP_ORIGIN`, search engines are sent to localhost. | Set both to the public origin. The smoke test fails if the sitemap mentions localhost. |
 | 7 | `notify:sweep` and campus mail call `createMailer()` in production. | The worker logs `mail: no production transport is configured` every 10 minutes. Public pages are unaffected. | Expected until a transport exists. |
 | 8 | The local verify scripts (`db:verify-*`) run as the local docker superuser. The web app switches to the `hirelane_app` role for signed-in queries (`withUser`). Neon's owner role is a managed role, not that local superuser. | If `SET ROLE hirelane_app` is refused on Neon, signed-in pages fail with a permission error. This is the one thing the local checks cannot prove. | Section 8 exercises signed-in pages. Treat any `permission denied` as a stop-and-report. |
@@ -235,7 +235,7 @@ Add each variable under Settings, then Environment Variables, with the Environme
 Leave these unset on Vercel. Setting any of them changes behaviour in the wrong direction for the demo:
 
 - `NODE_ENV` (Vercel sets `production` itself)
-- `HIRELANE_DEMO` (not read by the web app)
+- `HIRELANE_DEMO` (demo deploy only; see known limit 5)
 - `HIRELANE_SAMPLES` (opens every `/dev` page)
 - `HIRELANE_INSECURE_DEV_COOKIE`
 - `HIRELANE_FAULTS`

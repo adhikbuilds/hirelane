@@ -24,11 +24,15 @@ export interface ExtractRequest<T> {
    */
   schema: ZodType<T>;
   tier?: LlmTier;
+  /** The student on whose behalf this runs. Enables the per-student daily limit. */
+  userId?: string;
   maxTokens?: number;
 }
 
 export type UnavailableReason =
   | 'off'
+  | 'spend_cap'
+  | 'daily_limit'
   | 'no_fixture'
   | 'empty_batch'
   | 'refusal'
@@ -52,7 +56,7 @@ export interface LlmProvider {
   extractBatched<T>(req: ExtractRequest<T>, chunkSize?: number): Promise<LlmResult<T>[]>;
 }
 
-export type CallStatus = 'ok' | Exclude<UnavailableReason, 'off' | 'no_fixture' | 'empty_batch'>;
+export type CallStatus = 'ok' | Exclude<UnavailableReason, 'off' | 'spend_cap' | 'daily_limit' | 'no_fixture' | 'empty_batch'>;
 
 /** A row of llm_calls. Deliberately has no field that could carry prompt or completion text. */
 export interface LlmCallRecord {
@@ -66,13 +70,16 @@ export interface LlmCallRecord {
   cacheCreationTokens: number;
   latencyMs: number;
   batchSize: number;
+  /** Estimated, from token counts and a price table. Not a bill. */
+  estCostUsd: number;
+  userId?: string;
 }
 
 export interface LlmCallSink {
   record(call: LlmCallRecord): void | Promise<void>;
 }
 
-export const DEFAULT_MODEL = 'claude-opus-5-5';
+export const DEFAULT_MODEL = 'claude-sonnet-5-5';
 export const DEFAULT_CHUNK_SIZE = 10;
 
 export async function safeRecord(sink: LlmCallSink | undefined, call: LlmCallRecord): Promise<void> {
