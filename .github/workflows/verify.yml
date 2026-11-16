@@ -51,6 +51,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # tests/sitemap.test.ts validates generated sitemaps against the XSD with xmllint.
+      - name: Install xmllint
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libxml2-utils
+
       # docker/initdb only runs in the compose image, so create the test database the same way here.
       - name: Create test database
         run: |
