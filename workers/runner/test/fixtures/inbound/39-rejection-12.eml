@@ -1,0 +1,17 @@
+From: Orchid Payments Recruiting <jobs@orchidpayments.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=orchidpayments.example.test; dmarc=pass header.from=orchidpayments.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 06:26:00 GMT
+Message-ID: <corpus-39@orchidpayments.example.test>
+MIME-Version: 1.0
+Subject: Update from Orchid Payments hiring
+Content-Type: text/plain; charset=us-ascii
+
+Hi Neha,
+
+We've decided to go with another candidate for the Associate Consultant role. It was a close call and we really enjoyed your technical round.
+
+All the best,
+Karan
+
+PS: Neha - salary details (- figures) are shared with shortlisted candidates only.

@@ -28,7 +28,8 @@ describe.skipIf(!slug)("markdown negotiation against the running app", () => {
     const htmlBody = await html.text();
     expect(Buffer.byteLength(mdBody)).toBeLessThanOrEqual(Buffer.byteLength(htmlBody) * 0.3);
     expect(mdBody).not.toMatch(/<(script|style|iframe)/i);
-  });
+    // 30 s: the first request to a cold dev server compiles the route, which can exceed vitest's 5 s default (flaked once).
+  }, 30_000);
 
   it("the .md suffix returns the same document", async () => {
     const a = await (await fetch(`${BASE}/job/${slug}`, { headers: { accept: "text/markdown" } })).text();

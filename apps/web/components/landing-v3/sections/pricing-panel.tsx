@@ -146,7 +146,7 @@ export function PricingPanel({ initialCurrency }: { initialCurrency: Currency })
 
             <div className="flex flex-wrap items-center gap-4">
               <Button size="lg" asChild className="transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97]">
-                <a href="#start">Start free</a>
+                <a href="#start">Get early access</a>
               </Button>
               <div className="ml-auto flex flex-wrap items-center gap-3">
                 <Pick<Currency> label="Currency" value={currency} onChange={setCurrency} items={[{ value: "INR", label: "INR" }, { value: "USD", label: "USD" }]} />

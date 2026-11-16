@@ -1,5 +1,5 @@
 /**
- * The swipe queue as a reducer: which card is on top, what was decided, the undo window and the Needs-you gate.
+ * The decision queue as a reducer: which card is on top, what was decided, the undo window and the Needs-you gate.
  * Pure, so the rules (gate, undo, end-of-queue tallies) are tested without a browser.
  */
 import type { Decision } from "./physics";

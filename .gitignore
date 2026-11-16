@@ -2,6 +2,7 @@ node_modules/
 .next/
 .env*
 !.env.example
+!.env.production.example
 coverage/
 playwright-report/
 test-results/
@@ -18,3 +19,10 @@ playwright-report/
 
 # taste-skill working files (inspector screenshots); the chosen sheet is kept in docs/design
 .taste-skill/
+
+# Hallmark screenshots and logs
+.hallmark/
+docs/design/refs/
+docs/design/plan-viewer.html
+docs/design/mocks/shots/
+.DS_Store

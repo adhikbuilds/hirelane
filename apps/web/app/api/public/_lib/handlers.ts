@@ -1,5 +1,5 @@
 import { withAdmin } from "@hirelane/db";
-import { checkRateLimit, clientIp, trustProxyHops, type RateLimitResult } from "../../../../lib/rate-limit";
+import { checkRateLimit, clientIp, guardedLimit, scaledLimit, trustProxyHops, type RateLimitResult } from "../../../../lib/rate-limit";
 import { parseStrict, serializeApi } from "../../../../lib/public-api-params";
 import { appOrigin, pagesFor, searchJobs, type JobQuery, type JobsResult } from "../../../../lib/queries/jobs";
 import { cachedJson, errorResponse, optionsResponse } from "./http";
@@ -20,22 +20,27 @@ export const defaultDeps: Deps = {
   search: (q) => searchJobs(q, { withFacets: false }),
   detail: (slug) => withAdmin((c) => getPublicJobDetail(c, slug, appOrigin())),
   limit: (ip) =>
-    withAdmin((c) =>
-      checkRateLimit(c, `public-api:${ip}`, { limit: RATE_LIMIT, windowSeconds: RATE_WINDOW_SECONDS, prune: Math.random() < 0.01 }),
+    guardedLimit(() =>
+      withAdmin((c) =>
+        checkRateLimit(c, `public-api:${ip}`, { limit: scaledLimit(ip, RATE_LIMIT), windowSeconds: RATE_WINDOW_SECONDS, prune: Math.random() < 0.01 }),
+      ),
     ),
   hops: () => trustProxyHops(),
 };
 
-type Limited = { response: Response } | { headers: Record<string, string> };
+export type Limited = { response: Response } | { headers: Record<string, string> };
 
-/** Rate limits before any data work. A limiter outage fails open: this is a public read-only API. */
-async function gate(req: Request, deps: Deps): Promise<Limited> {
-  let r: RateLimitResult;
-  try {
-    r = await deps.limit(clientIp(req.headers, { hops: deps.hops(), socketAddress: null }));
-  } catch (e) {
-    console.error("public api rate limiter unavailable", e instanceof Error ? e.message : e);
-    return { headers: {} };
+/** Rate limits before any data work. A limiter outage fails closed with a visible 429 "busy" and Retry-After. */
+export async function gate(req: Request, deps: Deps): Promise<Limited> {
+  const r = await guardedLimit(() => deps.limit(clientIp(req.headers, { hops: deps.hops(), socketAddress: null })));
+  return limitOutcome(r);
+}
+
+export function limitOutcome(r: RateLimitResult): Limited {
+  if (r.busy) {
+    return {
+      response: errorResponse(429, "busy", "The service is busy. Try again shortly.", { headers: { "Retry-After": String(r.retryAfter) } }),
+    };
   }
   const headers = { "RateLimit-Limit": String(r.limit), "RateLimit-Remaining": String(r.remaining) };
   if (r.allowed) return { headers };

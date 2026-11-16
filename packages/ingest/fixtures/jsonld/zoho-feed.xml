@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Trellis Cloud Jobs (synthetic fixture, not a live Zoho feed)</title>
+    <link>https://trellis.zohorecruit.in/jobs/Careers</link>
+    <item>
+      <title>Graduate Trainee - Operations</title>
+      <link>https://trellis.zohorecruit.in/recruit/ViewJob.na?digest=abc123&amp;embedsource=RSS</link>
+      <guid isPermaLink="false">ZR_101_JOB</guid>
+      <pubDate>Mon, 02 Nov 2026 09:00:00 +0530</pubDate>
+      <description><![CDATA[<p>Freshers welcome. Pune.</p>]]></description>
+      <city>Pune</city><state>Maharashtra</state><country>India</country>
+      <jobtype>Full time</jobtype>
+    </item>
+    <item>
+      <title>Sales Executive &amp; Support</title>
+      <link>https://trellis.zohorecruit.in/recruit/ViewJob.na?digest=def456</link>
+      <pubDate>Fri, 30 Oct 2026 12:00:00 GMT</pubDate>
+      <description>Plain text description</description>
+    </item>
+    <item>
+      <title>Broken: http link</title>
+      <link>http://trellis.zohorecruit.in/recruit/ViewJob.na?digest=zzz</link>
+      <guid>ZR_103</guid>
+    </item>
+    <item>
+      <link>https://trellis.zohorecruit.in/recruit/ViewJob.na?digest=notitle</link>
+      <guid>ZR_104</guid>
+    </item>
+    <item>
+      <title>Graduate Trainee - Operations</title>
+      <link>https://trellis.zohorecruit.in/recruit/ViewJob.na?digest=abc123&amp;embedsource=RSS</link>
+      <guid isPermaLink="false">ZR_101_JOB</guid>
+    </item>
+  </channel>
+</rss>

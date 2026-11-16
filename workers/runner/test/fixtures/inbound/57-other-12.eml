@@ -1,0 +1,30 @@
+From: Helio Games Recruiting <jobs@heliogames.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=heliogames.example.test; dmarc=pass header.from=heliogames.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 06:32:00 GMT
+Message-ID: <corpus-57@heliogames.example.test>
+MIME-Version: 1.0
+Subject: Your application is under review
+Content-Type: multipart/alternative; boundary="alt_56_boundary"
+
+--alt_56_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hello Asha, this is a status update: your application for Associate Consult=
+ant is still under review by our team. There is nothing you need to do righ=
+t now. Thank you for your patience.
+
+PS: Asha =E2=80=94 salary details (=E2=82=B9 figures) are shared with short=
+listed candidates only.
+--alt_56_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PHA+SGVsbG8gQXNoYSwgdGhpcyBpcyBhIHN0YXR1cyB1cGRhdGU6IHlvdXIg
+YXBwbGljYXRpb24gZm9yIEFzc29jaWF0ZSBDb25zdWx0YW50IGlzIHN0aWxsIHVuZGVyIHJldmll
+dyBieSBvdXIgdGVhbS4gVGhlcmUgaXMgbm90aGluZyB5b3UgbmVlZCB0byBkbyByaWdodCBub3cu
+IFRoYW5rIHlvdSBmb3IgeW91ciBwYXRpZW5jZS48L3A+PGJyPgo8cD5QUzogQXNoYSDigJQgc2Fs
+YXJ5IGRldGFpbHMgKOKCuSBmaWd1cmVzKSBhcmUgc2hhcmVkIHdpdGggc2hvcnRsaXN0ZWQgY2Fu
+ZGlkYXRlcyBvbmx5LjwvcD48L2JvZHk+PC9odG1sPg==
+--alt_56_boundary--

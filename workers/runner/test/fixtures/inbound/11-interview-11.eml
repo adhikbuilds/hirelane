@@ -1,0 +1,16 @@
+From: Northwind Labs Recruiting <jobs@northwindlabs.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=northwindlabs.example.test; dmarc=pass header.from=northwindlabs.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Wed, 28 Oct 2026 05:10:00 GMT
+Message-ID: <corpus-11@northwindlabs.example.test>
+MIME-Version: 1.0
+Subject: Technical round - Northwind Labs
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Hi Meera,
+
+We've shortlisted you for the technical round. It is a 60 minute live problem solving conversation with one of our developers. Choose a time on Monday 10 November or the day after, and let us know.
+
+Thanks,
+Karan

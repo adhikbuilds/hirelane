@@ -1,0 +1,24 @@
+{
+  "name": "@hirelane/services",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "picks:eval": "vite-node src/picks/eval-cli.ts"
+  },
+  "dependencies": {
+    "@hirelane/db": "workspace:^",
+    "@hirelane/engine": "workspace:^",
+    "@hirelane/vault": "workspace:^",
+    "@hirelane/agent": "workspace:^",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

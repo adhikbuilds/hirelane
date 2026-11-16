@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "note": "Canonical branch codes with aliases. 'and' in an alias also matches '&'. Aliases of 2 letters or fewer match upper-case only. The longest alias wins.",
+  "branches": [
+    { "code": "cse", "label": "Computer Science and Engineering", "aliases": ["cse", "cs", "c.s.e", "computer science", "computer science and engineering", "computer science engineering", "computer engineering", "computer science and technology", "comp sci", "comps"] },
+    { "code": "it", "label": "Information Technology", "aliases": ["it", "information technology", "information technology engineering"] },
+    { "code": "ise", "label": "Information Science and Engineering", "aliases": ["ise", "information science", "information science and engineering"] },
+    { "code": "aids", "label": "Artificial Intelligence and Data Science", "aliases": ["aids", "ai and ds", "ai and data science", "artificial intelligence and data science", "data science and artificial intelligence"] },
+    { "code": "aiml", "label": "Artificial Intelligence and Machine Learning", "aliases": ["aiml", "ai and ml", "ai and machine learning", "artificial intelligence and machine learning", "machine learning"] },
+    { "code": "ds", "label": "Data Science", "aliases": ["data science", "data analytics"] },
+    { "code": "cyber", "label": "Cyber Security", "aliases": ["cyber security", "cybersecurity", "information security"] },
+    { "code": "ece", "label": "Electronics and Communication Engineering", "aliases": ["ece", "e.c.e", "electronics and communication", "electronics and communication engineering", "electronics and telecommunication", "electronics and telecommunication engineering", "extc", "entc", "telecommunication engineering"] },
+    { "code": "eee", "label": "Electrical and Electronics Engineering", "aliases": ["eee", "e.e.e", "electrical and electronics", "electrical and electronics engineering"] },
+    { "code": "electrical", "label": "Electrical Engineering", "aliases": ["electrical", "electrical engineering"] },
+    { "code": "electronics", "label": "Electronics Engineering", "aliases": ["electronics", "electronics engineering"] },
+    { "code": "instrumentation", "label": "Instrumentation Engineering", "aliases": ["instrumentation", "instrumentation engineering", "instrumentation and control", "electronics and instrumentation"] },
+    { "code": "mech", "label": "Mechanical Engineering", "aliases": ["mech", "mechanical", "mechanical engineering"] },
+    { "code": "civil", "label": "Civil Engineering", "aliases": ["civil", "civil engineering"] },
+    { "code": "chem", "label": "Chemical Engineering", "aliases": ["chemical", "chemical engineering"] },
+    { "code": "auto", "label": "Automobile Engineering", "aliases": ["automobile", "automobile engineering", "automotive engineering"] },
+    { "code": "aero", "label": "Aeronautical and Aerospace Engineering", "aliases": ["aeronautical", "aeronautical engineering", "aerospace", "aerospace engineering"] },
+    { "code": "production", "label": "Production and Industrial Engineering", "aliases": ["production engineering", "industrial engineering", "industrial and production engineering"] },
+    { "code": "biotech", "label": "Biotechnology", "aliases": ["biotechnology", "bio technology", "biotech"] },
+    { "code": "vlsi", "label": "VLSI and Embedded Systems", "aliases": ["vlsi", "vlsi design", "vlsi and embedded systems", "embedded systems"] },
+    { "code": "mining", "label": "Mining Engineering", "aliases": ["mining", "mining engineering"] },
+    { "code": "textile", "label": "Textile Engineering", "aliases": ["textile", "textile engineering"] },
+    { "code": "agri", "label": "Agricultural Engineering", "aliases": ["agricultural engineering", "agriculture engineering"] },
+    { "code": "physics", "label": "Physics", "aliases": ["physics"] },
+    { "code": "chemistry", "label": "Chemistry", "aliases": ["chemistry"] },
+    { "code": "maths", "label": "Mathematics", "aliases": ["mathematics", "maths"] },
+    { "code": "statistics", "label": "Statistics", "aliases": ["statistics"] }
+  ]
+}

@@ -12,7 +12,7 @@ export function SiteFooter() {
               <Wordmark />
             </Link>
             <p className="mt-4 text-[15px] leading-6 text-ink-2">
-              Open jobs from public company career boards, matched to your resume. You approve every application.
+              Open jobs from public company career boards, matched to your resume. Early access is opening soon; every decision will stay with you.
             </p>
           </div>
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
@@ -34,7 +34,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-[13px] text-ink-3 sm:flex-row sm:justify-between">
           <p>&copy; {new Date().getUTCFullYear()} Hirelane. Built by adhikbuilds.</p>
-          <p>Jobs come from public Greenhouse, Lever and Ashby boards. Nothing is applied for without your OK.</p>
+          <p>Jobs come from public Greenhouse, Lever and Ashby boards. Hirelane does not apply for anyone.</p>
         </div>
       </div>
     </footer>

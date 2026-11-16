@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.12.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   },
   "scripts": {
     "dev": "pnpm --filter @hirelane/web dev",
@@ -16,23 +16,35 @@
     "lint:deps": "depcruise packages apps workers --config .dependency-cruiser.cjs",
     "brand-guard": "vite-node scripts/brand-guard.ts",
     "no-submit-guard": "vite-node scripts/no-submit-guard.ts",
-    "verify": "pnpm test && pnpm typecheck && pnpm lint:deps && pnpm brand-guard && pnpm no-submit-guard && pnpm db:verify-schema",
+    "withadmin-guard": "vite-node scripts/withadmin-guard.ts",
+    "verify": "pnpm test && pnpm typecheck && pnpm lint:deps && pnpm brand-guard && pnpm no-submit-guard && pnpm withadmin-guard && pnpm engine:eval && pnpm db:verify-schema && pnpm db:verify-rls && pnpm db:verify-auth",
+    "setup:keys": "pnpm --filter @hirelane/vault --silent setup:keys",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @hirelane/db migrate",
+    "demo:seed": "vite-node scripts/demo-seed.ts",
     "db:seed": "pnpm --filter @hirelane/db seed",
     "db:reset": "pnpm --filter @hirelane/db reset",
     "db:fresh": "pnpm db:reset && pnpm db:migrate && pnpm db:seed",
-    "db:verify-rls": "echo \"db:verify-rls: not implemented until Phase 4\"",
-    "db:verify-auth": "echo \"db:verify-auth: not implemented until Phase 4\"",
+    "db:verify-rls": "pnpm --filter @hirelane/db verify-rls",
+    "db:verify-auth": "pnpm --filter @hirelane/db verify-auth",
     "db:verify-schema": "pnpm --filter @hirelane/db verify-schema",
     "ingest:run": "pnpm --filter @hirelane/ingest ingest:run",
+    "ingest:india-report": "pnpm --filter @hirelane/ingest ingest:india-report",
     "ingest:record": "pnpm --filter @hirelane/ingest record",
     "engine:eval": "pnpm --filter @hirelane/engine eval",
     "agent:eval": "echo \"agent:eval: not implemented until Phase 4\"",
     "enrich:run": "pnpm --filter @hirelane/runner enrich:run",
     "report:coverage": "vite-node scripts/report-coverage.ts --",
-    "bench:board": "vite-node scripts/bench-board.ts"
+    "bench:board": "vite-node scripts/bench-board.ts",
+    "budget": "vite-node scripts/js-budget.ts",
+    "ops": "vite-node scripts/ops/main.ts --",
+    "ops:campus-create": "vite-node scripts/ops/main.ts -- campus create",
+    "ops:domain-add": "vite-node scripts/ops/main.ts -- domain add",
+    "ops:domain-remove": "vite-node scripts/ops/main.ts -- domain remove",
+    "ops:cgpa-rule": "vite-node scripts/ops/main.ts -- cgpa-rule set",
+    "ops:owner-invite": "vite-node scripts/ops/main.ts -- owner-invite",
+    "ops:platform-switch": "vite-node scripts/ops/main.ts -- switch set"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

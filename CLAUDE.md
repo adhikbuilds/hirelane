@@ -39,8 +39,27 @@ plus a 390px-wide mobile shot. 5. `security-reviewer` when applicable. 6. `doc-u
 ## Legal guardrails
 - Jobs only from public ATS board APIs (Greenhouse boards-api, Lever v0 postings, Ashby posting-api), with recorded fixtures for
   tests/offline dev. Never scrape shortlistapp.co, LinkedIn or Indeed.
-- No auto-submission in MVP: draft → user approves → 4s undo → hand off to the employer's own form. Headless submission is a later,
-  feature-flagged phase with per-application approval.
+- Approved by the owner 2026-10-29; not built yet (see docs/recon/ats-terms-2026-10-29.md). Two more source types are allowed:
+  - schema.org `JobPosting` JSON-LD on employer career pages (Workday, SuccessFactors career sites and similar)
+  - Zoho Recruit public RSS feeds
+
+  Only under these rules:
+  1. Start only from the `Sitemap:` lines in robots.txt, and honour every Disallow.
+  2. Read only the JSON-LD block on job pages listed in that sitemap. Never store page HTML.
+  3. At most 1 request per second per host, with an honest user agent, and back off on 429 and 5xx errors.
+  4. Never call undocumented APIs (for example Workday `/wday/cxs/`), log in, submit an application, or bypass a bot check or CAPTCHA.
+  5. Add each host to the allowlist by hand, with a dated note recording that robots.txt and the site terms were read.
+  6. Stop within 24 h when an employer asks.
+  7. Every card links back to the source with "read Nh ago".
+- **Owner decision 2026-10-29 (docs/product/DECISIONS-2026-10-29-night.md): right swipe = applied.** Hirelane may submit on the
+  company's own form, but only:
+  - with the student's one-time `auto_apply` consent, which they can switch off at any time
+  - never bypassing CAPTCHAs, bot checks or logins; a blocked submission falls back to "finish on their site"
+  - never inventing answers
+  - with receipts, a per-platform kill switch and a daily cap
+  - against recorded fixtures only, until the owner runs a supervised live pilot
+- **Applications use the student's Hirelane apply address**, so replies are tracked. Every employer message is forwarded to the
+  student.
 - Resumes are PII: encrypt at rest, never log contents, never send to an LLM without the user's consent toggle.
 
 ## When PLAN.md and this file disagree

@@ -1,18 +1,4 @@
-const isDev = process.env.NODE_ENV !== "production";
-
-const csp = [
-  "default-src 'self'",
-  // Next injects inline bootstrap scripts; dev also needs eval for React refresh.
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  `connect-src 'self'${isDev ? " ws://localhost:3001" : ""}`,
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join("; ");
+import { buildSecurityHeaders } from "./security-headers.mjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -30,12 +16,7 @@ const nextConfig = {
     return [
       {
         source: "/:path*",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Content-Security-Policy", value: csp },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        ],
+        headers: buildSecurityHeaders(),
       },
       // The job page has a markdown twin chosen by Accept (middleware), so caches must key on it.
       { source: "/job/:slug", headers: [{ key: "Vary", value: "Accept" }] },

@@ -1,0 +1,21 @@
+From: Quartz Health Recruiting <jobs@quartzhealth.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=quartzhealth.example.test; dmarc=pass header.from=quartzhealth.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Wed, 28 Oct 2026 11:04:00 GMT
+Message-ID: <corpus-53@quartzhealth.example.test>
+MIME-Version: 1.0
+Subject: Campus webinar invitation
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hi Divya,
+
+Join our free webinar on how to build a strong fresher resume on Saturday at 5 PM. Register here: https://events.example.test/quartzhealth/webinar. Seats are limited!
+
+See you there,
+Priya
+
+-- 
+Priya Nair
+Talent Acquisition | Quartz Health
+"Unfortunately, we cannot guarantee replies to every email, so please be kind to the planet and think before you print."

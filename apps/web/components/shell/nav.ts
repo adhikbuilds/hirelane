@@ -7,7 +7,7 @@ export const NAV: NavItem[] = [
   { href: "/companies", label: "Companies" },
 ];
 
-export const START_FREE = { href: "/#start", label: "Start free" } as const;
+export const START_FREE = { href: "/#start", label: "Get early access" } as const;
 
 export type FooterColumn = { title: string; links: NavItem[] };
 
@@ -43,6 +43,9 @@ export const FOOTER: FooterColumn[] = [
     links: [
       { href: "/how-it-works#never", label: "What Hirelane never does" },
       { href: "/about#limits", label: "Limits, stated outright" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+      { href: "/contact", label: "Contact" },
       { href: "/robots.txt", label: "robots.txt" },
     ],
   },

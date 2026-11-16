@@ -1,0 +1,24 @@
+From: Northwind Labs Recruiting <jobs@northwindlabs.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=northwindlabs.example.test; dmarc=pass header.from=northwindlabs.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Wed, 28 Oct 2026 08:40:00 GMT
+Message-ID: <corpus-41@northwindlabs.example.test>
+MIME-Version: 1.0
+Subject: Re: your interview slot
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Hi Asha,
+
+Thanks for coming in for the discussion. After the panel's feedback, we will not be proceeding further. We wish you success.
+
+Regards,
+Priya
+
+On Mon, 27 Oct 2026 at 10:15, Northwind Labs Recruiting <jobs@northwindlabs.example.test> wrote:
+> Your interview for Data Analyst is scheduled on Tuesday 4 November. Please join ten minutes early.
+
+-- 
+Priya Nair
+Talent Acquisition | Northwind Labs
+"Unfortunately, we cannot guarantee replies to every email, so please be kind to the planet and think before you print."

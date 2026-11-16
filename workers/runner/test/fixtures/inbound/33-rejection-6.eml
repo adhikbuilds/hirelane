@@ -1,0 +1,13 @@
+From: Quartz Health Recruiting <jobs@quartzhealth.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=quartzhealth.example.test; dmarc=pass header.from=quartzhealth.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Thu, 29 Oct 2026 09:44:00 GMT
+Message-ID: <corpus-33@quartzhealth.example.test>
+MIME-Version: 1.0
+Subject: Your application status has changed
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hi Asha, your application status for Associate Consultant has been updated to: Not selected. Thank you for applying, and good luck with your search.
+
+PS: Asha — salary details (₹ figures) are shared with shortlisted candidates only.

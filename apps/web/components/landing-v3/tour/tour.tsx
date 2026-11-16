@@ -11,7 +11,7 @@ import { TourCard } from "./tour-card";
 
 /**
  * The pinned scroll tour. Scroll position comes from motion's `useScroll` over a tall section whose inner stage is
- * `position: sticky` (no GSAP: the swipe stack already uses motion, so there is one animation library on the page).
+ * `position: sticky` (no GSAP: the card stack already uses motion, so there is one animation library on the page).
  * On phones and under reduced motion the four stages are static frames, one under the other.
  */
 export function ScrollTour({ card, trace = null }: { card: StackCardModel | null; trace?: TraceDemo | null }) {

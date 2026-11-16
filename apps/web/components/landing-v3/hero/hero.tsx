@@ -5,7 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { Toaster } from "@/components/shadcn/sonner";
 import { Button } from "@/components/shadcn/button";
 import type { StackCardModel } from "../stack/cards";
-import { SwipeStack } from "../stack/swipe-stack";
+import { CardStack } from "../stack/card-stack";
 import { Backdrop } from "./backdrop";
 import type { RoadShot } from "./road";
 import { useReduced } from "../stack/use-reduced";
@@ -61,25 +61,32 @@ export function Hero({ cards, shots, start, counts }: { cards: StackCardModel[];
   const sign = top ? { company: top.company, role: top.title } : IDLE_SIGN;
 
   return (
-    <section ref={ref} aria-label="Swipe right. We fill it in." data-testid="hero" className="relative isolate min-h-svh overflow-hidden text-white">
+    <section ref={ref} aria-label="Tap Apply. We fill it in." data-testid="hero" className="relative isolate min-h-svh overflow-hidden text-white">
       <Backdrop shots={shots} start={start} sign={sign} x={reduce ? nx : photoX} y={reduce ? ny : photoY} />
 
       <div className="relative mx-auto grid min-h-svh w-full max-w-[1320px] grid-cols-[minmax(0,1fr)] content-end items-end gap-8 px-5 pt-[256px] md:pt-[340px] pb-8 max-lg:gap-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-16 md:px-10 lg:pt-24">
         <div className="flex flex-col gap-4 lg:gap-5">
           <h1 className="t-display max-lg:text-[42px]" data-testid="hero-h1">
-            Swipe right.
+            Tap Apply.
             <br />
             We fill it in.
           </h1>
           <p className="t-statement text-white/90 max-lg:text-[16px]" data-testid="hero-subline">
-            You approve every application. 4 seconds to undo.
+            Try it on real roles below. Early access opens soon.
           </p>
           <div className="flex flex-col gap-3 lg:gap-4">
-            <Button asChild size="lg" className="self-start">
-              <a href="#start" data-testid="hero-start">
-                Start free
-              </a>
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <a href="#start" data-testid="hero-start">
+                  Get early access
+                </a>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="text-white">
+                <a href="/jobs" data-testid="hero-jobs">
+                  Browse live jobs
+                </a>
+              </Button>
+            </div>
             <p className="t-small flex flex-wrap gap-x-2 text-[#c4cdc4]" data-testid="live-counts">
               <span>{counts.roles} live roles</span>
               <span aria-hidden>·</span>
@@ -95,7 +102,7 @@ export function Hero({ cards, shots, start, counts }: { cards: StackCardModel[];
         </div>
 
         <motion.div style={reduce ? undefined : { x: cardX, y: cardY }} className="w-full">
-          <SwipeStack cards={cards} onTopChange={onTop} />
+          <CardStack cards={cards} onTopChange={onTop} />
         </motion.div>
       </div>
 

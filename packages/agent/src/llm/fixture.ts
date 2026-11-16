@@ -21,7 +21,7 @@ export class FixtureProvider implements LlmProvider {
     const base = {
       purpose: req.purpose, model: DEFAULT_MODEL, mode: 'fixture' as const,
       inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0,
-      latencyMs: 0, batchSize: req.items.length,
+      latencyMs: 0, batchSize: req.items.length, estCostUsd: 0,
     };
     if (!checked.success) {
       await safeRecord(this.sink, { ...base, status: 'parse_failed' });

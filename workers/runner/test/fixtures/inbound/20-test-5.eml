@@ -1,0 +1,14 @@
+From: Banyan Logistics Recruiting <jobs@banyanlogistics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=banyanlogistics.example.test; dmarc=pass header.from=banyanlogistics.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Wed, 28 Oct 2026 05:13:00 GMT
+Message-ID: <corpus-20@banyanlogistics.example.test>
+MIME-Version: 1.0
+Subject: Your Codility test for Backend Developer
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+SGVsbG8gSW1yYW4sIHlvdXIgQ29kaWxpdHkgdGVzdCBmb3IgQmFja2VuZCBEZXZlbG9wZXIgaXMg
+cmVhZHkuIFlvdSBoYXZlIDcgZGF5cyB0byBzdGFydCBpdCwgYW5kIG9uY2Ugc3RhcnRlZCB5b3Ug
+d2lsbCBoYXZlIDIgaG91cnMuIExpbms6IGh0dHBzOi8vY29kaWxpdHkuZXhhbXBsZS50ZXN0L2Jh
+bnlhbmxvZ2lzdGljcy9pbnZpdGUvNzc=

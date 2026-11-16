@@ -1,0 +1,31 @@
+From: Helio Games Recruiting <jobs@heliogames.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=heliogames.example.test; dmarc=pass header.from=heliogames.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 11:52:00 GMT
+Message-ID: <corpus-17@heliogames.example.test>
+MIME-Version: 1.0
+Subject: Coding challenge - Data Analyst
+Content-Type: multipart/alternative; boundary="alt_16_boundary"
+
+--alt_16_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Dear Asha,
+
+You are invited to take a 90 minute coding challenge as part of the Data An=
+alyst selection. Link: https://tests.example.test/heliogames/c/42. Please a=
+ttempt it before Tuesday 4 November.
+
+Regards,
+Hiring Team
+--alt_16_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PHA+RGVhciBBc2hhLDwvcD48YnI+CjxwPllvdSBhcmUgaW52aXRlZCB0byB0
+YWtlIGEgOTAgbWludXRlIGNvZGluZyBjaGFsbGVuZ2UgYXMgcGFydCBvZiB0aGUgRGF0YSBBbmFs
+eXN0IHNlbGVjdGlvbi4gTGluazogaHR0cHM6Ly90ZXN0cy5leGFtcGxlLnRlc3QvaGVsaW9nYW1l
+cy9jLzQyLiBQbGVhc2UgYXR0ZW1wdCBpdCBiZWZvcmUgVHVlc2RheSA0IE5vdmVtYmVyLjwvcD48
+YnI+CjxwPlJlZ2FyZHMsPGJyPgpIaXJpbmcgVGVhbTwvcD48L2JvZHk+PC9odG1sPg==
+--alt_16_boundary--

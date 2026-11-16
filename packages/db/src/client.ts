@@ -33,6 +33,42 @@ export async function withAdmin<T>(fn: (client: PoolClient) => Promise<T>): Prom
   }
 }
 
+/** Runs `fn` with the session role switched to `role`, then switches back. A client that cannot be reset is discarded. */
+export async function runAsRole<C extends { query: (sql: string) => Promise<unknown> }, T>(
+  client: C,
+  role: 'hirelane_auth',
+  fn: (client: C) => Promise<T>,
+): Promise<{ result: T; reset: boolean }> {
+  await client.query(`SET ROLE ${role}`);
+  try {
+    return { result: await fn(client), reset: await client.query('RESET ROLE').then(() => true, () => false) };
+  } catch (error) {
+    await client.query('RESET ROLE').catch(() => undefined);
+    throw error;
+  }
+}
+
+/**
+ * Auth work (sessions, OTP, identities, sign-up, account delete) as the narrow `hirelane_auth` role. Unlike withAdmin it
+ * is not the table owner: it can reach only the auth tables, so a bug in apps/web/lib/auth cannot read or change
+ * anything else. The role is session-level, so the callback may run its own BEGIN/COMMIT.
+ */
+export async function withAuth<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  const client = await getPool().connect();
+  let discard = true;
+  try {
+    const { result, reset } = await runAsRole(client, 'hirelane_auth', fn);
+    discard = !reset;
+    return result;
+  } catch (error) {
+    // After a failure the connection state is unknown; do not hand it back to the pool still holding a role.
+    discard = true;
+    throw error;
+  } finally {
+    client.release(discard);
+  }
+}
+
 /**
  * Run work in a transaction as the unprivileged `hirelane_app` role with the user context set.
  *

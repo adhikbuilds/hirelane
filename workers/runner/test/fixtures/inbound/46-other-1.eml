@@ -1,0 +1,21 @@
+From: Tamarind Cloud Recruiting <jobs@tamarindcloud.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=tamarindcloud.example.test; dmarc=pass header.from=tamarindcloud.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Tue, 27 Oct 2026 04:15:00 GMT
+Message-ID: <corpus-46@tamarindcloud.example.test>
+MIME-Version: 1.0
+Subject: We received your application
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><p>Hi Karthik,</p><br>
+<p>Thank you for applying to QA Engineer at Tamarind Cloud. This is an auto=
+mated message to confirm we have received your application. Please do not r=
+eply to this email.</p><br>
+<p>If your profile matches our requirements, a recruiter will contact you.<=
+/p><br>
+<p>-- <br>
+Priya Nair<br>
+Talent Acquisition | Tamarind Cloud<br>
+"Unfortunately, we cannot guarantee replies to every email, so please be ki=
+nd to the planet and think before you print."</p></body></html>

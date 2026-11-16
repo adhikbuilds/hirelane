@@ -1,0 +1,22 @@
+From: Saffron Retail Recruiting <jobs@saffronretail.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=saffronretail.example.test; dmarc=pass header.from=saffronretail.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 12:11:00 GMT
+Message-ID: <corpus-54@saffronretail.example.test>
+MIME-Version: 1.0
+Subject: Documents needed for onboarding
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Dear Karthik,
+
+Please upload the following documents to the onboarding portal: educational=
+ certificates, a photo ID and bank details. Our HR operations team is avail=
+able if you need help.
+
+Thanks,
+Lata
+
+--=20
+Lata Iyer
+People Operations, Saffron Retail

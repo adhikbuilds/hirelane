@@ -1,0 +1,16 @@
+From: Quartz Health Recruiting <jobs@quartzhealth.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=quartzhealth.example.test; dmarc=pass header.from=quartzhealth.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Tue, 27 Oct 2026 10:54:00 GMT
+Message-ID: <corpus-43@quartzhealth.example.test>
+MIME-Version: 1.0
+Subject: Candidate update
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Dear Meera,
+
+Unfortunately we are not able to move your application forward. Should a suitable role open up we will let you know.
+
+Best,
+Meera

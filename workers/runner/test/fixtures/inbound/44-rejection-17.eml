@@ -1,0 +1,21 @@
+From: Saffron Retail Recruiting <jobs@saffronretail.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=saffronretail.example.test; dmarc=pass header.from=saffronretail.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 11:01:00 GMT
+Message-ID: <corpus-44@saffronretail.example.test>
+MIME-Version: 1.0
+Subject: About your application
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hello Imran,
+
+I wanted to let you know personally that we won't be hiring you for Backend=
+ Developer. Our needs changed this quarter and the headcount was cancelled.
+
+Sorry to disappoint,
+Sam
+
+--=20
+Sam Thomas, Recruiting Coordinator
+P.S. Unfortunately our office is closed on public holidays.

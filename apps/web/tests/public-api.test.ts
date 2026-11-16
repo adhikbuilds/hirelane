@@ -352,11 +352,13 @@ describe("rate limiting", () => {
     }
   });
 
-  it("fails open when the limiter itself is down", async () => {
+  it("answers a visible 429 busy with Retry-After when the limiter itself is down (fails closed)", async () => {
     limiterBroken = true;
     try {
       const res = await get("role=design");
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(429);
+      expect(Number(res.headers.get("retry-after"))).toBeGreaterThanOrEqual(1);
+      expect((await res.json()).error.code).toBe("busy");
     } finally {
       limiterBroken = false;
     }

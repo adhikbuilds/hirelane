@@ -1,0 +1,29 @@
+From: Brightpath Systems Recruiting <jobs@brightpathsystems.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=brightpathsystems.example.test; dmarc=pass header.from=brightpathsystems.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 11:49:00 GMT
+Subject: HR round on Friday 14 November [ref
+ BRIGHTPATHSYSTEMS-2026-1007] (candidate communication from the
+ recruitment desk)
+Message-ID: <corpus-08@brightpathsystems.example.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mixed_7_boundary"
+
+--mixed_7_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Dear Candidate,
+
+You have cleared the written screening. The HR round with Brightpath Systems will be held on Friday 14 November at our Pune office. Kindly carry a printed copy of your resume and your college ID.
+
+Regards,
+HR
+--mixed_7_boundary
+Content-Type: text/plain; name="notes.txt"
+Content-Disposition: attachment; filename="notes.txt"
+Content-Transfer-Encoding: base64
+
+QXR0YWNobWVudCB0ZXh0OiBpbnRlcnZpZXcgb2ZmZXIgcmVqZWN0ZWQgdGVzdCB1bmZvcnR1bmF0
+ZWx5
+--mixed_7_boundary--

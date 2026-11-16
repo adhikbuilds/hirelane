@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const toastSpy = vi.hoisted(() => vi.fn());
 vi.mock("sonner", () => ({ toast: toastSpy, Toaster: () => null }));
 
-import { SwipeStack } from "../components/landing-v3/stack/swipe-stack";
+import { CardStack } from "../components/landing-v3/stack/card-stack";
 import { buildStackCards, needsFor } from "../components/landing-v3/stack/cards";
 import type { DemoJob } from "../components/landing/types";
 
@@ -40,10 +40,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("SwipeStack", () => {
+describe("CardStack", () => {
   it("shows the top card with the next two cards queued behind it by company and role", () => {
     const [a, b, c, d] = pick(false, 4);
-    render(<SwipeStack cards={deck([a!, b!, c!, d!])} />);
+    render(<CardStack cards={deck([a!, b!, c!, d!])} />);
     expect(current()).toBe(a);
     const behind = screen.getAllByTestId("behind-card");
     expect(behind).toHaveLength(2);
@@ -54,7 +54,7 @@ describe("SwipeStack", () => {
 
   it("passes with P or the left arrow, announces it, and offers undo", () => {
     const [a, b, c] = pick(false, 3);
-    render(<SwipeStack cards={deck([a!, b!, c!])} />);
+    render(<CardStack cards={deck([a!, b!, c!])} />);
     press("p");
     expect(current()).toBe(b);
     expect(screen.getByTestId("live-region")).toHaveTextContent(`Passed Role ${a} at Co ${a}.`);
@@ -65,7 +65,7 @@ describe("SwipeStack", () => {
 
   it("approves with A or the right arrow when nothing needs an answer, with the 4 second undo bar", () => {
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     press("a");
     expect(current()).toBe(b);
     expect(screen.getByTestId("live-region")).toHaveTextContent(`Approved Role ${a} at Co ${a}. Sending in 4 seconds. Press U to undo.`);
@@ -74,7 +74,7 @@ describe("SwipeStack", () => {
 
   it("U brings the same card back", async () => {
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     press("ArrowRight");
     expect(current()).toBe(b);
     press("u");
@@ -84,7 +84,7 @@ describe("SwipeStack", () => {
 
   it("the Undo button works too", () => {
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     fireEvent.click(screen.getByRole("button", { name: "Pass" }));
     expect(current()).toBe(b);
     fireEvent.click(within(screen.getByTestId("undo-bar")).getByRole("button", { name: /Undo/ }));
@@ -93,7 +93,7 @@ describe("SwipeStack", () => {
 
   it("the Needs-you gate refuses approve, focuses the field and shows the message", () => {
     const [a, b] = pick(true, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     press("a");
     expect(current()).toBe(a);
     expect(screen.queryByTestId("undo-bar")).toBeNull();
@@ -103,13 +103,13 @@ describe("SwipeStack", () => {
     press("Escape");
     fireEvent.click(within(top()).getAllByRole("button", { name: /^(Immediately|30 days|60 days|I am authorised|Need sponsorship|This month|Next month|In 3 months)$/ })[0]!);
     expect(screen.queryByRole("alert")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     expect(current()).toBe(b);
   });
 
   it("typing in the Needs-you field never triggers the shortcuts", () => {
     const [a] = pick(true, 1);
-    render(<SwipeStack cards={deck([a!, "x1", "x2"])} />);
+    render(<CardStack cards={deck([a!, "x1", "x2"])} />);
     const input = within(top()).getByTestId("needs-field").querySelector("input")!;
     fireEvent.keyDown(input, { key: "p" });
     fireEvent.keyDown(input, { key: "a" });
@@ -119,7 +119,7 @@ describe("SwipeStack", () => {
   it("makes no network request on approve, undo, or when the undo window runs out", () => {
     vi.useFakeTimers();
     const [a, b, c] = pick(false, 3);
-    render(<SwipeStack cards={deck([a!, b!, c!])} />);
+    render(<CardStack cards={deck([a!, b!, c!])} />);
     press("a");
     press("u");
     press("a");
@@ -131,7 +131,7 @@ describe("SwipeStack", () => {
   it("does not hand off a card whose approve was undone", () => {
     vi.useFakeTimers();
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     press("a");
     press("u");
     act(() => void vi.advanceTimersByTime(5000));
@@ -140,7 +140,7 @@ describe("SwipeStack", () => {
 
   it("Space opens details on a phone as a sheet, with every requirement, the pay trace and a safe link", () => {
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     screen.getByTestId("demo").focus();
     fireEvent.keyDown(screen.getByTestId("demo"), { key: " " });
     const dlg = screen.getByRole("dialog");
@@ -157,24 +157,24 @@ describe("SwipeStack", () => {
   it("Space opens the expanding panel on desktop, and Escape closes it", async () => {
     setDesktop(true);
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     fireEvent.keyDown(screen.getByTestId("demo"), { key: " " });
     const panel = screen.getByTestId("details-panel");
-    expect(within(panel).getByRole("button", { name: "Approve" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Apply" })).toBeInTheDocument();
     fireEvent.keyDown(panel, { key: "Escape" });
     await waitFor(() => expect(screen.queryByTestId("details-panel")).toBeNull());
   });
 
   it("does not hijack Space when focus is elsewhere on the page", () => {
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     fireEvent.keyDown(document.body, { key: " " });
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("ends with real tallies, a Start with your resume link and Start over", () => {
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     press("a");
     press("p");
     const end = screen.getByTestId("end-of-queue");
@@ -187,7 +187,7 @@ describe("SwipeStack", () => {
   it("reports the top card so the road sign can follow", () => {
     const onTop = vi.fn();
     const [a, b] = pick(false, 2);
-    render(<SwipeStack cards={deck([a!, b!])} onTopChange={onTop} />);
+    render(<CardStack cards={deck([a!, b!])} onTopChange={onTop} />);
     expect(onTop).toHaveBeenLastCalledWith(expect.objectContaining({ slug: a }));
     press("p");
     expect(onTop).toHaveBeenLastCalledWith(expect.objectContaining({ slug: b }));
@@ -195,16 +195,16 @@ describe("SwipeStack", () => {
 
   it("shows the first-visit hint once and remembers it", () => {
     const [a, b] = pick(false, 2);
-    const { unmount } = render(<SwipeStack cards={deck([a!, b!])} />);
-    expect(screen.getByTestId("stack-caption")).toHaveTextContent("Swipe right to approve, left to pass. Or use A and P.");
-    expect(localStorage.getItem("hirelane:swipe-hint")).toBe("1");
+    const { unmount } = render(<CardStack cards={deck([a!, b!])} />);
+    expect(screen.getByTestId("stack-caption")).toHaveTextContent("Tap Apply to approve, Pass to skip. Or use A and P.");
+    expect(localStorage.getItem("hirelane:card-hint")).toBe("1");
     unmount();
-    render(<SwipeStack cards={deck([a!, b!])} />);
+    render(<CardStack cards={deck([a!, b!])} />);
     expect(screen.getByTestId("stack-caption")).toHaveTextContent("Demo: nothing is sent.");
   });
 
   it("copes with an empty deck", () => {
-    render(<SwipeStack cards={[]} />);
+    render(<CardStack cards={[]} />);
     expect(screen.getByTestId("demo")).toHaveAttribute("data-current-slug", "");
   });
 });

@@ -4,10 +4,11 @@ import { useEffect, useRef, useState, type DragEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Check, FileText, Lock, RotateCcw, UploadCloud } from "lucide-react";
 import { REJECTION_TEXT, validatePdf, type DropRejection } from "../../ui/DropZone";
-import { PARSE_FIXTURE, PARSE_STEPS } from "../../landing/resume-drop";
+import { PARSE_FIXTURE, PARSE_STEPS } from "./parse-fixture";
 import { Button } from "@/components/shadcn/button";
 import { cn } from "@/lib/utils";
 import { PANEL, PhotoBackdrop, Rise } from "./panel";
+import { WaitlistForm } from "./waitlist-form";
 
 type Stage = "idle" | "parsing" | "done";
 
@@ -142,6 +143,12 @@ export function StartPanelView({ photoSrc = "/landing/road-1800.jpg" }: { photoS
               <p id="start-error" role="alert" className={cn("t-small mt-3 font-bold text-foreground", !error && "sr-only")}>
                 {error ? REJECTION_TEXT[error] : ""}
               </p>
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <p className="t-body font-bold">Or skip the sample. Accounts open soon, and we&apos;ll email you once, when they do.</p>
+                <div className="mt-4">
+                  <WaitlistForm source="landing" />
+                </div>
+              </div>
             </div>
           ) : (
             <div data-testid="resume-parse" data-ui>
@@ -151,7 +158,7 @@ export function StartPanelView({ photoSrc = "/landing/road-1800.jpg" }: { photoS
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold">{fileName}</p>
-                  <p className="t-small text-muted-foreground">Sample preview. Your file isn&apos;t read.</p>
+                  <p className="t-small text-muted-foreground">Sample preview. Your file stays on your device and isn&apos;t read.</p>
                 </div>
               </div>
               <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
@@ -168,7 +175,10 @@ export function StartPanelView({ photoSrc = "/landing/road-1800.jpg" }: { photoS
                   <AnimatePresence>
                     {shown(0) && (
                       <motion.div initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                        <p className="t-statement font-extrabold">{PARSE_FIXTURE.name}</p>
+                        <p className="t-statement font-extrabold">
+                          <span className="t-small mr-2 rounded-full bg-white/15 px-2 py-0.5 align-middle font-bold uppercase tracking-wide">Sample</span>
+                          {PARSE_FIXTURE.name}
+                        </p>
                         <p className="t-small text-muted-foreground">{PARSE_FIXTURE.headline}</p>
                       </motion.div>
                     )}
@@ -207,13 +217,13 @@ export function StartPanelView({ photoSrc = "/landing/road-1800.jpg" }: { photoS
                     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className="mt-6"
                   >
-                    <p className="t-body font-bold">Create your account to save this. Coming in the next release.</p>
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                      <Button disabled size="lg">Create your account</Button>
-                      <Button variant="ghost" size="lg" onClick={reset} className="active:scale-95">
-                        <RotateCcw aria-hidden /> Try another PDF
-                      </Button>
+                    <p className="t-body font-bold">Accounts open soon. Join early access and we&apos;ll email you once, when they do.</p>
+                    <div className="mt-4">
+                      <WaitlistForm source="landing" />
                     </div>
+                    <Button variant="ghost" size="lg" onClick={reset} className="mt-3 active:scale-95">
+                      <RotateCcw aria-hidden /> Try another PDF
+                    </Button>
                   </motion.div>
                 )}
               </AnimatePresence>

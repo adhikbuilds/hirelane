@@ -93,6 +93,10 @@ export function JobBoard({ initialRows, initialPreviews, total, page, hasMore: i
     startLoad(async () => {
       try {
         const res = await loadMoreJobs(qs, lastPage + 1);
+        if (res.busy) {
+          setFailed(true);
+          return;
+        }
         setRows((cur) => {
           const seen = new Set(cur.map((r) => r.slug));
           return [...cur, ...res.rows.filter((r) => !seen.has(r.slug))];

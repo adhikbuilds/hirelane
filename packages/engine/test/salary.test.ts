@@ -11,6 +11,7 @@ import {
   parseSalary,
   parseSalaryTraced,
   salaryCues,
+  isSalaryStated,
   type SalaryParse,
   type StructuredComp,
 } from '../src/salary';
@@ -579,5 +580,33 @@ describe('trace headroom', () => {
     expect(r.filter((x) => x.startsWith('salary.fx.')).length).toBeGreaterThanOrEqual(2);
     expect(r).not.toContain('trace.truncated');
     expect(isTrace(n.trace)).toBe(true);
+  });
+});
+
+describe('isSalaryStated (A3: stated only with an amount)', () => {
+  const parse = (min: number | null, max: number | null) => ({ minMinor: min, maxMinor: max });
+  it('is false with no parse and no structured amount', () => {
+    expect(isSalaryStated(null, null)).toBe(false);
+    expect(isSalaryStated(undefined, undefined)).toBe(false);
+  });
+  it('is false for a parse that carries no amount', () => {
+    expect(isSalaryStated(parse(null, null), null)).toBe(false);
+    expect(isSalaryStated(parse(0, 0), null)).toBe(false);
+  });
+  it('is true when min or max exists', () => {
+    expect(isSalaryStated(parse(100, null), null)).toBe(true);
+    expect(isSalaryStated(parse(null, 100), null)).toBe(true);
+  });
+  it('uses structured min or max, and ignores a structured block with neither', () => {
+    const sc = (min: number | null, max: number | null) => ({ min, max });
+    expect(isSalaryStated(null, sc(50000, null))).toBe(true);
+    expect(isSalaryStated(null, sc(null, 90000))).toBe(true);
+    expect(isSalaryStated(null, sc(null, null))).toBe(false);
+    expect(isSalaryStated(null, sc(0, 0))).toBe(false);
+  });
+  it('is not driven by a bare cue word such as "compensation"', () => {
+    const text = 'Competitive compensation and equity. Benefits include health.';
+    expect(salaryCues(text).length).toBeGreaterThan(0);
+    expect(isSalaryStated(parseSalary(text, null, { countries: ['US'] }), null)).toBe(false);
   });
 });

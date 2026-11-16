@@ -1,0 +1,15 @@
+From: Orchid Payments Recruiting <jobs@orchidpayments.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=orchidpayments.example.test; dmarc=pass header.from=orchidpayments.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 05:16:00 GMT
+Message-ID: <corpus-29@orchidpayments.example.test>
+MIME-Version: 1.0
+Subject: Your application to Orchid Payments
+Content-Type: text/plain; charset=us-ascii
+
+Dear Divya,
+
+Unfortunately, we will not be moving forward with your application for Data Analyst at this time. We appreciate the time you invested.
+
+Regards,
+Talent Team

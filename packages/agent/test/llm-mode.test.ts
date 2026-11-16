@@ -25,11 +25,11 @@ describe('resolveLlmMode', () => {
 });
 
 describe('resolveModels', () => {
-  it('defaults every tier to claude-opus-5-5', () => {
-    expect(resolveModels({})).toEqual({ draft: 'claude-opus-5-5', bulk: 'claude-opus-5-5' });
+  it('defaults draft to claude-sonnet-5-5 and bulk to claude-haiku-5-5', () => {
+    expect(resolveModels({})).toEqual({ draft: 'claude-sonnet-5-5', bulk: 'claude-haiku-5-5' });
   });
   it('reads overrides', () => {
-    expect(resolveModels({ HIRELANE_MODEL_BULK: 'x', HIRELANE_MODEL_DRAFT: 'y' })).toEqual({ draft: 'y', bulk: 'x' });
+    expect(resolveModels({ HIRELANE_MODEL_BULK: 'claude-sonnet-5-5', HIRELANE_MODEL_DRAFT: 'claude-haiku-5-5' })).toEqual({ draft: 'claude-haiku-5-5', bulk: 'claude-sonnet-5-5' });
   });
 });
 

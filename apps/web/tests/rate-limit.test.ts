@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { applyMigrations, close, withAdmin } from "@hirelane/db";
-import { checkRateLimit, clientIp, trustProxyHops } from "../lib/rate-limit";
+import { checkRateLimit, clientIp, guardedLimit, isLocalKey, scaledLimit, trustProxyHops } from "../lib/rate-limit";
 
 const h = (xff?: string) => new Headers(xff === undefined ? {} : { "x-forwarded-for": xff });
 
@@ -22,7 +22,7 @@ describe("trustProxyHops", () => {
 describe("clientIp", () => {
   it("with 0 hops never reads X-Forwarded-For, even when a client sends one", () => {
     expect(clientIp(h("9.9.9.9"), { hops: 0, socketAddress: "10.0.0.7" })).toBe("10.0.0.7");
-    expect(clientIp(h("9.9.9.9"), { hops: 0 })).toBe("unknown");
+    expect(clientIp(h("9.9.9.9"), { hops: 0 })).toBe("local");
     expect(clientIp(h(), { hops: 0, socketAddress: "10.0.0.7" })).toBe("10.0.0.7");
   });
 
@@ -32,12 +32,12 @@ describe("clientIp", () => {
     expect(clientIp(h("5.6.7.8"), { hops: 1 })).toBe("5.6.7.8");
   });
 
-  it("is unknown when the chain is shorter than the trusted hops, or the entry is not an IP", () => {
-    expect(clientIp(h("5.6.7.8"), { hops: 2 })).toBe("unknown");
-    expect(clientIp(h(), { hops: 1 })).toBe("unknown");
-    expect(clientIp(h("1.1.1.1, not-an-ip"), { hops: 1 })).toBe("unknown");
-    expect(clientIp(h("1.1.1.1, 999.1.1.1"), { hops: 1 })).toBe("unknown");
-    expect(clientIp(h(""), { hops: 1 })).toBe("unknown");
+  it("falls back to the local key (never the spoofable entry) when the chain is shorter than the trusted hops, or the entry is not an IP", () => {
+    expect(clientIp(h("5.6.7.8"), { hops: 2 })).toBe("local");
+    expect(clientIp(h(), { hops: 1 })).toBe("local");
+    expect(clientIp(h("1.1.1.1, not-an-ip"), { hops: 1 })).toBe("local");
+    expect(clientIp(h("1.1.1.1, 999.1.1.1"), { hops: 1 })).toBe("local");
+    expect(clientIp(h(""), { hops: 1 })).toBe("local");
   });
 
   it("normalises IPv4-mapped IPv6, ports and surrounding space", () => {
@@ -53,6 +53,75 @@ describe("clientIp", () => {
     expect(b).toBe(a);
     expect(clientIp(h("2001:db8:1:3::1"), { hops: 1 })).not.toBe(a);
     expect(clientIp(h("::1"), { hops: 1 })).toBe("0:0:0:0::/64");
+  });
+});
+
+describe("clientIp without a proxy count (SEC-1)", () => {
+  const prod = { NODE_ENV: "production" };
+  const dev = { NODE_ENV: "development" };
+  const hdr = (o: Record<string, string>) => new Headers(o);
+
+  const trusted = { NODE_ENV: "production", TRUST_X_REAL_IP: "1" };
+
+  it("trusts x-real-ip only when TRUST_X_REAL_IP=1", () => {
+    expect(clientIp(hdr({ "x-real-ip": "5.6.7.8", "x-forwarded-for": "9.9.9.9" }), { hops: 0, env: trusted })).toBe("5.6.7.8");
+    expect(clientIp(hdr({ "x-real-ip": "2001:db8:1:2::9" }), { hops: 0, env: trusted })).toBe("2001:db8:1:2::/64");
+  });
+
+  it("never reads a client-supplied x-real-ip without the opt-in (no fresh bucket per request)", () => {
+    const a = clientIp(hdr({ "x-real-ip": "5.6.7.8", "user-agent": "u" }), { hops: 0, env: prod });
+    const b = clientIp(hdr({ "x-real-ip": "5.6.7.9", "user-agent": "u" }), { hops: 0, env: prod });
+    expect(a).toMatch(/^anon:/);
+    expect(a).toBe(b);
+    expect(clientIp(hdr({ "x-real-ip": "5.6.7.8" }), { hops: 0, env: dev })).toBe("local");
+    // hops configured does not turn x-real-ip on
+    expect(clientIp(hdr({ "x-real-ip": "7.7.7.7", "x-forwarded-for": "1.1.1.1, 5.6.7.8" }), { hops: 1, env: prod })).toBe("5.6.7.8");
+    expect(clientIp(hdr({ "x-real-ip": "7.7.7.7" }), { hops: 0, env: { ...prod, TRUST_X_REAL_IP: "0" } })).toMatch(/^anon:/);
+  });
+
+  it("ignores a malformed x-real-ip and falls through to the hop-based chain", () => {
+    expect(clientIp(hdr({ "x-real-ip": "nope", "x-forwarded-for": "1.1.1.1, 5.6.7.8" }), { hops: 1, env: trusted })).toBe("5.6.7.8");
+  });
+
+  it("uses the socket address before any fallback", () => {
+    expect(clientIp(hdr({}), { hops: 0, socketAddress: "10.0.0.7", env: prod })).toBe("10.0.0.7");
+  });
+
+  it("in development/test with no address uses a shared local key, not 'unknown'", () => {
+    expect(clientIp(hdr({}), { hops: 0, env: dev })).toBe("local");
+    expect(clientIp(hdr({}), { hops: 0, env: { NODE_ENV: "test" } })).toBe("local");
+    expect(isLocalKey("local")).toBe(true);
+    expect(isLocalKey("5.6.7.8")).toBe(false);
+  });
+
+  it("in production never collapses to one global bucket: buckets by a header fingerprint", () => {
+    const a = clientIp(hdr({ "user-agent": "curl/8", "accept-language": "en" }), { hops: 0, env: prod });
+    const b = clientIp(hdr({ "user-agent": "Mozilla/5.0", "accept-language": "de" }), { hops: 0, env: prod });
+    expect(a).toMatch(/^anon:[0-9a-f]{16}$/);
+    expect(b).toMatch(/^anon:[0-9a-f]{16}$/);
+    expect(a).not.toBe(b);
+    expect(clientIp(hdr({ "user-agent": "curl/8", "accept-language": "en" }), { hops: 0, env: prod })).toBe(a);
+    expect(a).not.toBe("unknown");
+    expect(isLocalKey(a)).toBe(false);
+  });
+
+  it("scaledLimit widens the budget only for the local key", () => {
+    expect(scaledLimit("local", 60)).toBeGreaterThan(60);
+    expect(scaledLimit("5.6.7.8", 60)).toBe(60);
+  });
+});
+
+describe("guardedLimit (SEC-5)", () => {
+  it("passes a normal result through", async () => {
+    const ok = { allowed: true, limit: 5, remaining: 4, retryAfter: 1, resetAt: new Date() };
+    expect(await guardedLimit(async () => ok)).toBe(ok);
+  });
+
+  it("turns a limiter failure into a typed busy result, without leaking the error", async () => {
+    const r = await guardedLimit(async () => { throw new Error("password=hunter2"); }, { log: () => {} });
+    expect(r).toMatchObject({ allowed: false, busy: true });
+    expect(r.retryAfter).toBeGreaterThanOrEqual(1);
+    expect(JSON.stringify(r)).not.toContain("hunter2");
   });
 });
 

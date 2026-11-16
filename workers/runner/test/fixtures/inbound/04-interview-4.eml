@@ -1,0 +1,22 @@
+From: Saffron Retail Recruiting <jobs@saffronretail.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=saffronretail.example.test; dmarc=pass header.from=saffronretail.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 07:21:00 GMT
+Message-ID: <corpus-04@saffronretail.example.test>
+MIME-Version: 1.0
+Subject: Quick phone screen?
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Imran,
+
+I'm a recruiter at Saffron Retail. I came across your application and would=
+ like to set up a short phone screen about the QA Engineer opening. What ti=
+mes work for you this week?
+
+Thanks,
+Sam
+
+--=20
+Sam Thomas, Recruiting Coordinator
+P.S. Unfortunately our office is closed on public holidays.

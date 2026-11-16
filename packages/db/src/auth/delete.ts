@@ -1,0 +1,35 @@
+import { revokeAllSessions, type Queryable } from './sessions.js';
+
+export interface DeleteAccountResult {
+  deleted: boolean;
+  sessionsRevoked: number;
+}
+
+export interface DeleteAccountHooks {
+  /** Deletes every stored file of the user (resume originals). Must throw if any file could not be removed. */
+  purgeBlobs?: (userId: string) => Promise<void>;
+}
+
+/**
+ * Account deletion (DPDP erasure). Order matters: sessions are revoked first, so no cookie can act on the
+ * account while the delete is in flight, then the users row goes and the foreign keys cascade through
+ * identities, sessions, consents, events and idempotency keys. Run it on a single connection (withAdmin).
+ * Resume files are removed through `hooks.purgeBlobs` before the users DELETE; a failure rolls the delete back.
+ */
+export async function deleteAccount(q: Queryable, userId: string, now: Date = new Date(), hooks: DeleteAccountHooks = {}): Promise<DeleteAccountResult> {
+  await q.query('BEGIN');
+  try {
+    const sessionsRevoked = await revokeAllSessions(q, userId, now);
+    // Files go BEFORE the rows: once the users row cascades away, nothing can find the sealed originals again.
+    // If this throws, the whole delete rolls back and the caller can retry the erasure.
+    if (hooks.purgeBlobs) await hooks.purgeBlobs(userId);
+    // The waitlist keeps a plain email with no FK to users; erase it by lower(email) in the same transaction.
+    await q.query('SELECT erase_waitlist($1)', [userId]);
+    const r = await q.query('DELETE FROM users WHERE id = $1', [userId]);
+    await q.query('COMMIT');
+    return { deleted: (r.rowCount ?? 0) > 0, sessionsRevoked };
+  } catch (e) {
+    await q.query('ROLLBACK');
+    throw e;
+  }
+}

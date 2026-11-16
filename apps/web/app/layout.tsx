@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
-import { FooterGate } from "@/components/shell/FooterGate";
-import { SiteFooter } from "@/components/shell/SiteFooter";
-import { SiteHeader } from "@/components/shell/SiteHeader";
+import { SiteChrome } from "@/components/shell/SiteChrome";
 import "./globals.css";
 
 const overpass = localFont({
@@ -20,7 +18,7 @@ const overpass = localFont({
 
 export const metadata: Metadata = {
   title: { default: "hirelane", template: "%s | hirelane" },
-  description: "Open jobs from public company boards, matched to your resume, applied to with your approval.",
+  description: "Open jobs read straight from public company boards, with pay shown only when stated. Applications sent from Hirelane open with early access.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -30,13 +28,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <SiteHeader />
+        <SiteChrome part="header" />
         <main id="main" className="flex-1">
           {children}
         </main>
-        <FooterGate>
-          <SiteFooter />
-        </FooterGate>
+        <SiteChrome part="footer" />
       </body>
     </html>
   );

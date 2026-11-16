@@ -64,8 +64,11 @@ export async function seedBoards(boards: BoardConfig[]): Promise<SeededBoard[]> 
   return withAdmin(async (client) => {
     const out: SeededBoard[] = [];
     for (const config of boards) {
+      // db's seed type still lists the 3 ATS APIs; migration 0018 widened the column CHECK. Widen the type in
+      // packages/db/src/ingest/persist.ts (outside this change's scope) and drop the cast.
       const { boardId } = await upsertCompanyBoard(client, {
-        slug: config.slug, name: config.name, domain: config.domain, ats: config.ats, token: config.token, verifiedAt: config.verifiedAt,
+        slug: config.slug, name: config.name, domain: config.domain,
+        ats: config.ats as 'greenhouse' | 'lever' | 'ashby', token: config.token, verifiedAt: config.verifiedAt,
       });
       out.push({ id: boardId, ats: config.ats, token: config.token, config });
     }

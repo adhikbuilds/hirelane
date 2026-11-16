@@ -1,0 +1,823 @@
+{
+  "_readme": "Per-university CGPA to percentage rules (PRD E5). verified:false means the formula was entered from memory and has NOT been confirmed against the university's own notice: the engine uses such a row only after the student or the campus confirms it. source_url is the university's official site, to be replaced with the deep link to the regulation when verified. checked_on is the date the row was entered, not a fetch date, until check_method says fetched. pct = a * cgpa + b, clamped to 0..100. Version 2 (2026-10-31, recon docs/recon/cgpa-naac-sources-2026-10-31.md): a row may carry variants keyed by scheme or admission year (a and b are then null: there is no single formula), a disputed block (never converted; the student is told to use the marksheet percentage), source_urls, source_document and scope. source_url stays the single link the UI shows.",
+  "version": 2,
+  "rules": [
+    {
+      "id": "cbse",
+      "name": "CBSE (school boards, 9.5 rule)",
+      "short": "CBSE",
+      "aliases": [
+        "cbse",
+        "central board of secondary education"
+      ],
+      "kind": "linear",
+      "a": 9.5,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 9.5 x CGPA",
+      "applies_to": "school CGPA on a 10-point scale (not a university degree)",
+      "source_url": "https://www.cbse.gov.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "high",
+      "note": "Class 10 CGPA to percentage; the 9.5 multiplier is the long-standing CBSE circular. Applies to school CGPA, not to a university degree.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 76.0
+      }
+    },
+    {
+      "id": "vtu",
+      "name": "Visvesvaraya Technological University (VTU)",
+      "short": "VTU",
+      "aliases": [
+        "vtu",
+        "visvesvaraya technological university",
+        "visvesvaraya technological univ"
+      ],
+      "kind": "linear",
+      "a": null,
+      "b": null,
+      "scale": 10,
+      "formula": "percentage = (CGPA - 0.75) x 10 for the 2015, 2017 and 2018 schemes; percentage = CGPA x 10 for the 2021 and 2022 schemes",
+      "applies_to": "degree CGPA on a 10-point scale, by scheme",
+      "source_url": "https://knwdle.com/tools/vtu-cgpa-to-percentage-calculator",
+      "source_kind": "third_party_calculator_sites",
+      "checked_on": "2026-10-31",
+      "check_method": "third_party_consensus_regulation_cited",
+      "verified": false,
+      "confidence": "medium",
+      "note": "The formula depends on the scheme. 2015/2017/2018 schemes: (CGPA - 0.75) x 10. 2021/2022 schemes: CGPA x 10 (Regulations 2022, clause 22OB 6.7, as cited by third-party sites). 2026 passouts are expected to be on the 2022 scheme, but the passout year is not the scheme: the scheme or admission year must come from the student. Unknown scheme or an admission year not named here gives no verdict. Read VTU's own regulation before marking verified.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 72.5
+      },
+      "source_urls": [
+        "https://knwdle.com/tools/vtu-cgpa-to-percentage-calculator",
+        "https://www.cgpaconverter.in/blog/vtu-cgpa-calculator-guide.html"
+      ],
+      "variants": [
+        {
+          "id": "2015-2018",
+          "label": "2015, 2017 and 2018 schemes",
+          "schemes": [
+            "2015",
+            "2017",
+            "2018"
+          ],
+          "admission_years": [
+            2015,
+            2017,
+            2018
+          ],
+          "a": 10,
+          "b": -7.5,
+          "formula": "percentage = (CGPA - 0.75) x 10",
+          "example": {
+            "cgpa": 8.0,
+            "pct": 72.5
+          }
+        },
+        {
+          "id": "2021-2022",
+          "label": "2021 and 2022 schemes",
+          "schemes": [
+            "2021",
+            "2022"
+          ],
+          "admission_years": [
+            2021,
+            2022
+          ],
+          "a": 10,
+          "b": 0,
+          "formula": "percentage = CGPA x 10",
+          "example": {
+            "cgpa": 8.0,
+            "pct": 80.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "jntuh",
+      "name": "JNTU Hyderabad (JNTUH)",
+      "short": "JNTUH",
+      "aliases": [
+        "jntuh",
+        "jntu hyderabad",
+        "jawaharlal nehru technological university hyderabad"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": -5,
+      "scale": 10,
+      "formula": "percentage = (CGPA - 0.5) x 10",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://scholarkit.org/tools/cgpa-calculator/jntu/",
+      "source_kind": "third_party_calculator_sites",
+      "checked_on": "2026-10-31",
+      "check_method": "third_party_consensus_regulation_cited",
+      "verified": false,
+      "confidence": "high",
+      "note": "JNTUH: percentage = (CGPA - 0.5) x 10, clause 11.2 of the B.Tech regulations R16, R18 and R22, as quoted by third-party sites. Not read from JNTUH itself.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 75.0
+      },
+      "source_urls": [
+        "https://scholarkit.org/tools/cgpa-calculator/jntu/",
+        "https://mycgpatopercentage.in/jntuh-cgpa-to-percentage"
+      ]
+    },
+    {
+      "id": "jntuk",
+      "name": "JNTU Kakinada (JNTUK)",
+      "short": "JNTUK",
+      "aliases": [
+        "jntuk",
+        "jntu kakinada",
+        "jawaharlal nehru technological university kakinada"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": -5,
+      "scale": 10,
+      "formula": "percentage = (CGPA - 0.5) x 10",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://jntuk.edu.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "medium",
+      "note": "JNTUK: (CGPA - 0.5) x 10, as recalled.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 75.0
+      }
+    },
+    {
+      "id": "jntua",
+      "name": "JNTU Anantapur (JNTUA)",
+      "short": "JNTUA",
+      "aliases": [
+        "jntua",
+        "jntu anantapur",
+        "jawaharlal nehru technological university anantapur"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": -5,
+      "scale": 10,
+      "formula": "percentage = (CGPA - 0.5) x 10",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://jntua.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "medium",
+      "note": "JNTUA: (CGPA - 0.5) x 10, as recalled.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 75.0
+      }
+    },
+    {
+      "id": "gtu",
+      "name": "Gujarat Technological University (GTU)",
+      "short": "GTU",
+      "aliases": [
+        "gtu",
+        "gujarat technological university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": -5,
+      "scale": 10,
+      "formula": "percentage = (CGPA - 0.5) x 10",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.gtu.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "medium",
+      "note": "GTU: (CGPA - 0.5) x 10, as recalled.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 75.0
+      }
+    },
+    {
+      "id": "anna",
+      "name": "Anna University",
+      "short": "Anna University",
+      "aliases": [
+        "anna university",
+        "anna univ",
+        "au chennai"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://acoe.annauniv.edu/download_forms/student_forms/CGPA_TO_PERCENTAGE_CONVERSION.pdf",
+      "source_kind": "official_pdf",
+      "checked_on": "2026-10-31",
+      "check_method": "official_pdf_fetch_timed_out",
+      "verified": false,
+      "confidence": "medium",
+      "note": "Anna University: percentage = CGPA x 10, per Lr.No. 3452/AU/CAC/CGPA2020 dated 29.12.2020 (University Departments office, UG and PG, regulations R-2015, R-2018 and R-2019), found by search. The PDF fetch timed out on 2026-10-31, so the text was not read: recheck, then mark verified. R2021 and affiliated colleges are unconfirmed.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      },
+      "source_document": "Lr.No. 3452/AU/CAC/CGPA2020 dated 29.12.2020",
+      "scope": [
+        "R-2015",
+        "R-2018",
+        "R-2019"
+      ]
+    },
+    {
+      "id": "aktu",
+      "name": "Dr. A.P.J. Abdul Kalam Technical University (AKTU)",
+      "short": "AKTU",
+      "aliases": [
+        "aktu",
+        "uptu",
+        "apj abdul kalam technical university",
+        "dr a p j abdul kalam technical university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": -7.5,
+      "scale": 10,
+      "formula": "percentage = (CGPA - 0.75) x 10",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://knwdle.com/tools/aktu-cgpa-to-percentage-calculator",
+      "source_kind": "third_party_calculator_sites",
+      "checked_on": "2026-10-31",
+      "check_method": "third_party_consensus_ordinance_cited",
+      "verified": false,
+      "confidence": "medium",
+      "note": "AKTU: (CGPA - 0.75) x 10. Most third-party sources cite the B.Tech Ordinance 2018-19 section 15 (one says section 14); one outlier says -0.5. Not read from aktu.ac.in yet: fetch the ordinance before marking verified.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 72.5
+      },
+      "source_urls": [
+        "https://knwdle.com/tools/aktu-cgpa-to-percentage-calculator",
+        "https://academic.exammint.in/tools/aktu-cgpa-to-percentage-calculator/"
+      ]
+    },
+    {
+      "id": "rgpv",
+      "name": "Rajiv Gandhi Proudyogiki Vishwavidyalaya (RGPV)",
+      "short": "RGPV",
+      "aliases": [
+        "rgpv",
+        "rajiv gandhi proudyogiki vishwavidyalaya",
+        "rajiv gandhi technical university"
+      ],
+      "kind": "linear",
+      "a": 9.5,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 9.5 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.rgpv.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "RGPV: CGPA x 9.5, as recalled; check the current ordinance.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 76.0
+      }
+    },
+    {
+      "id": "mumbai",
+      "name": "University of Mumbai",
+      "short": "University of Mumbai",
+      "aliases": [
+        "mumbai university",
+        "university of mumbai",
+        "mu",
+        "bombay university"
+      ],
+      "kind": "linear",
+      "a": 7.1,
+      "b": 11,
+      "scale": 10,
+      "formula": "percentage = 7.1 x CGPA + 11",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://gradekar.com/cgpa-to-percentage/mumbai-university",
+      "source_kind": "third_party_calculator_sites",
+      "checked_on": "2026-10-31",
+      "check_method": "third_party_search_conflicting",
+      "verified": false,
+      "confidence": "low",
+      "note": "7.1 x CGPA + 11 is from Circular Exam/Com/97 of 2018 (CBCS). One third-party source says it was repealed from 1 Jan 2026 by Circular Exam/Result/803 of 2026, with conversion from raw marks instead. Engineering may differ. DISPUTED: never converted until mu.ac.in is read.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 67.8
+      },
+      "source_urls": [
+        "https://gradekar.com/cgpa-to-percentage/mumbai-university",
+        "https://knwdle.com/tools/mumbai-university-cgpa-to-percentage-calculator"
+      ],
+      "disputed": {
+        "since": "2026-01-01",
+        "reason": "Possibly repealed from 1 Jan 2026 by Circular Exam/Result/803 of 2026 (single third-party source); the original is Circular Exam/Com/97 of 2018.",
+        "message": "Use the percentage on your marksheet"
+      }
+    },
+    {
+      "id": "sppu",
+      "name": "Savitribai Phule Pune University (SPPU)",
+      "short": "SPPU",
+      "aliases": [
+        "sppu",
+        "pune university",
+        "savitribai phule pune university",
+        "university of pune"
+      ],
+      "kind": "linear",
+      "a": 7.1,
+      "b": 11,
+      "scale": 10,
+      "formula": "percentage = 7.1 x CGPA + 11",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.unipune.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "SPPU engineering: 7.1 x CGPA + 11, as recalled; other faculties differ.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 67.8
+      }
+    },
+    {
+      "id": "makaut",
+      "name": "Maulana Abul Kalam Azad University of Technology (MAKAUT)",
+      "short": "MAKAUT",
+      "aliases": [
+        "makaut",
+        "wbut",
+        "maulana abul kalam azad university of technology"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://makautwb.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "MAKAUT: DGPA x 10, as recalled.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "osmania",
+      "name": "Osmania University",
+      "short": "Osmania University",
+      "aliases": [
+        "osmania university",
+        "ou hyderabad",
+        "osmania univ"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.osmania.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "rtu",
+      "name": "Rajasthan Technical University (RTU)",
+      "short": "RTU",
+      "aliases": [
+        "rtu",
+        "rajasthan technical university",
+        "rtu kota"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://rtu.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "ktu",
+      "name": "APJ Abdul Kalam Technological University (KTU, Kerala)",
+      "short": "KTU",
+      "aliases": [
+        "ktu",
+        "kerala technological university",
+        "apj abdul kalam technological university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://ktu.edu.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "rtmnu",
+      "name": "Rashtrasant Tukadoji Maharaj Nagpur University (RTMNU)",
+      "short": "RTMNU",
+      "aliases": [
+        "rtmnu",
+        "nagpur university",
+        "rashtrasant tukadoji maharaj nagpur university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.nagpuruniversity.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "sukh",
+      "name": "Shivaji University, Kolhapur",
+      "short": "Shivaji University, Kolhapur",
+      "aliases": [
+        "shivaji university",
+        "suk",
+        "shivaji university kolhapur"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.unishivaji.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "du",
+      "name": "University of Delhi",
+      "short": "University of Delhi",
+      "aliases": [
+        "delhi university",
+        "university of delhi",
+        "du"
+      ],
+      "kind": "linear",
+      "a": 9.5,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 9.5 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.du.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; DU courses differ.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 76.0
+      }
+    },
+    {
+      "id": "lu",
+      "name": "University of Lucknow",
+      "short": "University of Lucknow",
+      "aliases": [
+        "lucknow university",
+        "university of lucknow"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.lkouniv.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "ccsu",
+      "name": "Chaudhary Charan Singh University (CCSU)",
+      "short": "CCSU",
+      "aliases": [
+        "ccsu",
+        "meerut university",
+        "chaudhary charan singh university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.ccsuniversity.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "mdu",
+      "name": "Maharshi Dayanand University (MDU)",
+      "short": "MDU",
+      "aliases": [
+        "mdu",
+        "mdu rohtak",
+        "maharshi dayanand university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://mdu.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "pu-chd",
+      "name": "Panjab University",
+      "short": "Panjab University",
+      "aliases": [
+        "panjab university",
+        "pu chandigarh"
+      ],
+      "kind": "linear",
+      "a": 9.5,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 9.5 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://puchd.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 76.0
+      }
+    },
+    {
+      "id": "mgu",
+      "name": "Mahatma Gandhi University, Kerala",
+      "short": "Mahatma Gandhi University, Kerala",
+      "aliases": [
+        "mahatma gandhi university",
+        "mg university",
+        "mgu kottayam"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.mgu.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "calicut",
+      "name": "University of Calicut",
+      "short": "University of Calicut",
+      "aliases": [
+        "calicut university",
+        "university of calicut"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.uoc.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "bharathiar",
+      "name": "Bharathiar University",
+      "short": "Bharathiar University",
+      "aliases": [
+        "bharathiar university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://b-u.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "mku",
+      "name": "Madurai Kamaraj University",
+      "short": "Madurai Kamaraj University",
+      "aliases": [
+        "madurai kamaraj university",
+        "mku"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.mkuniversity.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "pondicherry",
+      "name": "Pondicherry University",
+      "short": "Pondicherry University",
+      "aliases": [
+        "pondicherry university",
+        "puducherry university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://www.pondiuni.edu.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    },
+    {
+      "id": "gujarat",
+      "name": "Gujarat University",
+      "short": "Gujarat University",
+      "aliases": [
+        "gujarat university"
+      ],
+      "kind": "linear",
+      "a": 10,
+      "b": 0,
+      "scale": 10,
+      "formula": "percentage = 10 x CGPA",
+      "applies_to": "degree CGPA on a 10-point scale",
+      "source_url": "https://gujaratuniversity.ac.in",
+      "source_kind": "official_site_root_not_a_deep_link",
+      "checked_on": "2026-10-29",
+      "check_method": "recalled_from_public_notices_not_fetched",
+      "verified": false,
+      "confidence": "low",
+      "note": "As recalled; check the current rule.",
+      "example": {
+        "cgpa": 8.0,
+        "pct": 80.0
+      }
+    }
+  ]
+}

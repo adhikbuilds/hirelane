@@ -1,4 +1,3 @@
-export const x=1
 
 // --- foundation, salary and requirements (task 2.2, 2.3, 2.5)
 export { ENGINE_VERSION, ENRICH_VERSION, DOC_FORMAT_VERSION } from './version';
@@ -19,6 +18,7 @@ export {
   parseSalaryTraced,
   normalizeSalary,
   salaryCues,
+  isSalaryStated,
   formatSalary,
   formatMoney,
 } from './salary';
@@ -71,3 +71,43 @@ export {
   simhashTokens,
 } from './dedup';
 export type { CanonicalTitle, ClusterMember, DedupDecision, DedupKey, DedupPair, DedupPairSide, DedupScore, Simhash } from './dedup';
+
+// --- A4 fresher flag and A8 worthwhile gate
+export { assessFresher, FRESHER_MAX_LOWER_YEARS, FRESHER_MAX_UPPER_YEARS, SENIOR_MIN_YEARS } from './fresher';
+export type { FresherInput, FresherRequirement, FresherResult } from './fresher';
+export { isWorthwhile, WORTHWHILE_MIN_MUST_RATIO, WORTHWHILE_MAX_CHECK_AGE_DAYS } from './worthwhile';
+export type { WorthwhileInput, WorthwhileCondition, WorthwhileResult } from './worthwhile';
+
+// --- campus: resume parsing, sensitive-data detection, eligibility (Slices 1 and 2)
+export { detectSections, normalizeResumeText } from './resume/sections';
+export type { SectionKind as ResumeSectionKind } from './resume/sections';
+export { parseEducation, parseBacklogs, normalizeBranch } from './resume/education';
+export type { EducationParse } from './resume/education';
+export { verhoeffValid, verhoeffCheckDigit } from './resume/verhoeff';
+export { detectSensitive, maskSensitive } from './resume/sensitive';
+export { assessTextLayer } from './resume/text-layer';
+export { parseCriteria, evaluateEligibility, applyCgpaRule, invertCgpaRule, canonDegree, canonBranch, universityRules, findUniversityRule, toCgpaRule, resolveUniversityRule } from './eligibility';
+export type { EvaluateOptions, UniversityRule } from './eligibility';
+export type { LevelVerdict, VerdictLevel } from './eligibility/types';
+export { normalizeDate, normalizeDateRange, normalizeMarks, parseScoreText, validateScore, PCT_MISMATCH_TOLERANCE } from './resume/normalize';
+export type { YearMonth, DateRange, Marks, ParsedScore, ScoreKind, ScoreFlag, ScoreFlagCode, ScoreValidation, ValidateContext } from './resume/normalize';
+export type { Criterion, CriterionLevel, EligibilityProfileInput, CgpaRule, VerdictStatus, CriterionVerdict, EligibilityResult } from './eligibility/types';
+export type { ExtractMeta } from './resume/types';
+export { assessHealth, checkFileName } from './resume/health';
+export type { HealthInput, HealthReport, FileNameProblem, FileNameResult } from './resume/health';
+
+// --- campus: paste-a-job (S5) and scam signals (C6)
+export { parsePastedJob, scoreForProfile, sourceHintFromUrl } from './jobtext';
+export type { ParsedJob, ParseOptions, SourceHint, JobField, FieldEvidence, ProfileFit, ScoreOptions, JobScore } from './jobtext';
+export { detectScamSignals, FREE_MAIL_DOMAINS, URL_SHORTENER_HOSTS, FRESHER_UNREALISTIC_ANNUAL_INR, LOW_SKILL_UNREALISTIC_ANNUAL_INR } from './scam';
+export type { ScamSignalId, ScamSeverity, ScamRisk, ScamSignal, ScamResult, ScamOptions } from './scam';
+
+// --- application answers without an LLM (decision 1, 2026-10-29)
+export { classifyQuestion, answerFrom, answerQuestion, ANSWER_KEYS } from './answers';
+export type { Answer, AnswerBankEntry, AnswerEvidence, AnswerInputs, AnswerKey, AnswerOptions, AnswerProfile, AnswerSet, Classification, CompanyFacts, AnswerEvidenceSource, QuestionKey, ResumeFacts } from './answers';
+
+// --- layout-aware PDF text (RP1)
+export { reconstructText, legacyText, MAX_PAGE_WIDTH, MAX_ITEMS_PER_PAGE } from './resume/layout';
+export type { TextItem, PageItems, LayoutResult, Heading } from './resume/layout';
+export { findMarks } from './resume/normalize';
+export type { MarksHit } from './resume/normalize';

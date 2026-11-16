@@ -1,0 +1,18 @@
+From: Saffron Retail Recruiting <jobs@saffronretail.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=saffronretail.example.test; dmarc=pass header.from=saffronretail.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 09:41:00 GMT
+Message-ID: <corpus-24@saffronretail.example.test>
+MIME-Version: 1.0
+Subject: Case study before we proceed
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hello Vikram,
+
+Before the next step we would like you to submit a short case study (two pa=
+ges maximum) on how you would improve our onboarding flow. Please send it b=
+ack within four days.
+
+Regards,
+Saffron Retail Product Team

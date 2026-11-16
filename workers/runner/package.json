@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "@types/pdfkit": "^0.17.7",
     "@types/pg": "^8.23.1",
     "pg": "^8.23.1",
     "typescript": "^5.9.3",
@@ -22,6 +23,9 @@
     "@hirelane/db": "workspace:^",
     "@hirelane/engine": "workspace:^",
     "@hirelane/ingest": "workspace:^",
-    "graphile-worker": "^0.18.0"
+    "fflate": "0.8.3",
+    "graphile-worker": "^0.18.0",
+    "pdfkit": "0.20.2",
+    "unpdf": "1.8.1"
   }
 }

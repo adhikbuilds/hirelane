@@ -1,0 +1,13 @@
+From: Banyan Logistics Recruiting <jobs@banyanlogistics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=banyanlogistics.example.test; dmarc=pass header.from=banyanlogistics.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Tue, 27 Oct 2026 04:03:00 GMT
+Message-ID: <corpus-10@banyanlogistics.example.test>
+MIME-Version: 1.0
+Subject: Reminder - your interview tomorrow
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+SGkgUm9oYW4sIGEgcXVpY2sgcmVtaW5kZXIgdGhhdCB5b3VyIHZpZGVvIGludGVydmlldyBmb3Ig
+UUEgRW5naW5lZXIgaXMgdG9tb3Jyb3cgYXQgMyBQTSBJU1QuIFRoZSBqb2luaW5nIGxpbmsgaXMg
+dW5jaGFuZ2VkLiBHb29kIGx1Y2sh

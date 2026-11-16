@@ -11,7 +11,7 @@ export const CORS_HEADERS: Readonly<Record<string, string>> = {
 
 export const CACHE_PUBLIC = "public, s-maxage=300, stale-while-revalidate=60";
 
-export type ApiErrorCode = "invalid_param" | "page_out_of_range" | "rate_limited" | "not_found" | "internal_error";
+export type ApiErrorCode = "invalid_param" | "page_out_of_range" | "rate_limited" | "busy" | "not_found" | "internal_error";
 
 export function errorResponse(status: number, code: ApiErrorCode, message: string, extra: { param?: string; headers?: Record<string, string> } = {}): Response {
   const error: { code: ApiErrorCode; message: string; param?: string } = { code, message };

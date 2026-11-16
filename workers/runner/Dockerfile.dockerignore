@@ -1,0 +1,21 @@
+# Build context exclusions for workers/runner/Dockerfile. BuildKit reads <Dockerfile>.dockerignore next to the Dockerfile.
+# Keeps secrets, local state, caches and the web app's build output out of the image.
+**/node_modules
+**/.next
+**/.turbo
+**/*.tsbuildinfo
+**/.env*
+.git
+.mail
+.cache
+.claude
+.hallmark
+.taste-skill
+.github
+storage
+coverage
+playwright-report
+test-results
+e2e
+docs
+design-system

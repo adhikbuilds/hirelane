@@ -5,3 +5,19 @@
 7 */6 * * * ingest:schedule
 # Enrichment: every 6 hours at minute 37 (30 minutes after ingest); it only touches postings that changed.
 37 */6 * * * enrich:schedule
+# Resume retention: hourly backstop for the 24 h purge bound (deleted and replaced resumes). Each run is cheap and indexed.
+13 * * * * resume:purge-sweep
+# Stuck resumes: hourly. Re-queues extract for rows stuck in 'uploaded' and revives rows stuck in 'extracting'.
+43 * * * * resume:stuck-sweep
+# Idempotency keys hold full response bodies; delete after 24 h.
+27 * * * * idempotency:sweep
+# Campus snapshots (TPO numbers read only these): nightly, 02:20 UTC. Counts verified members; 35 days kept.
+20 2 * * * campus:stats
+# Apply pipeline backstop: every 5 minutes. Re-queues ready applications whose submit job was lost; fails ones stuck submitting.
+*/5 * * * * apply:sweep
+# Employer replies: every 5 minutes. Reads *.eml from the inbox folder (a missing folder is not an error); a production mail transport is still an open owner decision.
+*/5 * * * * inbound:scan
+# Retention for hashed identifiers in otp_challenges, rate_limits and join_attempts: daily, 03:10 UTC.
+10 3 * * * housekeeping:sweep
+# Notifications: every 10 minutes. New-drive and closes-tomorrow rows, then the email. Idempotent; needs a production mail transport (open owner decision).
+*/10 * * * * notify:sweep

@@ -29,7 +29,7 @@ describe('URL templates', () => {
   });
 
   it('registers each connector under its ATS name', () => {
-    expect(Object.keys(connectors).sort()).toEqual(['ashby', 'greenhouse', 'lever']);
+    expect(Object.keys(connectors).sort()).toEqual(['ashby', 'greenhouse', 'jsonld', 'lever', 'zoho_rss']);
     for (const [k, c] of Object.entries(connectors)) expect(c.ats).toBe(k);
   });
 });
@@ -428,9 +428,10 @@ describe('ashby against fixtures/mini/ashby/*', () => {
     expect(r.seenExternalIds).toHaveLength(j.jobs.length);
   });
 
-  it('handles a large board (803 items) and stays JSON-serialisable', async () => {
-    const { r } = await runBoard('openai');
-    expect(r.postings).toHaveLength(803);
+  it('handles a large board (count derived from the recorded fixture) and stays JSON-serialisable', async () => {
+    const { r, j } = await runBoard('openai');
+    expect(j.jobs.length).toBeGreaterThan(500);
+    expect(r.postings).toHaveLength(j.jobs.length);
     expect(() => JSON.stringify(r.postings.slice(0, 5))).not.toThrow();
   });
 });

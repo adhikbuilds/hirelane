@@ -182,10 +182,18 @@ describe("start panel", () => {
     expect(screen.getByRole("heading", { name: "Start with your resume." })).toBeInTheDocument();
   });
 
+  it("offers the waitlist form in the idle state without a PDF", () => {
+    render(<StartPanelView />);
+    expect(screen.getByTestId("drop-zone")).toBeInTheDocument();
+    expect(screen.getByTestId("waitlist-form")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Get early access" })).toBeEnabled();
+    expect(screen.queryByTestId("resume-parse")).toBeNull();
+  });
+
   it("rejects a text file", async () => {
     render(<StartPanelView />);
     fireEvent.change(input(), { target: { files: [new File(["hello"], "notes.txt", { type: "text/plain" })] } });
-    expect(await screen.findByRole("alert")).toHaveTextContent("not a PDF");
+    await waitFor(() => expect(document.getElementById("start-error")).toHaveTextContent("not a PDF"));
     expect(screen.queryByTestId("resume-parse")).toBeNull();
     noNetwork();
   });
@@ -193,18 +201,19 @@ describe("start panel", () => {
   it("rejects a .pdf whose bytes are not a PDF", async () => {
     render(<StartPanelView />);
     fireEvent.change(input(), { target: { files: [new File(["<html>nope</html>"], "fake.pdf", { type: "application/pdf" })] } });
-    expect(await screen.findByRole("alert")).toHaveTextContent("not a PDF");
+    await waitFor(() => expect(document.getElementById("start-error")).toHaveTextContent("not a PDF"));
     expect(screen.queryByTestId("resume-parse")).toBeNull();
     noNetwork();
   });
 
-  it("parses a real PDF into a card with 6 skill chips and a disabled account button, and uploads nothing", async () => {
+  it("parses a real PDF into a labelled sample card with 6 skill chips and a waitlist form, and uploads nothing", async () => {
     render(<StartPanelView />);
     fireEvent.change(input(), { target: { files: [pdf()] } });
     expect(await screen.findByTestId("resume-parse")).toBeInTheDocument();
     await waitFor(() => expect(within(screen.getByTestId("parse-skills")).getAllByRole("listitem")).toHaveLength(6), { timeout: 5000 });
-    expect(await screen.findByText("Create your account to save this. Coming in the next release.", {}, { timeout: 5000 })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Create your account" })).toBeDisabled();
+    expect(await screen.findByTestId("waitlist-form", {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Get early access" })).toBeEnabled();
+    expect(screen.getByText("Sample")).toBeInTheDocument();
     noNetwork();
   });
 
@@ -234,12 +243,12 @@ describe("landing header", () => {
     expect(header.firstElementChild!.className).toContain("backdrop-blur");
   });
 
-  it("has the wordmark, Jobs, Pricing and Start free", () => {
+  it("has the wordmark, Jobs, Pricing and Get early access", () => {
     render(<LandingHeader />);
     const nav = screen.getByRole("navigation", { name: "Primary" });
     expect(within(nav).getByRole("link", { name: "Jobs" })).toHaveAttribute("href", "/jobs");
     expect(within(nav).getByRole("link", { name: "Pricing" })).toHaveAttribute("href", "/#pricing");
-    expect(within(nav).getByRole("link", { name: "Start free" })).toHaveAttribute("href", "/#start");
+    expect(within(nav).getByRole("link", { name: "Get early access" })).toHaveAttribute("href", "/#start");
     expect(screen.getByRole("link", { name: "hirelane home" })).toHaveAttribute("href", "/");
   });
 
@@ -250,7 +259,7 @@ describe("landing header", () => {
     await user.click(trigger);
     const dialog = await screen.findByRole("dialog", { name: "Menu" });
     expect(dialog).toHaveAttribute("data-landing", "v3");
-    expect(within(dialog).getByRole("link", { name: "Start free" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Get early access" })).toBeInTheDocument();
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(trigger).toHaveFocus();

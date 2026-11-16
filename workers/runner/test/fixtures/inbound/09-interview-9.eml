@@ -1,0 +1,22 @@
+From: Orchid Payments Recruiting <jobs@orchidpayments.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=orchidpayments.example.test; dmarc=pass header.from=orchidpayments.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 12:56:00 GMT
+Message-ID: <corpus-09@orchidpayments.example.test>
+MIME-Version: 1.0
+Subject: Invitation: meet our engineering team
+Content-Type: text/plain; charset=us-ascii
+
+Hello Asha,
+
+We enjoyed your application and would like you to meet our engineering team for a 45 minute discussion. Please share two or three slots next week that suit you.
+
+Best wishes,
+Priya
+
+-- 
+Priya Nair
+Talent Acquisition | Orchid Payments
+"Unfortunately, we cannot guarantee replies to every email, so please be kind to the planet and think before you print."
+
+PS: Asha - salary details (- figures) are shared with shortlisted candidates only.

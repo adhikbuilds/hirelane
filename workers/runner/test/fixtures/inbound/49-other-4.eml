@@ -1,0 +1,15 @@
+From: Orchid Payments Recruiting <jobs@orchidpayments.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=orchidpayments.example.test; dmarc=pass header.from=orchidpayments.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 07:36:00 GMT
+Message-ID: <corpus-49@orchidpayments.example.test>
+MIME-Version: 1.0
+Subject: Automatic reply: out of office
+Content-Type: text/plain; charset=us-ascii
+
+Hello,
+
+I am out of office with limited access to email until Monday. Unfortunately I will not be able to respond before then. For urgent matters please contact hr-desk@orchidpayments.example.test.
+
+Regards,
+Priya

@@ -29,6 +29,11 @@ export const RULES: { rule: string; re: RegExp }[] = [
   { rule: 'ashby posting-api application', re: /ashbyhq\.com\/posting-api\/[^\s'"`]*\/application\b/gi },
 ];
 
+/**
+ * The ONE folder where submission code and its fixtures may live (apply pipeline, owner decision 2026-10-29: right swipe =
+ * applied, fixture-only until the owner runs a supervised pilot). The allowlist is this folder and nothing else: the worker
+ * tasks and services reach it through the executor's ports, never by naming an endpoint themselves.
+ */
 export const ALLOWED_PREFIX = 'packages/agent/src/submit/';
 
 export function scanContent(text: string): Violation[] {

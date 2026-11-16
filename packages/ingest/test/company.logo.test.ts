@@ -106,7 +106,8 @@ describe('fetchCompanyLogo', () => {
     const r = await fetchCompanyLogo('acme.com', { fetch: w.fetch, lookup: w.lookup });
     expect(r).toMatchObject({ ok: false });
     expect(JSON.stringify(r.ok ? '' : r.attempts)).toContain('too_many_pixels');
-  });
+    // Building the 144-megapixel fixture dominates: ~1.5 s locally, over 5 s on CI runners.
+  }, 30_000);
 
   it('tries the next candidate when one is rejected', async () => {
     const w = mockWorld(

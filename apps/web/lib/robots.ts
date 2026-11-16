@@ -6,6 +6,8 @@ export function robotsTxt(origin: string): string {
     "Allow: /api/public/",
     "Disallow: /api/",
     "Disallow: /ops/",
+    "Disallow: /dev/",
+    "Disallow: /v3",
     "Disallow: /applications",
     "Disallow: /triage",
     "Disallow: /md/",

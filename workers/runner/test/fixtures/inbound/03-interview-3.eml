@@ -1,0 +1,18 @@
+From: Quartz Health Recruiting <jobs@quartzhealth.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=quartzhealth.example.test; dmarc=pass header.from=quartzhealth.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Thu, 29 Oct 2026 06:14:00 GMT
+Message-ID: <corpus-03@quartzhealth.example.test>
+MIME-Version: 1.0
+Subject: Next round: panel discussion
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hello Meera,
+
+Congratulations! You have cleared the screening and been selected for the next round of our hiring process. The panel discussion is scheduled for Monday 10 November. Details of the meeting link follow shortly.
+
+Best,
+Quartz Health Talent Team
+
+PS: Meera — salary details (₹ figures) are shared with shortlisted candidates only.

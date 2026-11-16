@@ -1,0 +1,16 @@
+From: Tamarind Cloud Recruiting <jobs@tamarindcloud.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=tamarindcloud.example.test; dmarc=pass header.from=tamarindcloud.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Wed, 28 Oct 2026 11:55:00 GMT
+Message-ID: <corpus-26@tamarindcloud.example.test>
+MIME-Version: 1.0
+Subject: Technical screening exercise
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><p>Hi Rohan,</p><br>
+<p>We'd like to see how you work, so please complete the attached exercise =
+(build a small REST endpoint) and send us a link to your repository. No tim=
+e limit, but we suggest two to three hours.</p><br>
+<p>Thanks,<br>
+Karan</p></body></html>

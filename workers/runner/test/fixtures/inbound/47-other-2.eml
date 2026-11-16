@@ -1,0 +1,30 @@
+From: Helio Games Recruiting <jobs@heliogames.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=heliogames.example.test; dmarc=pass header.from=heliogames.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 05:22:00 GMT
+Message-ID: <corpus-47@heliogames.example.test>
+MIME-Version: 1.0
+Subject: Application received: Data Analyst
+Content-Type: multipart/alternative; boundary="alt_46_boundary"
+
+--alt_46_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Dear Neha,
+
+Your application has been received and is under review. If we would like to=
+ interview you, we will contact you within three weeks. Status: In review.
+
+Regards,
+Helio Games Careers
+--alt_46_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PHA+RGVhciBOZWhhLDwvcD48YnI+CjxwPllvdXIgYXBwbGljYXRpb24gaGFz
+IGJlZW4gcmVjZWl2ZWQgYW5kIGlzIHVuZGVyIHJldmlldy4gSWYgd2Ugd291bGQgbGlrZSB0byBp
+bnRlcnZpZXcgeW91LCB3ZSB3aWxsIGNvbnRhY3QgeW91IHdpdGhpbiB0aHJlZSB3ZWVrcy4gU3Rh
+dHVzOiBJbiByZXZpZXcuPC9wPjxicj4KPHA+UmVnYXJkcyw8YnI+CkhlbGlvIEdhbWVzIENhcmVl
+cnM8L3A+PC9ib2R5PjwvaHRtbD4=
+--alt_46_boundary--

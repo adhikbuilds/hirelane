@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MobileMenu } from "../components/shell/MobileMenu";
 import { SiteFooter } from "../components/shell/SiteFooter";
-import { isActive, NAV } from "../components/shell/nav";
+import { FOOTER, isActive, NAV, START_FREE } from "../components/shell/nav";
 import { readSaved, SAVED_KEY, toggleSaved } from "../components/job/useSaved";
 
 vi.mock("next/link", () => ({
@@ -22,6 +22,38 @@ describe("nav", () => {
     expect(isActive("/jobs/x", "/jobs")).toBe(true);
     expect(isActive("/", "/#pricing")).toBe(false);
     expect(isActive("/jobsx", "/jobs")).toBe(false);
+  });
+});
+
+describe("early-access CTA", () => {
+  it("is the honest waitlist call, not Start free, and reaches the waitlist section from any page", () => {
+    expect(START_FREE.label).toBe("Get early access");
+    expect(START_FREE.href).toBe("/#start");
+  });
+  it("shows the same label in the mobile menu and does not claim approval in present tense", async () => {
+    const user = userEvent.setup();
+    render(<MobileMenu pathname="/" />);
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const dialog = screen.getByRole("dialog", { name: "Menu" });
+    expect(within(dialog).getByRole("link", { name: "Get early access" })).toHaveAttribute("href", "/#start");
+    expect(within(dialog).queryByText(/Start free/)).toBeNull();
+    expect(dialog.textContent).not.toMatch(/You approve every application/);
+  });
+});
+
+describe("footer legal links", () => {
+  it("links Privacy, Terms and Contact to real pages, not how-it-works anchors", () => {
+    render(<SiteFooter />);
+    expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
+    expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
+    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
+    const legal = FOOTER.find((c) => c.title === "Legal")!;
+    expect(legal.links.some((l) => l.href === "/how-it-works#never")).toBe(true);
+  });
+  it("does not say the unbuilt approval flow exists in present tense", () => {
+    const { container } = render(<SiteFooter />);
+    expect(container.textContent).not.toMatch(/You approve every application/);
+    expect(container.textContent).toMatch(/early access/i);
   });
 });
 

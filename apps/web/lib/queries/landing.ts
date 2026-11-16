@@ -201,7 +201,7 @@ export const getLandingSnapshot = unstable_cache(loadLanding, ["landing:v1"], { 
 
 // landing v3
 /**
- * Per-card extras for the landing swipe stack: when each job was posted, how many roles its company has open and
+ * Per-card extras for the landing card stack: when each job was posted, how many roles its company has open and
  * the posting URL. Read from the same jobs the demo uses; nothing here is invented. JSON-safe, cached 300 s.
  */
 export type StackExtraRow = { freshAt: string | null; openRoles: number | null; postingUrl: string | null };
@@ -232,3 +232,28 @@ async function loadStackExtras(slugs: string[]): Promise<Record<string, StackExt
 
 export const getStackExtras = unstable_cache(loadStackExtras, ["landing-v3:stack-extras"], { revalidate: 300, tags: ["jobs"] });
 // end landing v3
+
+/** Open roles located in India (public career pages). null when the index is unreachable. */
+export async function indiaRoles(): Promise<number | null> {
+  try {
+    return await withAdmin(async (db) => Number((await db.query("SELECT count(*)::int AS n FROM jobs WHERE closed_at IS NULL AND 'IN' = ANY(countries)")).rows[0].n));
+  } catch {
+    return null;
+  }
+}
+
+/** Employers with the most open India roles, as plain names (no logos). */
+export async function loadEmployers(): Promise<string[]> {
+  try {
+    return await withAdmin(async (db) =>
+      (
+        await db.query(
+          "SELECT c.name FROM jobs j JOIN companies c ON c.id = j.company_id WHERE j.closed_at IS NULL AND 'IN' = ANY(j.countries) GROUP BY c.name ORDER BY count(*) DESC LIMIT 12",
+        )
+      ).rows.map((r: { name: string }) => r.name),
+    );
+  } catch {
+    return [];
+  }
+}
+

@@ -1,0 +1,21 @@
+From: Kestrel Analytics Recruiting <jobs@kestrelanalytics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=kestrelanalytics.example.test; dmarc=pass header.from=kestrelanalytics.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Thu, 29 Oct 2026 09:38:00 GMT
+Message-ID: <corpus-15@kestrelanalytics.example.test>
+MIME-Version: 1.0
+Subject: =?UTF-8?B?U2xvdCBjb25maXJtYXRpb24gZm9yIEFzc29jaWF0ZSBDb25zdWx0YW50?=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hello Neha,
+
+Please select your preferred interview slot from the options below and we will confirm it within a day.
+
+1. Monday 10 November, 10:00
+2. Monday 10 November, 15:30
+
+Thanks,
+Scheduling Desk
+
+PS: Neha — salary details (₹ figures) are shared with shortlisted candidates only.

@@ -15,6 +15,11 @@ const buttonVariants = cva(
         ghost: "text-foreground hover:bg-secondary",
         link: "text-foreground underline underline-offset-4 hover:no-underline",
         destructive: "bg-destructive text-white hover:bg-destructive/90",
+        // Wrapped account screens (DESIGN.md, --wr-* tokens in app/account.css). One lime fill per screen.
+        lime: "border-2 border-(--wr-ink) bg-(--wr-lime) font-extrabold text-(--wr-ink) hover:bg-(--wr-lime-press) active:scale-[0.98]",
+        outline: "border-2 border-(--wr-ink) bg-transparent font-extrabold text-(--wr-ink) hover:bg-(--wr-ink-wash) active:scale-[0.98]",
+        "on-night": "border-2 border-(--wr-cream) bg-transparent font-extrabold text-(--wr-cream) hover:bg-(--wr-cream-wash) active:scale-[0.98]",
+        danger: "border-2 border-(--wr-ink) bg-transparent font-extrabold text-(--wr-danger-ink) hover:bg-(--wr-coral-wash) active:scale-[0.98]",
       },
       size: {
         default: "t-body h-12 px-6",
@@ -22,6 +27,8 @@ const buttonVariants = cva(
         lg: "t-body h-14 px-8",
         icon: "size-12",
         "icon-sm": "size-10",
+        pill: "min-h-13 h-auto w-full rounded-full px-6 py-3 text-center text-[1.0625rem] leading-tight whitespace-normal",
+        "pill-sm": "h-11 rounded-full px-5 text-base",
       },
     },
     defaultVariants: {

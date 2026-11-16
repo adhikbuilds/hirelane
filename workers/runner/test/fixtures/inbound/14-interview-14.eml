@@ -1,0 +1,22 @@
+From: Saffron Retail Recruiting <jobs@saffronretail.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=saffronretail.example.test; dmarc=pass header.from=saffronretail.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Wed, 28 Oct 2026 08:31:00 GMT
+Message-ID: <corpus-14@saffronretail.example.test>
+MIME-Version: 1.0
+Subject: We'd like to meet you
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Karthik,
+
+Your background looks like a strong match. We'd like to meet you in person =
+at our office for a discussion about Backend Developer. Let us know which d=
+ay suits you.
+
+Sincerely,
+Meera
+
+--=20
+Sam Thomas, Recruiting Coordinator
+P.S. Unfortunately our office is closed on public holidays.

@@ -1,0 +1,13 @@
+From: Banyan Logistics Recruiting <jobs@banyanlogistics.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=banyanlogistics.example.test; dmarc=pass header.from=banyanlogistics.example.test
+To: Asha Kulkarni <asha.k3x+zz11yy22xx33@apply.hirelane.localhost>
+Date: Thu, 29 Oct 2026 06:23:00 GMT
+Message-ID: <corpus-30@banyanlogistics.example.test>
+MIME-Version: 1.0
+Subject: Application status
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+RGVhciBLYXJ0aGlrLAoKV2UgcmVncmV0IHRvIGluZm9ybSB5b3UgdGhhdCB5b3UgaGF2ZSBub3Qg
+YmVlbiBzaG9ydGxpc3RlZCBmb3IgdGhlIG5leHQgc3RhZ2Ugb2YgdGhlIFNvZnR3YXJlIERldmVs
+b3BlciBoaXJpbmcgcHJvY2Vzcy4KClRoYW5rIHlvdSwKSFI=

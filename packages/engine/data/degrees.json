@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "note": "Degrees with typical duration in years. Dots and inner spaces in aliases are optional when matching; aliases of 2 letters or fewer match upper-case only.",
+  "degrees": [
+    { "id": "diploma", "label": "Diploma", "level": "diploma", "durationYears": 3, "aliases": ["diploma"] },
+    { "id": "btech", "label": "Bachelor of Technology", "level": "ug", "durationYears": 4, "aliases": ["b.tech", "bachelor of technology", "bachelors of technology", "bachelor in technology"] },
+    { "id": "be", "label": "Bachelor of Engineering", "level": "ug", "durationYears": 4, "aliases": ["b.e", "bachelor of engineering", "bachelors of engineering", "bachelor in engineering"] },
+    { "id": "bsc", "label": "Bachelor of Science", "level": "ug", "durationYears": 3, "aliases": ["b.sc", "bachelor of science", "bachelors of science"] },
+    { "id": "bca", "label": "Bachelor of Computer Applications", "level": "ug", "durationYears": 3, "aliases": ["b.c.a", "bachelor of computer applications", "bachelor of computer application"] },
+    { "id": "bcom", "label": "Bachelor of Commerce", "level": "ug", "durationYears": 3, "aliases": ["b.com", "bachelor of commerce"] },
+    { "id": "ba", "label": "Bachelor of Arts", "level": "ug", "durationYears": 3, "aliases": ["b.a", "bachelor of arts"] },
+    { "id": "bba", "label": "Bachelor of Business Administration", "level": "ug", "durationYears": 3, "aliases": ["b.b.a", "bachelor of business administration"] },
+    { "id": "barch", "label": "Bachelor of Architecture", "level": "ug", "durationYears": 5, "aliases": ["b.arch", "bachelor of architecture"] },
+    { "id": "bpharm", "label": "Bachelor of Pharmacy", "level": "ug", "durationYears": 4, "aliases": ["b.pharm", "bachelor of pharmacy"] },
+    { "id": "mtech", "label": "Master of Technology", "level": "pg", "durationYears": 2, "aliases": ["m.tech", "master of technology", "masters of technology"] },
+    { "id": "me", "label": "Master of Engineering", "level": "pg", "durationYears": 2, "aliases": ["m.e", "master of engineering", "masters of engineering"] },
+    { "id": "mca", "label": "Master of Computer Applications", "level": "pg", "durationYears": 2, "aliases": ["m.c.a", "master of computer applications", "master of computer application"] },
+    { "id": "mba", "label": "Master of Business Administration", "level": "pg", "durationYears": 2, "aliases": ["m.b.a", "master of business administration"] },
+    { "id": "msc", "label": "Master of Science", "level": "pg", "durationYears": 2, "aliases": ["m.sc", "master of science", "masters of science"] },
+    { "id": "mcom", "label": "Master of Commerce", "level": "pg", "durationYears": 2, "aliases": ["m.com", "master of commerce"] },
+    { "id": "ma", "label": "Master of Arts", "level": "pg", "durationYears": 2, "aliases": ["m.a", "master of arts"] },
+    { "id": "pgdm", "label": "Post Graduate Diploma in Management", "level": "pg", "durationYears": 2, "aliases": ["pgdm", "post graduate diploma", "post-graduate diploma", "pg diploma"] }
+  ]
+}

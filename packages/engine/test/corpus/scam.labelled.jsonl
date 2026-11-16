@@ -1,0 +1,71 @@
+{"_header": {"corpus": "scam.labelled", "labelledBy": "Claude (Sonnet 5.5, tdd-guide agent) for the Hirelane Slice 3 scam-signal lane", "labelledAt": "2026-10-29", "method": "Synthetic hand-written notice lines labelled scam or legit, with the expected signal ids for scam lines, written BEFORE detectScamSignals existed. Legit lines include hard negatives (negated fees, paid training, plain deadlines, official WhatsApp numbers, free-mail senders for small employers with no company domain, strong fresher pay at real firms). Free-mail cases use the real free-mail domains with obviously fictional local parts; every other address is example.test; phones are 90000 0000nn.", "count": 70}}
+{"id": "sc-1", "label": "scam", "text": "Selected for Data Entry role! Pay Rs 1,500 registration fee to confirm your seat. Salary 25,000 per month work from home.", "signals": ["fee.upfront"]}
+{"id": "sc-2", "label": "scam", "text": "Congratulations, you are shortlisted. Please deposit a refundable security deposit of Rs 5000 before joining.", "signals": ["fee.upfront"]}
+{"id": "sc-3", "label": "scam", "text": "Training fee of Rs 8,000 is mandatory for all selected candidates. Job guaranteed after training.", "signals": ["fee.upfront"]}
+{"id": "sc-4", "label": "scam", "text": "To receive your offer letter you need to pay Rs 2,500 processing charges today.", "signals": ["fee.offer_letter"]}
+{"id": "sc-5", "label": "scam", "text": "Pay Rs 999 to get the offer letter and joining kit. Limited seats, hurry!", "signals": ["fee.offer_letter", "pressure.urgency"]}
+{"id": "sc-6", "label": "scam", "text": "HR contact only on Telegram: @hrdesk_demo01. Send your Aadhaar and resume there. Immediate joining.", "signals": ["contact.chat_only"]}
+{"id": "sc-7", "label": "scam", "text": "Apply by messaging us on WhatsApp only: 90000 00001. No email, no interview needed.", "signals": ["contact.chat_only"]}
+{"id": "sc-8", "label": "scam", "text": "Join our Telegram channel t.me/jobsdemo01 to apply. Work from home, earn daily.", "signals": ["contact.chat_only"]}
+{"id": "sc-9", "label": "scam", "text": "Hiring freshers at Zorvane Systems (careers.zorvane.example.test). Send CV to zorvane.hr.desk01@gmail.com", "senderEmail": "zorvane.hr.desk01@gmail.com", "url": "https://careers.zorvane.example.test/jobs", "signals": ["sender.freemail"]}
+{"id": "sc-10", "label": "scam", "text": "Official HR of Kestrel Logic. Mail resume to kestrel.hiring.desk02@yahoo.com. Visit https://kestrel.example.test for company details.", "senderEmail": "kestrel.hiring.desk02@yahoo.com", "signals": ["sender.freemail"]}
+{"id": "sc-11", "label": "scam", "text": "Quillmark Technologies hiring. Send details to quillmark_recruit03@rediffmail.com, company site quillmark.example.test", "senderEmail": "quillmark_recruit03@rediffmail.com", "signals": ["sender.freemail"]}
+{"id": "sc-12", "label": "scam", "text": "Nimbus Harbor careers (https://nimbus.example.test/careers). Contact the recruiter at nimbus.hr.desk04@outlook.com for interview slots.", "senderEmail": "nimbus.hr.desk04@outlook.com", "signals": ["sender.freemail"]}
+{"id": "sc-13", "label": "scam", "text": "Fresher data entry job, earn Rs 4,000 per day from your phone, no skills needed, 12th pass.", "signals": ["pay.unrealistic"]}
+{"id": "sc-14", "label": "scam", "text": "Freshers can earn 60 LPA as Software Engineer, no coding required. Apply now.", "signals": ["pay.unrealistic"]}
+{"id": "sc-15", "label": "scam", "text": "Work from home, no experience, earn Rs 90,000 per month typing at home.", "signals": ["pay.unrealistic"]}
+{"id": "sc-16", "label": "scam", "text": "Apply for the fresher job here: https://bit.ly/3DemoJob1 Salary 4 LPA", "signals": ["link.shortened"]}
+{"id": "sc-17", "label": "scam", "text": "Campus drive registration link https://tinyurl.com/demoDrive2 last date tomorrow", "signals": ["link.shortened"]}
+{"id": "sc-18", "label": "scam", "text": "Hiring freshers, apply: https://cutt.ly/demo3 for Customer Support role", "signals": ["link.shortened"]}
+{"id": "sc-19", "label": "scam", "text": "Click here to register: https://rb.gy/demo44 and get a job in 7 days", "signals": ["link.shortened"]}
+{"id": "sc-20", "label": "scam", "text": "Registration fee Rs 500 applicable for the walk-in drive. Limited seats, only 10 seats left, register in the next 2 hours!", "signals": ["fee.upfront", "pressure.urgency"]}
+{"id": "sc-21", "label": "scam", "text": "Pay Rs 3000 as security fee to book your laptop and ID card. Contact on WhatsApp only 90000 00002", "signals": ["fee.upfront", "contact.chat_only"]}
+{"id": "sc-22", "label": "scam", "text": "Selected! Training charges Rs 12,000 to be paid in advance. Link: https://bit.ly/DemoTrain5", "signals": ["fee.upfront", "link.shortened"]}
+{"id": "sc-23", "label": "scam", "text": "Urgent hiring, 5 seats only, first come first serve! Deposit Rs 2000 to block your seat.", "signals": ["fee.upfront", "pressure.urgency"]}
+{"id": "sc-24", "label": "scam", "text": "Offer letter will be issued after you pay Rs 1,800 documentation fee. Message HR on Telegram @offerdesk_demo.", "signals": ["fee.offer_letter", "contact.chat_only"]}
+{"id": "sc-25", "label": "scam", "text": "Earn Rs 3,000 daily as a fresher, no interview. Pay Rs 300 registration. Apply https://t.ly/demo6", "signals": ["pay.unrealistic", "fee.upfront", "link.shortened"]}
+{"id": "sc-26", "label": "scam", "text": "International company hiring freshers, salary 80 LPA, apply at https://bit.ly/DemoHire7. Hurry, limited seats!", "signals": ["pay.unrealistic", "link.shortened", "pressure.urgency"]}
+{"id": "sc-27", "label": "scam", "text": "Registration charges of Rs 750 are non-refundable. Interview will be taken on WhatsApp video call.", "signals": ["fee.upfront"]}
+{"id": "sc-28", "label": "scam", "text": "A refundable amount of Rs 4000 as security deposit has to be paid before the joining date.", "signals": ["fee.upfront"]}
+{"id": "sc-29", "label": "scam", "text": "You need to pay Rs 2,000 for the training kit. After training you get a guaranteed placement.", "signals": ["fee.upfront"]}
+{"id": "sc-30", "label": "scam", "text": "Kindly transfer Rs 1,200 for the offer letter to the account shared by our HR.", "signals": ["fee.offer_letter"]}
+{"id": "sc-31", "label": "scam", "text": "Direct joining without interview. Contact our HR manager on WhatsApp: 90000 00003 (WhatsApp only).", "signals": ["contact.chat_only"]}
+{"id": "sc-32", "label": "scam", "text": "Apply now! Only 3 seats left, offer closes tonight. Salary Rs 2 lakh per month for freshers, no experience.", "signals": ["pay.unrealistic", "pressure.urgency"]}
+{"id": "sc-33", "label": "scam", "text": "Hiring for Lumenfield Digital, see lumenfield.example.test. Send resume to lumenfield.jobs.desk05@gmail.com and register at https://shorturl.at/demo8", "senderEmail": "lumenfield.jobs.desk05@gmail.com", "signals": ["sender.freemail", "link.shortened"]}
+{"id": "sc-34", "label": "scam", "text": "Job confirmation fee Rs 1,000 must be paid via UPI to start the onboarding.", "signals": ["fee.upfront"]}
+{"id": "sc-35", "label": "scam", "text": "Pay the Rs 6,000 joining fee at once. Seats are filling fast, apply immediately.", "signals": ["fee.upfront", "pressure.urgency"]}
+{"id": "sc-36", "label": "scam", "text": "Fresher airline ground staff hiring, Rs 70,000 per month, apply via t.me/airjobsdemo only.", "signals": ["contact.chat_only"]}
+{"id": "sc-37", "label": "legit", "text": "Acme-style drive: Zorvane Systems off campus drive for 2026 batch. Apply at https://careers.zorvane.example.test/drive. CTC 4 to 6 LPA. Last date to apply: 30 November.", "signals": []}
+{"id": "sc-38", "label": "legit", "text": "No registration fee is charged at any stage of this hiring. Apply only through https://careers.kestrel.example.test.", "signals": []}
+{"id": "sc-39", "label": "legit", "text": "Please note that we never ask candidates for any fee or deposit. Beware of fraudsters.", "signals": []}
+{"id": "sc-40", "label": "legit", "text": "Paid training of 3 months with a stipend of Rs 15,000 per month, followed by a full-time role at 5 LPA.", "signals": []}
+{"id": "sc-41", "label": "legit", "text": "Training will be provided free of cost for all selected candidates.", "signals": []}
+{"id": "sc-42", "label": "legit", "text": "Registration for the online assessment closes on 5 November. Register on the company portal https://assess.example.test/register. Registration is free.", "signals": []}
+{"id": "sc-43", "label": "legit", "text": "Hurry up, registrations close on Friday. Limited seats for the aptitude test, register early at https://forms.example.test/reg.", "signals": []}
+{"id": "sc-44", "label": "legit", "text": "Selection process: online test, technical interview, HR round. Offer letter will be shared by email after the HR round.", "signals": []}
+{"id": "sc-45", "label": "legit", "text": "Fresher role: Associate Software Engineer, CTC 6.5 LPA. Apply at https://careers.nimbus.example.test/apply. Contact hr@nimbus.example.test for queries.", "signals": []}
+{"id": "sc-46", "label": "legit", "text": "Freshers: Graduate Engineer Trainee, package 12 LPA for top performers in the hiring test, apply on the official portal.", "url": "https://careers.quillmark.example.test/gt", "signals": []}
+{"id": "sc-47", "label": "legit", "text": "Stipend Rs 25,000 per month for the internship in Pune. Apply at https://jobs.example.test/intern.", "signals": []}
+{"id": "sc-48", "label": "legit", "text": "Share this with your friends on WhatsApp. For queries email placement@college.example.test.", "signals": []}
+{"id": "sc-49", "label": "legit", "text": "Join our WhatsApp group for campus updates. Applications go through https://apply.example.test/j/1 only.", "signals": []}
+{"id": "sc-50", "label": "legit", "text": "Interested candidates can send their resume to careers@lumenfield.example.test with the subject Fresher Application.", "senderEmail": "careers@lumenfield.example.test", "signals": []}
+{"id": "sc-51", "label": "legit", "text": "Walk-in drive on 12 November at the main auditorium. Bring two copies of your resume and a photo ID. No fee is required.", "signals": []}
+{"id": "sc-52", "label": "legit", "text": "Apply via the LinkedIn Easy Apply button: https://lnkd.in/xkDemo1. Entry level, 4.5 LPA.", "signals": []}
+{"id": "sc-53", "label": "legit", "text": "We are a small startup hiring a junior designer. Send your portfolio to design.studio.demo06@gmail.com. Pay 3 to 4 LPA.", "senderEmail": "design.studio.demo06@gmail.com", "signals": []}
+{"id": "sc-54", "label": "legit", "text": "Hiring a part-time tutor for maths. Contact us on WhatsApp 90000 00004 or email tutor.desk@example.test.", "signals": []}
+{"id": "sc-55", "label": "legit", "text": "Today is the last day to submit your application. Apply at https://careers.corvid.example.test/hire/9.", "signals": []}
+{"id": "sc-56", "label": "legit", "text": "Limited seats available for the bootcamp-style onboarding batch starting 1 December. Selected candidates are notified by email.", "signals": []}
+{"id": "sc-57", "label": "legit", "text": "Fresher salary band: 3.5 to 5 LPA depending on skills and the interview performance.", "signals": []}
+{"id": "sc-58", "label": "legit", "text": "Security clearance is not required. Candidates must carry their college ID to the venue.", "signals": []}
+{"id": "sc-59", "label": "legit", "text": "Candidates need to pay attention to the instructions in the assessment. No payment is requested at any point of the process.", "signals": []}
+{"id": "sc-60", "label": "legit", "text": "Deposit your resume on the company careers portal https://careers.halcyon.example.test. Free of cost, no charges.", "signals": []}
+{"id": "sc-61", "label": "legit", "text": "Data Analyst Intern: stipend Rs 20,000 per month, 6 months, remote. Apply at https://jobs.example.test/da.", "signals": []}
+{"id": "sc-62", "label": "legit", "text": "For the walk-in: registration desk opens at 9 am. Registration is free for all students of the college.", "signals": []}
+{"id": "sc-63", "label": "legit", "text": "Our company pays a joining bonus of Rs 30,000 to selected candidates after 90 days of service.", "signals": []}
+{"id": "sc-64", "label": "legit", "text": "Urgent requirement for 2 backend developers, 2 to 4 years experience, 14 to 18 LPA. Apply at https://careers.aurelian.example.test/be.", "signals": []}
+{"id": "sc-65", "label": "legit", "text": "Contact HR on WhatsApp 90000 00005 for any queries, or write to hr@kestrel.example.test. Apply at https://careers.kestrel.example.test/fresher.", "signals": []}
+{"id": "sc-66", "label": "legit", "text": "Telegram is not used for any communication from our recruiters. Official updates come only from example.test addresses.", "signals": []}
+{"id": "sc-67", "label": "legit", "text": "Shortlisted candidates will receive the offer letter on their registered email within 7 working days of the final round.", "signals": []}
+{"id": "sc-68", "label": "legit", "text": "Exclusive off-campus drive for the 2026 batch: Hexabyte Services. Apply at https://careers.hexabyte.example.test. Eligibility: 60% throughout, no active backlogs.", "signals": []}
+{"id": "sc-69", "label": "legit", "text": "Customer support executive, fresher, Rs 18,000 per month in hand plus incentives, Chennai, apply at https://careers.palmgrove.example.test/cs.", "signals": []}
+{"id": "sc-70", "label": "legit", "text": "Dear students, the training and placement office has shared the registration link: https://placement.college.example.test/register. Last date 3 November.", "signals": []}

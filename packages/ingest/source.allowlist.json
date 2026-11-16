@@ -1,0 +1,5 @@
+{
+  "_comment": "Hosts are added BY HAND, one at a time, after reading the host's robots.txt and site terms. Each entry needs checked_at (YYYY-MM-DD) and a note saying what was read (CLAUDE.md legal guardrail 5). Empty means no JSON-LD or Zoho source can be ingested yet. pnpm discover:v2 writes candidates to .cache/discovery/v2 for review; it never edits this file.",
+  "jsonld": [],
+  "zoho_rss": []
+}

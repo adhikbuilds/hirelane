@@ -1,0 +1,31 @@
+From: Helio Games Recruiting <jobs@heliogames.example.test>
+Authentication-Results: mx.hirelane.localhost; spf=pass; dkim=pass header.d=heliogames.example.test; dmarc=pass header.from=heliogames.example.test
+To: asha.k3x+zz11yy22xx33@apply.hirelane.localhost
+Date: Tue, 27 Oct 2026 04:12:00 GMT
+Message-ID: <corpus-37@heliogames.example.test>
+MIME-Version: 1.0
+Subject: Thanks for your time
+Content-Type: multipart/alternative; boundary="alt_36_boundary"
+
+--alt_36_boundary
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Dear Divya,
+
+We appreciate you speaking with our team. After discussing internally, we w=
+ill not be extending an offer for Graduate Engineer Trainee. We encourage y=
+ou to apply again in six months.
+
+Best wishes,
+Helio Games
+--alt_36_boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+PGJvZHk+PHA+RGVhciBEaXZ5YSw8L3A+PGJyPgo8cD5XZSBhcHByZWNpYXRlIHlvdSBz
+cGVha2luZyB3aXRoIG91ciB0ZWFtLiBBZnRlciBkaXNjdXNzaW5nIGludGVybmFsbHksIHdlIHdp
+bGwgbm90IGJlIGV4dGVuZGluZyBhbiBvZmZlciBmb3IgR3JhZHVhdGUgRW5naW5lZXIgVHJhaW5l
+ZS4gV2UgZW5jb3VyYWdlIHlvdSB0byBhcHBseSBhZ2FpbiBpbiBzaXggbW9udGhzLjwvcD48YnI+
+CjxwPkJlc3Qgd2lzaGVzLDxicj4KSGVsaW8gR2FtZXM8L3A+PC9ib2R5PjwvaHRtbD4=
+--alt_36_boundary--

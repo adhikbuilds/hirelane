@@ -1,3 +1,4 @@
+import { devPagesOpen } from "@/lib/dev-gate";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Kit } from "./kit";
@@ -7,6 +8,6 @@ export const dynamic = "force-dynamic";
 
 /** Dev-only: every shadcn component of landing v3 on the forest, white and black grounds. Not found in production. */
 export default function DevLandingKitPage() {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (!devPagesOpen()) notFound();
   return <Kit />;
 }
