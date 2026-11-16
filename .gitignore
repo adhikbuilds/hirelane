@@ -26,3 +26,6 @@ docs/design/refs/
 docs/design/plan-viewer.html
 docs/design/mocks/shots/
 .DS_Store
+
+# Competitor research stays local only
+docs/recon/
