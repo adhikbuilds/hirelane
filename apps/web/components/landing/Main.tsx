@@ -1,8 +1,6 @@
-import { Geist } from "next/font/google";
 import Link from "next/link";
 import "../../app/site.css";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+import { geist } from "@/lib/fonts";
 
 export type SiteCounts = { openJobs: number; companies: number; withSalary: number; indiaRoles: number | null; readAgo: string | null } | null;
 

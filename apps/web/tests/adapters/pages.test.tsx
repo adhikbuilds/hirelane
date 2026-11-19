@@ -2,12 +2,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("next/font/google", () => ({
-  Public_Sans: () => ({ variable: "v", className: "c" }),
-  Geist: () => ({ variable: "g" }),
-  Geist_Mono: () => ({ variable: "gm" }),
-  Bricolage_Grotesque: () => ({ variable: "b" }),
-}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 

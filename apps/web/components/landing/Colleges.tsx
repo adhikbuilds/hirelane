@@ -1,9 +1,7 @@
-import { Public_Sans } from "next/font/google";
 import Link from "next/link";
 import "../../app/campus.css";
 import { PublicFooter, PublicHeader } from "./Public";
-
-const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
+import { publicSans } from "@/lib/fonts";
 
 const FEATURES = [
   {

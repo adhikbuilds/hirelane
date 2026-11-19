@@ -1,11 +1,9 @@
-import { Public_Sans } from "next/font/google";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import "../../app/campus.css";
 import "../../app/account.css";
 import "../../app/student-legacy.css";
-
-const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
+import { publicSans } from "@/lib/fonts";
 
 export type StudentTab = "home" | "jobs" | "drives" | "tracker" | "me";
 

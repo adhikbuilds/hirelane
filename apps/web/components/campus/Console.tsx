@@ -1,10 +1,8 @@
-import { Public_Sans } from "next/font/google";
 import Link from "next/link";
 import type React from "react";
 import type { CampusOverview } from "@/lib/sample/campus";
 import "../../app/campus.css";
-
-const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
+import { publicSans } from "@/lib/fonts";
 
 export const pct = (n: number, of: number) => (of > 0 ? Math.round((n / of) * 100) : 0);
 
