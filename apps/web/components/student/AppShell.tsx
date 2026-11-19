@@ -1,12 +1,8 @@
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import "../../app/student.css";
 import { Ic, type IconName } from "./Icon";
-
-const geist = Geist({ subsets: ["latin", "latin-ext"], variable: "--font-geist", display: "swap" });
-const geistMono = Geist_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-geist-mono", display: "swap" });
-const bricolage = Bricolage_Grotesque({ subsets: ["latin", "latin-ext"], variable: "--font-bricolage", display: "swap" });
+import { geist, geistMono, bricolage } from "@/lib/fonts";
 
 /** The three font variables, for every student surface (the app frame and the dark onboarding frame). */
 export const studentFonts = `${geist.variable} ${geistMono.variable} ${bricolage.variable}`;

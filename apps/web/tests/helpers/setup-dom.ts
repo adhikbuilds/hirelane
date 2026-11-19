@@ -1,4 +1,8 @@
-import { afterEach } from "vitest";
+import { afterEach, vi } from "vitest";
+
+// next/font/local is a Next compiler transform, so outside a Next build it is a plain function call that throws.
+// Give every test the shape a component reads: a CSS variable class and a className.
+vi.mock("next/font/local", () => ({ default: () => ({ variable: "font-var", className: "font-class", style: { fontFamily: "font" } }) }));
 
 // Only jsdom files have a document. Give them the browser APIs jsdom lacks and clean up between tests.
 if (typeof document !== "undefined") {

@@ -1,8 +1,6 @@
-import { Geist } from "next/font/google";
 import Link from "next/link";
 import "../../app/next.css";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+import { geist } from "@/lib/fonts";
 
 export type NextCounts = { indiaRoles: number | null; companies: number | null; employers: string[] };
 

@@ -1,10 +1,8 @@
-import { Public_Sans } from "next/font/google";
 import Link from "next/link";
 import type { EligibilityResult } from "@hirelane/engine";
 import "../../app/campus.css";
 import { PublicHeader, PublicFooter } from "./Public";
-
-const publicSans = Public_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-public", display: "swap" });
+import { publicSans } from "@/lib/fonts";
 
 export type DemoInput = { notice: string; pct10: string; pct12: string; grad: string; degree: string; year: string; backlogs: string };
 

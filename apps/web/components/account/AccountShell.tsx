@@ -1,14 +1,7 @@
-import { Bricolage_Grotesque } from "next/font/google";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import "../../app/account.css";
-
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  weight: ["500", "700", "800"],
-  variable: "--font-bricolage",
-  display: "swap",
-});
+import { bricolage } from "@/lib/fonts";
 
 /** Full-screen frame for the account screens. Server component: no client JS. */
 export function AccountShell({ children, right }: { children: ReactNode; right?: ReactNode }) {
