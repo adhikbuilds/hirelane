@@ -46,7 +46,7 @@ Placement cells pay; students use it free when their college does. The screens a
 
 ## Run it
 
-Requires Node ≥ 20, pnpm 9 and Docker.
+Requires Node 22.18 or newer (see `.nvmrc`), pnpm 9 and Docker. No API keys are needed: ingest, the LLM and embeddings all run from local fixtures by default.
 
 ```bash
 pnpm install
@@ -59,3 +59,7 @@ pnpm dev                       # http://localhost:3001
 ## Docs
 
 Architecture: [`docs/architecture.md`](docs/architecture.md). Ingest: [`docs/ingest.md`](docs/ingest.md). Enrichment: [`docs/enrichment.md`](docs/enrichment.md). Public API: [`docs/public-api.md`](docs/public-api.md). Campus: [`docs/campus.md`](docs/campus.md). Deploying the demo: [`docs/DEPLOY-DEMO.md`](docs/DEPLOY-DEMO.md). The full plan and its amendments are in [`PLAN.md`](PLAN.md).
+
+## Contributing
+
+Contributions are welcome. Start with an issue labelled [good first issue](https://github.com/adhikbuilds/hirelane/labels/good%20first%20issue) and read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and the project rules.
