@@ -4,8 +4,8 @@ Thanks for helping. HireLane is a job board built from public ATS APIs plus an a
 
 ## Find something to work on
 
-- Issues labelled [`good first issue`](https://github.com/adhikbuilds/hirelane/labels/good%20first%20issue) are small and self-contained.
-- Issues labelled [`help wanted`](https://github.com/adhikbuilds/hirelane/labels/help%20wanted) are bigger.
+- Issues labelled [`enhancement`](https://github.com/adhikbuilds/hirelane/labels/enhancement) are features we want built; [`help wanted`](https://github.com/adhikbuilds/hirelane/labels/help%20wanted) marks the bigger ones.
+- Have your own feature idea? Open an issue describing the problem first, so we can agree on the approach before you build.
 - Comment on the issue before you start so two people don't build the same thing. If an issue has had no activity for a week after someone claimed it, it's fair game.
 
 ## Run it locally

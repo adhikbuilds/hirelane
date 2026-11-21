@@ -62,4 +62,4 @@ Architecture: [`docs/architecture.md`](docs/architecture.md). Ingest: [`docs/ing
 
 ## Contributing
 
-Contributions are welcome. Start with an issue labelled [good first issue](https://github.com/adhikbuilds/hirelane/labels/good%20first%20issue) and read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and the project rules.
+Contributions are welcome. Pick an issue labelled [enhancement](https://github.com/adhikbuilds/hirelane/labels/enhancement) and read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and the project rules.
